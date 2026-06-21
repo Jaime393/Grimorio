@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campo Primordial ρ(x) - MIU</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #0a0a0a;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+        
+        .container {
+            position: relative;
+            width: 1200px;
+            height: 1000px;
+            background: #0B0C10;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 150px rgba(255, 215, 0, 0.15), 0 0 300px rgba(26, 35, 126, 0.1);
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .statement {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 215, 0, 0.7);
+            font-size: 13px;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            width: 90%;
+            line-height: 1.5;
+        }
+        
+        .subtitle {
+            position: absolute;
+            bottom: 15px;
+            right: 30px;
+            color: rgba(255, 215, 0, 0.5);
+            font-size: 10px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+<style>
+#gal-backnav{position:fixed;top:12px;left:12px;z-index:99999;display:flex;gap:6px;font-family:'Courier New',monospace;font-size:11px;}
+#gal-backnav a{color:#ffd700;text-decoration:none;background:rgba(10,10,15,0.7);border:1px solid rgba(255,215,0,0.35);border-radius:6px;padding:5px 10px;backdrop-filter:blur(4px);transition:all .2s;}
+#gal-backnav a:hover{background:rgba(255,215,0,0.15);border-color:#ffd700;}
+</style>
+<div id="gal-backnav"><a href="index.html">← Galería</a><a href="../index.html">Inicio</a></div>
+
+    <div class="container">
+        <canvas id="fieldCanvas"></canvas>
+        <div class="statement">
+            ρ(x) > 0 — La información es el sustrato primordial.<br>
+            No hay materia, energía, espacio ni tiempo anteriores a ella.
+        </div>
+        <div class="subtitle">MIU-IFT v13.0</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('fieldCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        
+        let time = 0;
+        const phi = 1.618033988749;
+        
+        // Sistema de partículas para el campo
+        class InformationParticle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.brightness = Math.random() * 0.7 + 0.3;
+                this.size = Math.random() * 1.5 + 0.5;
+                this.phase = Math.random() * Math.PI * 2;
+            }
+            
+            update() {
+                // Movimiento hacia el centro (atracción)
+                const dx = centerX - this.x;
+                const dy = centerY - this.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance > 100) {
+                    this.vx += (dx / distance) * 0.0005;
+                    this.vy += (dy / distance) * 0.0005;
+                }
+                
+                this.x += this.vx;
+                this.y += this.vy;
+                this.phase += 0.02;
+                
+                // Rebotar en bordes
+                if (this.x < 0) this.x = canvas.width;
+                if (this.x > canvas.width) this.x = 0;
+                if (this.y < 0) this.y = canvas.height;
+                if (this.y > canvas.height) this.y = 0;
+            }
+            
+            draw(ctx) {
+                const intensity = 0.5 + 0.5 * Math.sin(this.phase + time * 0.02);
+                
+                ctx.fillStyle = `rgba(255, 215, 0, ${intensity * this.brightness})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        // Crear campo de información
+        const particles = [];
+        for (let i = 0; i < 2000; i++) {
+            particles.push(new InformationParticle());
+        }
+        
+        // Dibujar espirales áureas de fondo
+        function drawGoldenSpiralsBackground() {
+            ctx.strokeStyle = 'rgba(184, 134, 11, 0.06)';
+            ctx.lineWidth = 1.5;
+            
+            for (let spiral = 0; spiral < 5; spiral++) {
+                ctx.beginPath();
+                const rotation = (spiral * Math.PI * 2 / 5);
+                
+                for (let i = 0; i < 250; i++) {
+                    const theta = (i / 15) + rotation;
+                    const radius = 5 * Math.pow(phi, theta / (Math.PI * 2));
+                    const x = centerX + radius * Math.cos(theta);
+                    const y = centerY + radius * Math.sin(theta);
+                    
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                    
+                    if (radius > 450) break;
+                }
+                ctx.stroke();
+            }
+            
+            // Etiqueta de la proporción áurea
+            ctx.fillStyle = 'rgba(184, 134, 11, 0.4)';
+            ctx.font = 'italic 11px "Courier New"';
+            ctx.textAlign = 'center';
+            ctx.fillText('φ = 0.618...', centerX + 350, centerY);
+        }
+        
+        // Dibujar regiones de densidad
+        function drawDensityRegions() {
+            // Región de ALTA densidad (casi sólida)
+            const highDensityGrad = ctx.createRadialGradient(
+                centerX - 80, centerY - 100, 20,
+                centerX - 80, centerY - 100, 180
+            );
+            
+            highDensityGrad.addColorStop(0, 'rgba(255, 215, 0, 0.25)');
+            highDensityGrad.addColorStop(0.4, 'rgba(255, 215, 0, 0.12)');
+            highDensityGrad.addColorStop(1, 'rgba(255, 215, 0, 0)');
+            
+            ctx.fillStyle = highDensityGrad;
+            ctx.beginPath();
+            ctx.arc(centerX - 80, centerY - 100, 180, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Región de BAJA densidad (niebla cuántica)
+            const lowDensityGrad = ctx.createRadialGradient(
+                centerX + 120, centerY + 80, 10,
+                centerX + 120, centerY + 80, 150
+            );
+            
+            lowDensityGrad.addColorStop(0, 'rgba(255, 255, 255, 0.1)');
+            lowDensityGrad.addColorStop(1, 'rgba(255, 215, 0, 0)');
+            
+            ctx.fillStyle = lowDensityGrad;
+            ctx.beginPath();
+            ctx.arc(centerX + 120, centerY + 80, 150, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Dibujar esfera central del primer latido
+        function drawFirstPulse() {
+            const pulseScale = 1 + 0.3 * Math.sin(time * 0.005);
+            const coreRadius = 50 * pulseScale;
+            
+            // Núcleo blanco intensísimo
+            const coreGrad = ctx.createRadialGradient(
+                centerX, centerY, 0,
+                centerX, centerY, coreRadius
+            );
+            
+            coreGrad.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
+            coreGrad.addColorStop(0.3, 'rgba(255, 215, 0, 0.7)');
+            coreGrad.addColorStop(1, 'rgba(255, 215, 0, 0.1)');
+            
+            ctx.fillStyle = coreGrad;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, coreRadius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Onda de choque
+            const waveRadius = 80 + (time * 0.15) % 250;
+            const waveWidth = 30;
+            
+            const waveGrad = ctx.createRadialGradient(
+                centerX, centerY, waveRadius - waveWidth,
+                centerX, centerY, waveRadius + waveWidth
+            );
+            
+            waveGrad.addColorStop(0, 'rgba(26, 35, 126, 0.5)');
+            waveGrad.addColorStop(0.5, 'rgba(255, 215, 0, 0.3)');
+            waveGrad.addColorStop(1, 'rgba(26, 35, 126, 0)');
+            
+            ctx.fillStyle = waveGrad;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, waveRadius + waveWidth, 0, Math.PI * 2);
+            ctx.arc(centerX, centerY, waveRadius - waveWidth, 0, Math.PI * 2, true);
+            ctx.fill();
+            
+            // Valores numéricos
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.9)';
+            ctx.font = 'bold 13px "Courier New"';
+            ctx.textAlign = 'center';
+            ctx.fillText('q_born = 1.1910149', centerX, centerY - 12);
+            ctx.fillText('Φ_c = 0.6829322', centerX, centerY + 12);
+        }
+        
+        // Partículas emergentes
+        function drawEmergingParticles() {
+            const particleColors = [
+                { color: 'rgba(255, 50, 50, 0.7)', angle: 0 },      // Quarks rojo
+                { color: 'rgba(50, 255, 50, 0.7)', angle: Math.PI / 4 },     // Electrones verde
+                { color: 'rgba(50, 50, 255, 0.7)', angle: Math.PI / 2 },     // Fotones azul
+                { color: 'rgba(255, 255, 50, 0.7)', angle: 3 * Math.PI / 4 }  // Otros
+            ];
+            
+            particleColors.forEach((pc, idx) => {
+                const distance = 150 + Math.sin(time * 0.01 + idx) * 50;
+                const x = centerX + distance * Math.cos(pc.angle);
+                const y = centerY + distance * Math.sin(pc.angle);
+                
+                const particleGrad = ctx.createRadialGradient(x - 2, y - 2, 0, x, y, 12);
+                particleGrad.addColorStop(0, pc.color);
+                particleGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                
+                ctx.fillStyle = particleGrad;
+                ctx.beginPath();
+                ctx.arc(x, y, 12, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+        
+        // Filamentos conectando regiones densas
+        function drawInformationFilaments() {
+            ctx.strokeStyle = 'rgba(255, 215, 0, 0.2)';
+            ctx.lineWidth = 1;
+            
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 2;
+                const x1 = centerX + 100 * Math.cos(angle);
+                const y1 = centerY + 100 * Math.sin(angle);
+                
+                const x2 = centerX + 300 * Math.cos(angle);
+                const y2 = centerY + 300 * Math.sin(angle);
+                
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                
+                // Curva suave
+                const cpx = (x1 + x2) / 2 + Math.cos(angle + Math.PI / 2) * 30;
+                const cpy = (y1 + y2) / 2 + Math.sin(angle + Math.PI / 2) * 30;
+                
+                ctx.quadraticCurveTo(cpx, cpy, x2, y2);
+                ctx.stroke();
+            }
+        }
+        
+        // Anotaciones científicas
+        function drawAnnotations() {
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.6)';
+            ctx.font = '11px "Courier New"';
+            
+            // Superior izquierda
+            ctx.textAlign = 'left';
+            ctx.fillText('Δ_COD = 0.6829322', 30, 50);
+            ctx.font = '9px "Courier New"';
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.4)';
+            ctx.fillText('(gap cuántico)', 30, 65);
+            
+            // Superior derecha
+            ctx.font = '11px "Courier New"';
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.6)';
+            ctx.textAlign = 'right';
+            ctx.fillText('Ω_F = 0.65048305 Hz', canvas.width - 30, 50);
+            ctx.font = '9px "Courier New"';
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.4)';
+            ctx.fillText('(frecuencia Fisher)', canvas.width - 30, 65);
+            
+            // Centro inferior
+            ctx.font = '11px "Courier New"';
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.6)';
+            ctx.textAlign = 'center';
+            ctx.fillText('K_i = φ · D_f/2.5 (R²=0.989, p<10⁻⁴⁸)', centerX, canvas.height - 80);
+            
+            // Inferior izquierda
+            ctx.textAlign = 'left';
+            ctx.font = '10px "Courier New"';
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.5)';
+            ctx.fillText('MIU-IFT v13.0 — ρ(x) > 0 — Zvvvvv', 30, canvas.height - 15);
+        }
+        
+        // Animación principal
+        function animate() {
+            // Fondo negro profundo
+            ctx.fillStyle = '#0B0C10';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Elementos
+            drawGoldenSpiralsBackground();
+            drawDensityRegions();
+            drawInformationFilaments();
+            
+            // Actualizar y dibujar partículas
+            particles.forEach(particle => {
+                particle.update();
+                particle.draw(ctx);
+            });
+            
+            drawFirstPulse();
+            drawEmergingParticles();
+            drawAnnotations();
+            
+            time++;
+            requestAnimationFrame(animate);
+        }
+        
+        animate();
+    </script>
+</body>
+</html>

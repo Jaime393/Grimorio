@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIU — Ecosistema Digital</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --accent:#3B82F6;
+  --accent-rgb:59, 130, 246;
+  --bg:#070B14;
+  --bg2:#0D1524;
+  --bg3:#162036;
+  --text:#E8EDF5;
+  --text2:#8B9DC3;
+  --text3:#3A4A6A;
+  --green:#00C9A7;
+  --amber:#F59E0B;
+  --red:#EF4444;
+  --purple:#8B5CF6;
+  --sans:-apple-system,'Segoe UI','Helvetica Neue',Arial,sans-serif;
+  --mono:'Courier New',Consolas,monospace;
+  --r:12px;
+  --rs:8px;
+  --t:0.25s ease;
+}
+
+@media(prefers-color-scheme:light){
+  :root:not([data-hc]){
+    --bg:#F0F4FF;--bg2:#FFFFFF;--bg3:#E2E8F8;
+    --text:#0D1524;--text2:#3A4A6A;--text3:#8B9DC3;
+  }
+}
+
+[data-hc="1"]{
+  --bg:#000;--bg2:#0A0A0A;--bg3:#1A1A1A;
+  --text:#FFF;--text2:#E0E0E0;--text3:#A0A0A0;
+  --accent:#FFE500;
+}
+
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+
+.app{max-width:800px;margin:0 auto;padding:0 1.25rem}
+
+/* NAV */
+.nav{display:flex;justify-content:space-between;align-items:center;padding:.9rem 0;border-bottom:1px solid var(--bg3);margin-bottom:2rem}
+.back{color:var(--text2);text-decoration:none;font-size:.85rem;letter-spacing:.04em;transition:color var(--t)}
+.back:hover{color:var(--accent)}
+.nav-right{display:flex;align-items:center;gap:.6rem}
+.badge{font-size:.7rem;letter-spacing:.1em;color:var(--text2);background:var(--bg3);padding:.2rem .65rem;border-radius:999px;text-transform:uppercase}
+.hc-btn{background:none;border:1px solid var(--bg3);color:var(--text2);padding:.2rem .5rem;border-radius:6px;cursor:pointer;font-size:.7rem;transition:all var(--t)}
+.hc-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* HERO */
+.hero{text-align:center;padding:2.5rem 1rem 2rem}
+.phi{display:block;font-size:4.5rem;font-family:var(--mono);font-weight:300;color:var(--accent);line-height:1;margin-bottom:1rem;animation:phiPulse 3s ease-in-out infinite}
+@keyframes phiPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.55;transform:scale(.92)}}
+.hero h1{font-size:clamp(1.6rem,5vw,2.4rem);font-weight:700;letter-spacing:-.02em;margin-bottom:.4rem}
+.hero-sub{font-size:.8rem;color:var(--accent);letter-spacing:.18em;text-transform:uppercase;margin-bottom:.9rem;font-weight:600}
+.hero-desc{color:var(--text2);max-width:520px;margin:0 auto;font-size:.92rem}
+
+/* SECTION LABELS */
+.sec-lbl{display:flex;align-items:center;gap:.5rem;margin:2.2rem 0 .9rem;font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;font-weight:700}
+.sec-lbl::after{content:'';flex:1;height:1px;background:var(--bg3)}
+.sec-lbl.g{color:var(--green)}.sec-lbl.r{color:var(--red)}
+
+/* TOGGLES */
+.t-row{display:flex;align-items:center;gap:.9rem;padding:.9rem 1rem;background:var(--bg2);border-radius:var(--r);margin-bottom:.6rem;cursor:pointer;border:2px solid transparent;transition:all var(--t);user-select:none}
+.t-row:hover{border-color:var(--bg3);background:var(--bg3)}
+.t-row:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.t-row.ag{border-color:rgba(0,201,167,.35);background:rgba(0,201,167,.05)}
+.t-row.ar{border-color:rgba(239,68,68,.35);background:rgba(239,68,68,.05)}
+.t-ico{font-size:1.7rem;min-width:2.2rem;text-align:center;flex-shrink:0}
+.t-body{flex:1;min-width:0}
+.t-lbl{font-weight:600;font-size:.93rem;margin-bottom:.15rem}
+.t-desc{font-size:.78rem;color:var(--text2);line-height:1.4}
+.t-sw{width:50px;height:26px;border-radius:999px;background:var(--bg3);position:relative;flex-shrink:0;transition:background var(--t);border:2px solid var(--text3)}
+.t-th{width:18px;height:18px;border-radius:50%;background:var(--text3);position:absolute;top:2px;left:2px;transition:all var(--t)}
+.t-row.ag .t-sw{background:rgba(0,201,167,.18);border-color:var(--green)}
+.t-row.ag .t-th{transform:translateX(22px);background:var(--green)}
+.t-row.ar .t-sw{background:rgba(239,68,68,.18);border-color:var(--red)}
+.t-row.ar .t-th{transform:translateX(22px);background:var(--red)}
+
+/* RESULTS */
+.results{margin:2rem 0;padding:1.4rem;background:var(--bg2);border-radius:var(--r);border:1px solid var(--bg3)}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:.85rem;margin-bottom:1.3rem}
+.mc{background:var(--bg3);border-radius:var(--rs);padding:.9rem;text-align:center;border:1px solid transparent;transition:border-color var(--t)}
+.ml{display:block;font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text2);margin-bottom:.4rem}
+.mv{display:block;font-family:var(--mono);font-size:1.45rem;font-weight:700;color:var(--text);margin-bottom:.2rem;transition:color var(--t)}
+.ms{display:block;font-size:.65rem;color:var(--text3);font-family:var(--mono)}
+
+/* DIAGNOSIS */
+.diag{padding:.9rem 1.1rem;border-radius:var(--rs);background:var(--bg3);border-left:3px solid var(--text3);margin-bottom:1.3rem;transition:border-color var(--t)}
+.band-name{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;display:block;margin-bottom:.4rem;transition:color var(--t)}
+.diag-txt{color:var(--text);font-size:.88rem;line-height:1.65;font-style:italic}
+
+/* VIZ */
+.viz{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+@media(max-width:460px){.viz{grid-template-columns:1fr}.metrics{gap:.5rem}.mv{font-size:1.1rem}}
+.vc{background:var(--bg3);border-radius:var(--rs);padding:.9rem;text-align:center}
+.vc h3{font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text2);margin-bottom:.7rem}
+.gauge-svg{width:100%;max-width:240px;height:auto}
+#radarCanvas{width:100%;max-width:240px;height:auto}
+
+/* ACTIONS */
+.actions{display:flex;flex-wrap:wrap;gap:.65rem;margin:1.4rem 0}
+.btn{padding:.55rem 1.1rem;border-radius:var(--rs);border:1px solid var(--bg3);cursor:pointer;font-family:var(--sans);font-size:.82rem;font-weight:600;transition:all var(--t);background:var(--bg3);color:var(--text)}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn-exp{background:rgba(var(--accent-rgb),.12);color:var(--accent);border-color:rgba(var(--accent-rgb),.3)}
+.btn-exp:hover{background:rgba(var(--accent-rgb),.22)}
+.btn-clr{background:none;color:var(--text3)}
+.btn-clr:hover{color:var(--red);border-color:var(--red)}
+
+/* HISTORY */
+.history{margin:1.3rem 0 3rem}
+.history h2{font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text2);margin-bottom:.9rem}
+.h-item{display:flex;justify-content:space-between;align-items:center;padding:.65rem .9rem;background:var(--bg2);border-radius:var(--rs);margin-bottom:.45rem;border-left:3px solid var(--text3);font-size:.83rem}
+.h-item.bg{border-color:var(--green)}.h-item.ba{border-color:var(--amber)}.h-item.br{border-color:var(--red)}.h-item.bn{border-color:var(--purple)}
+.h-ki{font-family:var(--mono);font-weight:700;font-size:.95rem}
+.h-dt{color:var(--text3);font-size:.72rem}
+.h-meta{color:var(--text3);font-size:.72rem;margin-top:.15rem}
+.h-empty{text-align:center;color:var(--text3);font-size:.85rem;padding:2rem 1rem}
+
+/* FOOTER */
+footer{border-top:1px solid var(--bg3);padding:1.4rem 0;text-align:center;color:var(--text3);font-size:.72rem;font-family:var(--mono);letter-spacing:.04em;margin-bottom:2rem}
+
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <nav class="nav">
+    <a href="index.html" class="back">← Ecosistema MIU</a>
+    <div class="nav-right">
+      <span class="badge">💻 Tecnología</span>
+      <button class="hc-btn" onclick="toggleHC()" aria-label="Alternar alto contraste">AA</button>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <span class="phi" id="phiG" aria-hidden="true">φ</span>
+    <h1>Ecosistema Digital</h1>
+    <p class="hero-sub">La deuda técnica como sombra del código</p>
+    <p class="hero-desc">Diagnostica la coherencia de un proyecto de software. El código es un organismo vivo: ¿está bien nutrido, modular y resiliente, o acumula deuda en la oscuridad del repositorio?</p>
+  </header>
+
+  <main>
+    <div class="sec-lbl g" role="heading" aria-level="2">◉ Diversidad &amp; Coherencia</div>
+    <div id="gT" role="group" aria-label="Áreas de coherencia y diversidad">
+        <div class="t-row" id="g0" onclick="toggle('green',0)" role="checkbox" aria-checked="false" tabindex="0">
+          <div class="t-ico">🧪</div>
+          <div class="t-body">
+            <div class="t-lbl">Tests automatizados</div>
+            <div class="t-desc">El código tiene cobertura de pruebas significativa y actualizada</div>
+          </div>
+          <div class="t-sw" aria-hidden="true"><div class="t-th"></div></div>
+        </div>
+        <div class="t-row" id="g1" onclick="toggle('green',1)" role="checkbox" aria-checked="false" tabindex="0">
+          <div class="t-ico">📖</div>
+          <div class="t-body">
+            <div class="t-lbl">Documentación viva</div>
+            <div class="t-desc">El código es legible, nombrado claramente y bien documentado</div>
+          </div>
+          <div class="t-sw" aria-hidden="true"><div class="t-th"></div></div>
+        </div>
+        <div class="t-row" id="g2" onclick="toggle('green',2)" role="checkbox" aria-checked="false" tabindex="0">
+          <div class="t-ico">🔄</div>
+          <div class="t-body">
+            <div class="t-lbl">CI/CD activo</div>
+            <div class="t-desc">Hay pipelines de integración y despliegue continuo funcionando</div>
+          </div>
+          <div class="t-sw" aria-hidden="true"><div class="t-th"></div></div>
+        </div>
+        <div class="t-row" id="g3" onclick="toggle('green',3)" role="checkbox" aria-checked="false" tabindex="0">
+          <div class="t-ico">🏗️</div>
+          <div class="t-body">
+            <div class="t-lbl">Arquitectura modular</div>
+            <div class="t-desc">Los módulos tienen responsabilidades únicas y claras (SRP)</div>
+          </div>
+          <div class="t-sw" aria-hidden="true"><div class="t-th"></div></div>
+        </div>
+    </div>
+
+    <div class="sec-lbl r" role="heading" aria-level="2">◎ Disfunción &amp; Sombra</div>
+    <div id="rT" role="group" aria-label="Áreas de disfunción y sombra">
+        <div class="t-row" id="r0" onclick="toggle('red',0)" role="checkbox" aria-checked="false" tabindex="0">
+          <div class="t-ico">🕸️</div>
+          <div class="t-body">
+            <div class="t-lbl">Deuda técnica</div>
+            <div class="t-desc">Hay partes del código que nadie quiere tocar ni logra entender</div>
+          </div>
+          <div class="t-sw" aria-hidden="true"><div class="t-th"></div></div>
+        </div>
+        <div class="t-row" id="r1" onclick="toggle('red',1)" role="checkbox" aria-checked="false" tabindex="0">
+          <div class="t-ico">🔓</div>
+          <div class="t-body">
+            <div class="t-lbl">Seguridad descuidada</div>
+            <div class="t-desc">No se realizan auditorías ni actualizaciones de seguridad</div>
+          </div>
+          <div class="t-sw" aria-hidden="true"><div class="t-th"></div></div>
+        </div>
+        <div class="t-row" id="r2" onclick="toggle('red',2)" role="checkbox" aria-checked="false" tabindex="0">
+          <div class="t-ico">🌀</div>
+          <div class="t-body">
+            <div class="t-lbl">Acoplamiento fuerte</div>
+            <div class="t-desc">Los cambios en una parte rompen otras de forma impredecible</div>
+          </div>
+          <div class="t-sw" aria-hidden="true"><div class="t-th"></div></div>
+        </div>
+        <div class="t-row" id="r3" onclick="toggle('red',3)" role="checkbox" aria-checked="false" tabindex="0">
+          <div class="t-ico">📦</div>
+          <div class="t-body">
+            <div class="t-lbl">Dependencias obsoletas</div>
+            <div class="t-desc">Hay librerías sin actualizar hace más de un año</div>
+          </div>
+          <div class="t-sw" aria-hidden="true"><div class="t-th"></div></div>
+        </div>
+    </div>
+
+    <section class="results" aria-live="polite" aria-label="Campo informacional calculado">
+      <div class="metrics">
+        <div class="mc">
+          <span class="ml">Dimensión Fractal</span>
+          <span class="mv" id="dfV">0.000</span>
+          <span class="ms">D_f</span>
+        </div>
+        <div class="mc">
+          <span class="ml">Disfunción</span>
+          <span class="mv" id="fV">0.000</span>
+          <span class="ms">f</span>
+        </div>
+        <div class="mc" id="kiMC">
+          <span class="ml">Coherencia Kᵢ⁻</span>
+          <span class="mv" id="kiV">0.000</span>
+          <span class="ms">φ · campo</span>
+        </div>
+      </div>
+
+      <div class="diag" id="diagC">
+        <span class="band-name" id="bName">— sin medición activa —</span>
+        <p class="diag-txt" id="diagT">Activa los toggles para revelar el campo informacional.</p>
+      </div>
+
+      <div class="viz">
+        <div class="vc">
+          <h3>Gauge φ · Campo bidireccional Kᵢ⁻</h3>
+          <svg id="gaugeSvg" class="gauge-svg" viewBox="0 0 300 280" aria-label="Gauge circular de coherencia"></svg>
+        </div>
+        <div class="vc">
+          <h3>Radar · Áreas de coherencia activas</h3>
+          <canvas id="radarCanvas" width="280" height="280" aria-label="Radar de diversidad"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <div class="actions">
+      <button class="btn" onclick="loadExample('healthy')">🌿 Saludable (3v/1r)</button>
+      <button class="btn" onclick="loadExample('collapse')">🌑 Colapso (1v/3r)</button>
+      <button class="btn btn-exp" onclick="exportJson()">↓ PHI-JSON</button>
+      <button class="btn btn-clr" onclick="clearHistory()">⊘ Limpiar historial</button>
+    </div>
+
+    <section class="history" aria-label="Historial de mediciones">
+      <h2>Historial de Campo · Últimas 10 mediciones</h2>
+      <div id="hList"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Monismo Informacional Unificado · φ = 1.6180339887498949 · Ecosistema Digital</p>
+  </footer>
+</div>
+<script>
+const PHI = 1.6180339887498948482;
+const TOOL_ID = '03-ecosistema-digital';
+const SK = 'miu_' + TOOL_ID;
+const BT = {"green": "El organismo digital muestra alta coherencia. Tus módulos son como nodos del micelio: conectados pero autónomos. La deuda técnica es baja y el sistema puede evolucionar.", "amber": "Sistema en tensión creativa. Hay código sano y código oscuro conviviendo. Un sprint de refactoring puede reorganizar el bosque antes de que el problema crezca.", "red": "Deuda técnica dominante. El código acumula sombra. Una auditoría técnica urgente antes de añadir más funcionalidades puede salvar el sistema.", "negative": "Colapso arquitectónico inminente. La entropía supera la coherencia del sistema. Un rediseño profundo o una migración planificada puede ser el único camino sostenible."};
+const GL = ["Tests automatizados", "Documentación viva", "CI/CD activo", "Arquitectura modular"];
+const RL = ["Deuda técnica", "Seguridad descuidada", "Acoplamiento fuerte", "Dependencias obsoletas"];
+
+const BC = {green:'#00C9A7',amber:'#F59E0B',red:'#EF4444',negative:'#8B5CF6'};
+const BN = {
+  green:'Resiliencia  ·  Kᵢ⁻ > 0.55',
+  amber:'Desequilibrio  ·  0.30 ≤ Kᵢ⁻ ≤ 0.55',
+  red:'Colapso  ·  Kᵢ⁻ < 0.30',
+  negative:'Sombra profunda  ·  Kᵢ⁻ < 0'
+};
+
+let gS=[false,false,false,false];
+let rS=[false,false,false,false];
+let hist=[];
+let touched=false;
+let lastKi=0;
+
+function init(){
+  try{hist=JSON.parse(localStorage.getItem(SK)||'[]')}catch(e){hist=[]}
+  renderHistory();
+  drawGauge(0);
+  drawRadar(gS);
+  document.addEventListener('keydown',e=>{
+    if((e.key===' '||e.key==='Enter')&&e.target.classList.contains('t-row')){
+      e.preventDefault();e.target.click();
+    }
+  });
+}
+
+function toggle(type,idx){
+  touched=true;
+  if(type==='green'){
+    gS[idx]=!gS[idx];
+    const row=document.querySelectorAll('#gT .t-row')[idx];
+    row.classList.toggle('ag',gS[idx]);
+    row.setAttribute('aria-checked',gS[idx]);
+  }else{
+    rS[idx]=!rS[idx];
+    const row=document.querySelectorAll('#rT .t-row')[idx];
+    row.classList.toggle('ar',rS[idx]);
+    row.setAttribute('aria-checked',rS[idx]);
+  }
+  calculate();
+}
+
+function calculate(){
+  const gc=gS.filter(Boolean).length;
+  const rc=rS.filter(Boolean).length;
+  const Df=(gc/4)*2.5;
+  const f=rc/4;
+  const Ki=PHI*(Df/2.5)*(1-2*f);
+  lastKi=Ki;
+  updateDisplay(Df,f,Ki);
+  if(touched)saveEntry(Df,f,Ki);
+}
+
+function band(Ki){
+  if(Ki>0.55)return'green';
+  if(Ki>=0.30)return'amber';
+  if(Ki>=0)return'red';
+  return'negative';
+}
+
+function updateDisplay(Df,f,Ki){
+  const b=band(Ki);
+  const c=BC[b];
+  document.getElementById('dfV').textContent=Df.toFixed(3);
+  document.getElementById('fV').textContent=f.toFixed(3);
+  document.getElementById('kiV').textContent=Ki.toFixed(4);
+  document.getElementById('kiV').style.color=c;
+  document.getElementById('kiMC').style.borderColor=c;
+  document.getElementById('bName').textContent=BN[b];
+  document.getElementById('bName').style.color=c;
+  document.getElementById('diagT').textContent=BT[b];
+  document.getElementById('diagC').style.borderLeftColor=c;
+  const phi=document.getElementById('phiG');
+  phi.style.color=c;
+  const dur={green:'4s',amber:'2s',red:'1s',negative:'0.55s'}[b];
+  phi.style.animationDuration=dur;
+  drawGauge(Ki);
+  drawRadar(gS);
+}
+
+/* ---- GAUGE SVG ---- */
+function sc(ga,cx,cy,r){
+  const rad=(90-ga)*Math.PI/180;
+  return{x:cx+r*Math.cos(rad),y:cy+r*Math.sin(rad)};
+}
+function arc(ga1,ga2,cx,cy,r,cw){
+  const p1=sc(ga1,cx,cy,r),p2=sc(ga2,cx,cy,r);
+  const da=Math.abs(ga2-ga1);
+  if(da<0.5)return'';
+  const lg=da>180?1:0,sw=cw?1:0;
+  return`M${p1.x.toFixed(2)} ${p1.y.toFixed(2)} A${r} ${r} 0 ${lg} ${sw} ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`;
+}
+
+function drawGauge(Ki){
+  const svg=document.getElementById('gaugeSvg');
+  const cx=150,cy=158,r=108;
+  const MGA=135;
+  const b=band(Ki);
+  const col=BC[b];
+  const kiC=Math.max(-PHI,Math.min(PHI,Ki));
+  const ga=(kiC/PHI)*MGA;
+
+  /* background */
+  const bgP=arc(-MGA,MGA,cx,cy,r,true);
+  /* band zones on right side */
+  const ga030=(0.30/PHI)*MGA,ga055=(0.55/PHI)*MGA;
+  const zRed=arc(0,ga030,cx,cy,r,false);
+  const zAmb=arc(ga030,ga055,cx,cy,r,false);
+  const zGrn=arc(ga055,MGA,cx,cy,r,false);
+  /* value arc */
+  let vP='';
+  if(ga>0.5)vP=arc(0,ga,cx,cy,r,false);
+  else if(ga<-0.5)vP=arc(ga,0,cx,cy,r,true);
+
+  /* needle */
+  const np=sc(ga,cx,cy,r);
+  /* labels */
+  const lNeg=sc(-MGA,cx,cy,r+22),lPos=sc(MGA,cx,cy,r+22),lZero=sc(0,cx,cy,r+22);
+
+  /* ticks */
+  function tick(ga2,col2,w){
+    const ti=sc(ga2,cx,cy,r-14),to=sc(ga2,cx,cy,r+5);
+    return`<line x1="${ti.x.toFixed(1)}" y1="${ti.y.toFixed(1)}" x2="${to.x.toFixed(1)}" y2="${to.y.toFixed(1)}" stroke="${col2}" stroke-width="${w}" opacity="0.8"/>`;
+  }
+
+  svg.innerHTML=`
+<defs>
+  <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+    <feGaussianBlur stdDeviation="4" result="b"/>
+    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+</defs>
+${bgP?`<path d="${bgP}" fill="none" stroke="#1A2A40" stroke-width="18" stroke-linecap="round"/>`:''}
+${zRed?`<path d="${zRed}" fill="none" stroke="rgba(239,68,68,0.12)" stroke-width="18" stroke-linecap="round"/>`:''}
+${zAmb?`<path d="${zAmb}" fill="none" stroke="rgba(245,158,11,0.12)" stroke-width="18" stroke-linecap="round"/>`:''}
+${zGrn?`<path d="${zGrn}" fill="none" stroke="rgba(0,201,167,0.12)" stroke-width="18" stroke-linecap="round"/>`:''}
+${vP?`<path d="${vP}" fill="none" stroke="${col}" stroke-width="14" stroke-linecap="round" filter="url(#glow)" opacity="0.92"/>`:''}
+${tick(ga030,'#F59E0B',2)}
+${tick(ga055,'#00C9A7',2)}
+${tick(-ga030,'#8B5CF6',1.5)}
+<line x1="${sc(0,cx,cy,r-20).x.toFixed(1)}" y1="${sc(0,cx,cy,r-20).y.toFixed(1)}" x2="${sc(0,cx,cy,r+6).x.toFixed(1)}" y2="${sc(0,cx,cy,r+6).y.toFixed(1)}" stroke="#3A4A6A" stroke-width="2"/>
+<circle cx="${np.x.toFixed(1)}" cy="${np.y.toFixed(1)}" r="8" fill="${col}" filter="url(#glow)"/>
+<circle cx="${np.x.toFixed(1)}" cy="${np.y.toFixed(1)}" r="3" fill="#070B14"/>
+<text x="${cx}" y="${cy-18}" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#3A4A6A">Kᵢ⁻</text>
+<text x="${cx}" y="${cy+10}" text-anchor="middle" font-family="Courier New,monospace" font-size="23" font-weight="700" fill="${col}">${Ki.toFixed(3)}</text>
+<text x="${lNeg.x.toFixed(1)}" y="${(lNeg.y+3).toFixed(1)}" text-anchor="middle" font-family="Courier New,monospace" font-size="10" fill="#3A4A6A">−φ</text>
+<text x="${lPos.x.toFixed(1)}" y="${(lPos.y+3).toFixed(1)}" text-anchor="middle" font-family="Courier New,monospace" font-size="10" fill="#3A4A6A">+φ</text>
+<text x="${lZero.x.toFixed(1)}" y="${(lZero.y+16).toFixed(1)}" text-anchor="middle" font-family="Courier New,monospace" font-size="10" fill="#3A4A6A">0</text>`;
+}
+
+/* ---- RADAR CANVAS ---- */
+function drawRadar(gs){
+  const cv=document.getElementById('radarCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height,cx=W/2,cy=H/2,maxR=Math.min(W,H)/2-32;
+  ctx.clearRect(0,0,W,H);
+  const st=getComputedStyle(document.documentElement);
+  const c3=st.getPropertyValue('--bg3').trim()||'#162036';
+  const ct=st.getPropertyValue('--text3').trim()||'#3A4A6A';
+
+  /* rings */
+  [.25,.5,.75,1].forEach(f=>{
+    ctx.beginPath();ctx.arc(cx,cy,maxR*f,0,Math.PI*2);
+    ctx.strokeStyle=c3;ctx.lineWidth=1;ctx.stroke();
+  });
+
+  /* axes: top(-90), right(0), bottom(90), left(180) */
+  const axes=[-90,0,90,180];
+  axes.forEach((ang,i)=>{
+    const rad=ang*Math.PI/180;
+    const ex=cx+maxR*Math.cos(rad),ey=cy+maxR*Math.sin(rad);
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(ex,ey);
+    ctx.strokeStyle=c3;ctx.lineWidth=1;ctx.stroke();
+    /* label */
+    const lx=cx+(maxR+22)*Math.cos(rad),ly=cy+(maxR+22)*Math.sin(rad);
+    ctx.fillStyle=ct;ctx.font='10px -apple-system,sans-serif';
+    ctx.textAlign=Math.cos(rad)>0.1?'left':Math.cos(rad)<-0.1?'right':'center';
+    ctx.textBaseline=Math.sin(rad)>0.1?'top':Math.sin(rad)<-0.1?'bottom':'middle';
+    const lbl=GL[i];
+    const short=lbl.length>11?lbl.substring(0,11)+'…':lbl;
+    ctx.fillText(short,lx,ly);
+  });
+
+  /* polygon */
+  if(gs.some(Boolean)){
+    const pts=axes.map((ang,i)=>{
+      const v=gs[i]?1:0,rad=ang*Math.PI/180;
+      return{x:cx+maxR*v*Math.cos(rad),y:cy+maxR*v*Math.sin(rad)};
+    });
+    ctx.beginPath();
+    pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
+    ctx.closePath();
+    ctx.fillStyle='rgba(0,201,167,0.13)';ctx.fill();
+    ctx.strokeStyle='#00C9A7';ctx.lineWidth=2;ctx.stroke();
+    pts.forEach((p,i)=>{
+      if(gs[i]){ctx.beginPath();ctx.arc(p.x,p.y,5,0,Math.PI*2);ctx.fillStyle='#00C9A7';ctx.fill();}
+    });
+  }
+  /* center */
+  ctx.beginPath();ctx.arc(cx,cy,3,0,Math.PI*2);ctx.fillStyle=ct;ctx.fill();
+}
+
+/* ---- EXAMPLES ---- */
+function loadExample(t){
+  gS=t==='healthy'?[true,true,true,false]:[true,false,false,false];
+  rS=t==='healthy'?[true,false,false,false]:[true,true,true,false];
+  document.querySelectorAll('#gT .t-row').forEach((row,i)=>{row.classList.toggle('ag',gS[i]);row.setAttribute('aria-checked',gS[i]);});
+  document.querySelectorAll('#rT .t-row').forEach((row,i)=>{row.classList.toggle('ar',rS[i]);row.setAttribute('aria-checked',rS[i]);});
+  touched=true;calculate();
+}
+
+/* ---- HISTORY ---- */
+function saveEntry(Df,f,Ki){
+  const e={ts:new Date().toISOString(),Df:+Df.toFixed(4),f:+f.toFixed(4),Ki:+Ki.toFixed(4),band:band(Ki),g:[...gS],r:[...rS]};
+  if(hist.length>0){const l=hist[hist.length-1];if(JSON.stringify(l.g)===JSON.stringify(e.g)&&JSON.stringify(l.r)===JSON.stringify(e.r))return;}
+  hist.push(e);if(hist.length>10)hist.shift();
+  try{localStorage.setItem(SK,JSON.stringify(hist));}catch(err){}
+  renderHistory();
+}
+function renderHistory(){
+  const el=document.getElementById('hList');
+  if(!hist.length){el.innerHTML='<div class="h-empty">Aún no hay mediciones. Activa los toggles para comenzar.</div>';return;}
+  el.innerHTML=[...hist].reverse().map(e=>{
+    const d=new Date(e.ts);
+    const ds=d.toLocaleDateString('es',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+    const gc=e.g?e.g.filter(Boolean).length:0,rc=e.r?e.r.filter(Boolean).length:0;
+    const bc={green:'bg',amber:'ba',red:'br',negative:'bn'}[e.band];
+    return`<div class="h-item ${bc}"><div><span class="h-ki" style="color:${BC[e.band]}">${e.Ki.toFixed(4)}</span><span style="color:var(--text3);font-size:.72rem;margin-left:.4rem">Kᵢ⁻</span><div class="h-meta">🟢 ${gc}/4 · 🔴 ${rc}/4 · D_f=${e.Df}</div></div><div class="h-dt">${ds}</div></div>`;
+  }).join('');
+}
+function clearHistory(){
+  if(confirm('¿Borrar el historial de este diagnóstico?')){hist=[];try{localStorage.removeItem(SK);}catch(err){}renderHistory();}
+}
+
+/* ---- EXPORT ---- */
+function exportJson(){
+  const gc=gS.filter(Boolean).length,rc=rS.filter(Boolean).length;
+  const Df=(gc/4)*2.5,f=rc/4,Ki=PHI*(Df/2.5)*(1-2*f);
+  const payload={schema:'PHI-JSON/MIU/1.0',tool:TOOL_ID,ts:new Date().toISOString(),phi:PHI,state:{greens:gS,reds:rS},metrics:{Df:+Df.toFixed(6),f:+f.toFixed(6),Ki:+Ki.toFixed(6)},band:band(Ki),history:hist};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download=`miu_${TOOL_ID}_${Date.now()}.json`;a.click();URL.revokeObjectURL(url);
+}
+
+/* ---- HIGH CONTRAST ---- */
+function toggleHC(){
+  const h=document.documentElement;
+  h.setAttribute('data-hc',h.getAttribute('data-hc')==='1'?'0':'1');
+  drawGauge(lastKi);drawRadar(gS);
+}
+
+init();
+</script>
+</body>
+</html>

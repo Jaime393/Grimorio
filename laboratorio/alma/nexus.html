@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXUS 10K Nodos - ALMA-NEXUS v4.1</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #000;
+  color: #e0e0e0;
+  font-family: 'Courier New', monospace;
+  padding: 20px;
+  transition: background 1.5s ease;
+}
+body.critical {
+  background: #0a0005;
+}
+body.degraded {
+  background: #0a0500;
+}
+h2 {
+  color: #00d4ff;
+  font-size: 1.3rem;
+  text-shadow: 0 0 15px #00d4ff;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #00d4ff;
+  padding-bottom: 8px;
+  transition: color 0.5s;
+}
+h2.critical {
+  color: #ff3366;
+  border-color: #ff3366;
+}
+.grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 15px;
+}
+.panel {
+  background: rgba(10,10,10,0.9);
+  border: 2px solid #00d4ff;
+  border-radius: 10px;
+  padding: 20px;
+  transition: border-color 0.5s;
+}
+.panel.critical {
+  border-color: #ff3366;
+  box-shadow: 0 0 25px rgba(255,51,102,0.4);
+}
+.panel h3 {
+  color: #ffd700;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+.btn-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+.btn {
+  padding: 12px;
+  background: linear-gradient(135deg, #00d4ff, #00aacc);
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11px;
+  text-transform: uppercase;
+  transition: all 0.3s;
+}
+.btn:hover {
+  box-shadow: 0 0 20px #00d4ff;
+  transform: scale(1.02);
+}
+.btn.pulse {
+  animation: pulse-sync 0.8s infinite;
+}
+@keyframes pulse-sync {
+ 0%, 100% { box-shadow: 0 0 15px #00ff88; transform: scale(1); }
+ 50% { box-shadow: 0 0 40px #00ff88; transform: scale(1.05); }
+}
+.btn.phi {
+  background: linear-gradient(135deg, #ffd700, #ffcc00);
+}
+.btn.green {
+  background: linear-gradient(135deg, #00ff88, #00cc66);
+}
+.btn.red {
+  background: linear-gradient(135deg, #ff3366, #cc2255);
+}
+canvas {
+  width: 100%;
+  height: 450px;
+  background: #000;
+  border: 2px solid #222;
+  border-radius: 8px;
+  transition: border-color 0.5s;
+}
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 15px;
+}
+.stat-box {
+  background: #050505;
+  border: 1px solid #222;
+  padding: 12px;
+  border-radius: 6px;
+  text-align: center;
+}
+.stat-label {
+  font-size: 10px;
+  color: #666;
+  text-transform: uppercase;
+}
+.stat-value {
+  font-size: 24px;
+  color: #00d4ff;
+  font-weight: bold;
+  margin-top: 5px;
+  transition: color 0.5s;
+}
+.stat-value.critical {
+  color: #ff3366;
+  animation: blink 1s infinite;
+}
+@keyframes blink {
+ 50% { opacity: 0.5; }
+}
+.log {
+  background: #000;
+  border-left: 4px solid #00d4ff;
+  padding: 12px;
+  font-size: 11px;
+  max-height: 250px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  line-height: 1.6;
+  margin-top: 10px;
+  transition: border-color 0.5s;
+}
+.log.critical {
+  border-color: #ff3366;
+}
+.warning {
+  background: rgba(255,170,0,0.1);
+  border: 1px solid #ffaa00;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  margin-bottom: 10px;
+  color: #ffaa00;
+}
+@media (max-width: 900px) {
+.grid { grid-template-columns: 1fr; }
+.btn-group { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<h2 id="titulo">🌐 NEXUS - 10K Nodos + Sincronización PPF-02 v4.1</h2>
+
+<div class="grid">
+  <div class="panel" id="panelMapa">
+    <h3>Mapa de Nodos Distribuidos</h3>
+    <canvas id="nexusCanvas"></canvas>
+  </div>
+
+  <div class="panel" id="panelControl">
+    <h3>Controles NEXUS</h3>
+    
+    <div class="warning">
+      ⚠️ 10K nodos consumen ~50MB RAM. Usar solo en desktop.
+    </div>
+
+    <div class="btn-group">
+      <button class="btn" onclick="agregarNodo()">+1 Nodo</button>
+      <button class="btn" onclick="agregar100Nodos()">+100 Nodos</button>
+      <button class="btn red" onclick="eliminarNodo()">-1 Nodo</button>
+      <button class="btn green" id="btnSync" onclick="sincronizarPPF()">Sync PPF-02</button>
+      <button class="btn phi" onclick="generar10K()">Generar 10K</button>
+      <button class="btn" onclick="limpiarNodos()">Limpiar Todo</button>
+      <button class="btn" id="btnMute" onclick="toggleMute()">🔊 Sonido ON</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat-box" id="boxTotal">
+        <div class="stat-label">Nodos Activos</div>
+        <div class="stat-value" id="totalNodos">1</div>
+      </div>
+      <div class="stat-box" id="boxConx">
+        <div class="stat-label">Conexiones</div>
+        <div class="stat-value" id="totalConexiones">0</div>
+      </div>
+      <div class="stat-box" id="boxKiProm">
+        <div class="stat-label">K_i Promedio</div>
+        <div class="stat-value" id="kiPromedio">0.570</div>
+      </div>
+      <div class="stat-box" id="boxMemoria">
+        <div class="stat-label">Memoria Est.</div>
+        <div class="stat-value" id="memoria">0 MB</div>
+      </div>
+    </div>
+
+    <div class="log" id="log">NEXUS v4.1 inicializado...\nNodo raíz activo</div>
+  </div>
+</div>
+
+<script src="alma-shared.js"></script>
+<script>
+const canvas = document.getElementById('nexusCanvas');
+const ctx = canvas.getContext('2d');
+
+let nodos = [];
+let conexiones = [];
+let audioCtx = null;
+
+// FALLBACK SEGURO
+function getALMA() {
+  return (parent.ALMA && parent.ALMA.K_i!== undefined)? parent.ALMA : {
+    K_i: 0.570,
+    nodos: [{ki: 0.570}]
+  };
+}
+
+function getAudio() {
+  return (parent.ALMA_AUDIO && parent.ALMA_AUDIO.enabled!== undefined)? parent.ALMA_AUDIO : {enabled: true};
+}
+
+// AUDIO con MUTE
+function beep(freq = 500, dur = 0.1) {
+  if (!getAudio().enabled) return;
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = audioCtx.createOscillator();
+  osc.frequency.value = freq;
+  osc.connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + dur);
+}
+
+function toggleMute() {
+  const audio = getAudio();
+  const estado = audio.toggle? audio.toggle() : !audio.enabled;
+  const btn = document.getElementById('btnMute');
+  btn.textContent = estado ? '🔊 Sonido ON' : '🔇 Sonido OFF';
+  btn.classList.toggle('red', !estado);
+  beep(400, 0.1);
+}
+
+// Resize
+function resize() {
+  canvas.width = canvas.offsetWidth;
+  canvas.height = 450;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// Agregar 1 nodo
+function agregarNodo() {
+  const id = nodos.length;
+  const x = Math.random() * canvas.width;
+  const y = Math.random() * canvas.height;
+  const ki = 0.4 + Math.random() * 0.4;
+  
+  nodos.push({ id, x, y, ki, vx: (Math.random()-0.5)*0.2, vy: (Math.random()-0.5)*0.2 });
+  
+  if (nodos.length > 1) {
+    const cercano = nodos[Math.floor(Math.random() * (nodos.length-1))];
+    conexiones.push({ from: id, to: cercano.id });
+  }
+  
+  actualizarStats();
+  log(`Nodo ${id} agregado | K_i: ${ki.toFixed(3)}`);
+  beep(600, 0.05);
+}
+
+// Agregar 100 nodos
+function agregar100Nodos() {
+  for (let i = 0; i < 100; i++) agregarNodo();
+  log('100 nodos agregados en lote');
+  beep(700, 0.3);
+}
+
+// Eliminar 1 nodo
+function eliminarNodo() {
+  if (nodos.length > 1) {
+    const eliminado = nodos.pop();
+    conexiones = conexiones.filter(c => c.from !== eliminado.id && c.to !== eliminado.id);
+    actualizarStats();
+    log(`Nodo ${eliminado.id} eliminado`);
+    beep(200, 0.1);
+  }
+}
+
+// Limpiar todo
+function limpiarNodos() {
+  nodos = [{ id: 0, x: canvas.width/2, y: canvas.height/2, ki: 0.570, vx: 0, vy: 0 }];
+  conexiones = [];
+  actualizarStats();
+  log('Nodos limpiados. Solo nodo raíz');
+  beep(400, 0.2);
+}
+
+// Generar 10K nodos
+function generar10K() {
+  if (nodos.length > 100) {
+    if (!confirm('Ya hay nodos. ¿Limpiar y generar 10K nuevos?')) return;
+    limpiarNodos();
+  }
+  
+  for (let i = 1; i < 10000; i++) {
+    const x = Math.random() * canvas.width;
+    const y = Math.random() * canvas.height;
+    const ki = 0.3 + Math.random() * 0.5;
+    nodos.push({ id: i, x, y, ki, vx: (Math.random()-0.5)*0.1, vy: (Math.random()-0.5)*0.1 });
+    
+    if (i > 0 && Math.random() > 0.3) {
+      const to = Math.floor(Math.random() * i);
+      conexiones.push({ from: i, to: to });
+    }
+  }
+  
+  actualizarStats();
+  log('10,000 nodos generados. ~50MB RAM');
+  beep(800, 0.4);
+  document.getElementById('btnSync').classList.add('pulse');
+  setTimeout(() => document.getElementById('btnSync').classList.remove('pulse'), 2000);
+}
+
+// Sincronización PPF-02
+function sincronizarPPF() {
+  const btn = document.getElementById('btnSync');
+  btn.textContent = 'Sincronizando...';
+  btn.disabled = true;
+  
+  setTimeout(() => {
+    conexiones.forEach(conx => {
+      const n1 = nodos[conx.from];
+      const n2 = nodos[conx.to];
+      if (n1 && n2) {
+        const prom = (n1.ki + n2.ki) / 2;
+        n1.ki = prom * (0.98 + Math.random() * 0.04);
+        n2.ki = prom * (0.98 + Math.random() * 0.04);
+      }
+    });
+    
+    const ALMA = getALMA();
+    if (ALMA && nodos.length > 0) {
+      ALMA.K_i = nodos.reduce((a, n) => a + n.ki, 0) / nodos.length;
+    }
+    
+    actualizarStats();
+    log('Sincronización PPF-02 completada');
+    btn.textContent = 'Sync PPF-02';
+    btn.disabled = false;
+    beep(500, 0.3);
+  }, 800);
+}
+
+// Actualizar estadísticas + COLORES DINÁMICOS
+function actualizarStats() {
+  document.getElementById('totalNodos').textContent = nodos.length;
+  document.getElementById('totalConexiones').textContent = conexiones.length;
+  
+  const kiProm = nodos.length > 0? nodos.reduce((a, n) => a + n.ki, 0) / nodos.length : 0;
+  document.getElementById('kiPromedio').textContent = kiProm.toFixed(3);
+  
+  const memoria = (nodos.length * 0.005 + conexiones.length * 0.0001).toFixed(1);
+  document.getElementById('memoria').textContent = memoria + ' MB';
+  
+  const audio = getAudio();
+  document.getElementById('btnMute').textContent = audio.enabled ? '🔊 Sonido ON' : '🔇 Sonido OFF';
+  document.getElementById('btnMute').classList.toggle('red', !audio.enabled);
+  
+  const kiSpan = document.getElementById('kiPromedio');
+  const body = document.body;
+  const panelMapa = document.getElementById('panelMapa');
+  const titulo = document.getElementById('titulo');
+  
+  kiSpan.classList.remove('critical');
+  panelMapa.classList.remove('critical');
+  body.classList.remove('critical', 'degraded');
+  titulo.classList.remove('critical');
+  
+  if (kiProm < 0.3) {
+    kiSpan.classList.add('critical');
+    panelMapa.classList.add('critical');
+    body.classList.add('critical');
+    titulo.classList.add('critical');
+    canvas.style.borderColor = '#ff0000';
+  } else if (kiProm < 0.55) {
+    body.classList.add('degraded');
+    canvas.style.borderColor = '#ffaa00';
+  } else {
+    canvas.style.borderColor = '#00d4ff';
+  }
+}
+
+// Dibujar nodos y conexiones
+function dibujar() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  const ALMA = getALMA();
+  const ki = ALMA.K_i;
+  const bgGradient = ctx.createRadialGradient(
+    canvas.width/2, canvas.height/2, 0,
+    canvas.width/2, canvas.height/2, Math.max(canvas.width, canvas.height)
+  );
+  
+  if (ki < 0.3) {
+    bgGradient.addColorStop(0, 'rgba(255,0,0,0.1)');
+    bgGradient.addColorStop(1, 'rgba(10,0,5,1)');
+  } else if (ki < 0.55) {
+    bgGradient.addColorStop(0, 'rgba(255,170,0,0.08)');
+    bgGradient.addColorStop(1, 'rgba(10,5,0,1)');
+  }
+  
+  ctx.fillStyle = bgGradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  ctx.strokeStyle = 'rgba(0,212,255,0.2)';
+  ctx.lineWidth = 0.5;
+  conexiones.forEach(c => {
+    const n1 = nodos[c.from];
+    const n2 = nodos[c.to];
+    if (n1 && n2) {
+      ctx.beginPath();
+      ctx.moveTo(n1.x, n1.y);
+      ctx.lineTo(n2.x, n2.y);
+      ctx.stroke();
+    }
+  });
+  
+  nodos.forEach(nodo => {
+    nodo.x += nodo.vx;
+    nodo.y += nodo.vy;
+    
+    if (nodo.x < 5 || nodo.x > canvas.width - 5) nodo.vx *= -1;
+    if (nodo.y < 5 || nodo.y > canvas.height - 5) nodo.vy *= -1;
+    
+    let color;
+    if (nodo.ki < 0.3) color = '#ff3366';
+    else if (nodo.ki < 0.55) color = '#ffaa00';
+    else color = '#00d4ff';
+    
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(nodo.x, nodo.y, 3, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  
+  requestAnimationFrame(dibujar);
+}
+
+function log(msg) {
+  const logDiv = document.getElementById('log');
+  logDiv.textContent += '\n' + new Date().toLocaleTimeString() + ' - ' + msg;
+  logDiv.scrollTop = logDiv.scrollHeight;
+}
+
+// Iniciar con nodo raíz
+nodos = [{ id: 0, x: canvas.width/2, y: canvas.height/2, ki: 0.570, vx: 0, vy: 0 }];
+actualizarStats();
+dibujar();
+</script>
+</body>
+</html>

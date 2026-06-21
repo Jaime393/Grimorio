@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exportar Universo v5.0</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #000; color: #e0e0e0; font-family: 'Courier New', monospace; padding: 20px; transition: background 2s ease; }
+  body.exporting { background: radial-gradient(ellipse at center, #0a1500 0%, #000 100%); }
+  h2 { color: #00ff88; text-shadow: 0 0 25px #00ff88; margin-bottom: 20px; border-bottom: 3px solid #00ff88; padding-bottom: 10px; }
+  h2.success { color: #ffd700; text-shadow: 0 0 30px #ffd700; border-color: #ffd700; animation: pulse-gold 1.5s infinite; }
+  @keyframes pulse-gold { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+  .panel { background: rgba(10,10,10,0.95); border: 2px solid #00ff88; border-radius: 12px; padding: 20px; transition: border-color 0.5s, box-shadow 0.5s; }
+  .panel.export { border-color: #ffd700; box-shadow: 0 0 40px rgba(255,215,0,0.5); }
+  .panel h3 { color: #ffd700; font-size: 14px; margin-bottom: 12px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 10px; margin: 15px 0; }
+  .stat-box { background: #050505; border: 1px solid #333; padding: 12px; border-radius: 6px; text-align: center; }
+  .stat-label { font-size: 9px; color: #666; text-transform: uppercase; }
+  .stat-value { font-size: 20px; color: #00ff88; font-weight: bold; margin-top: 5px; }
+  .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
+  .btn { padding: 16px; background: linear-gradient(135deg, #00ff88, #00cc66); color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-family: inherit; font-size: 12px; text-transform: uppercase; transition: all 0.3s; }
+  .btn:hover { box-shadow: 0 0 30px #00ff88; transform: scale(1.05); }
+  .btn.phi { background: linear-gradient(135deg, #ffd700, #ffcc00); }
+  .btn.purple { background: linear-gradient(135deg, #9d00ff, #7700cc); color: #fff; }
+  .btn.red { background: linear-gradient(135deg, #ff3366, #cc2255); color: #fff; }
+  .file-input-wrapper { position: relative; overflow: hidden; display: inline-block; width: 100%; }
+  .file-input-wrapper input[type=file] { position: absolute; left: -9999px; }
+  .file-input-label { display: block; padding: 16px; background: linear-gradient(135deg, #9d00ff, #7700cc); color: #fff; border-radius: 8px; text-align: center; cursor: pointer; font-weight: bold; font-size: 12px; text-transform: uppercase; transition: all 0.3s; }
+  .file-input-label:hover { box-shadow: 0 0 30px #9d00ff; transform: scale(1.05); }
+  .preview { background: #000; border: 2px solid #333; border-radius: 8px; padding: 15px; max-height: 250px; overflow-y: auto; font-size: 10px; color: #00ff88; white-space: pre-wrap; line-height: 1.5; }
+  .log { background: #000; border-left: 4px solid #00ff88; padding: 12px; font-size: 11px; max-height: 150px; overflow-y: auto; white-space: pre-wrap; line-height: 1.6; }
+  .progress-bar { height: 30px; background: #111; border-radius: 15px; overflow: hidden; margin: 15px 0; border: 2px solid #333; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #00ff88, #ffd700); width: 0%; transition: width 0.5s ease; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #000; font-size: 12px; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } .btn-group { grid-template-columns: 1fr; } .stats-grid { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<style>
+#lab-backnav{position:fixed;top:12px;right:12px;z-index:99999;display:flex;gap:6px;font-family:'Courier New',monospace;font-size:11px;}
+#lab-backnav a{color:#d4a843;text-decoration:none;background:rgba(10,10,15,0.75);border:1px solid rgba(212,168,67,0.4);border-radius:6px;padding:5px 10px;backdrop-filter:blur(4px);transition:all .2s;}
+#lab-backnav a:hover{background:rgba(212,168,67,0.15);border-color:#d4a843;}
+</style>
+<div id="lab-backnav"><a href="index.html">← MIU Laboratorio</a><a href="../../index.html">Inicio</a></div>
+
+<h2 id="titulo">💾 EXPORTAR UNIVERSO v5.0 — MATH-NEXUS Portable</h2>
+<div class="grid">
+  <div class="panel" id="panelExport">
+    <h3>Exportar Universo Matemático</h3>
+    <div class="stats-grid">
+      <div class="stat-box"><div class="stat-label">Nodos</div><div class="stat-value" id="statNodos">0</div></div>
+      <div class="stat-box"><div class="stat-label">Aristas</div><div class="stat-value" id="statAristas">0</div></div>
+      <div class="stat-box"><div class="stat-label">Teoremas</div><div class="stat-value" id="statTeoremas">0</div></div>
+      <div class="stat-box"><div class="stat-label">K_i Global</div><div class="stat-value" id="statKi">0.570</div></div>
+      <div class="stat-box"><div class="stat-label">Versión</div><div class="stat-value" id="statVersion">v5.0</div></div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressBar">0%</div></div>
+    <div class="btn-group">
+      <button class="btn" onclick="exportarUniverso()">💾 Exportar JSON</button>
+      <button class="btn phi" onclick="exportarCompleto()">🌌 Exportar Completo</button>
+    </div>
+    <div style="font-size: 11px; color: #666; margin-top: 10px;">Exporta todo: MIU, nodos, aristas, memoria episódica, historial K_i</div>
+  </div>
+  <div class="panel" id="panelImport">
+    <h3>Importar Universo</h3>
+    <div class="file-input-wrapper">
+      <label for="fileInput" class="file-input-label">📁 Seleccionar .json de Universo</label>
+      <input type="file" id="fileInput" accept=".json" onchange="importarUniverso(event)">
+    </div>
+    <div class="btn-group">
+      <button class="btn purple" onclick="verificarArchivo()">🔍 Verificar Checksum</button>
+      <button class="btn red" onclick="limpiarUniverso()">🗑️ Limpiar Todo</button>
+    </div>
+    <div style="font-size: 11px; color: #666; margin-top: 10px;">Importa un universo guardado. MIU continuará desde ese estado</div>
+  </div>
+</div>
+<div class="panel"><h3>👁️ Vista Previa del JSON</h3><div class="preview" id="previewJson">Esperando exportación...</div></div>
+<div class="panel"><h3>📋 Log</h3><div class="log" id="log">Exportar v5.0 listo...\nSincronizado con MATH-NEXUS v5.0</div></div>
+
+<script src="miu-shared.js"></script>
+<script>
+let estadoLocal = { K_i: 0.570, ciclos: 0, nodos: [], aristas: [], memoria: [], D_f: 1.0, entropia: 0, version: '5.0' };
+
+window.addEventListener('message', e => {
+  if (e.data.type === 'miu:sync' && e.data.source) {
+    estadoLocal = e.data.state;
+    window.MIU = e.data.state;
+    actualizarStats();
+  }
+});
+
+function actualizarStats() {
+  document.getElementById('statNodos').textContent = (estadoLocal.nodos || []).length;
+  document.getElementById('statAristas').textContent = (estadoLocal.aristas || []).length;
+  document.getElementById('statTeoremas').textContent = (estadoLocal.memoria || []).filter(m => m.evento === 'teorema_probado').length;
+  document.getElementById('statKi').textContent = (estadoLocal.K_i || 0.570).toFixed(3);
+}
+
+function reportarEstado() {
+  if (window.parent !== window && window.MIU_API) {
+    parent.postMessage({ type: 'miu:update', source: 'exportar', state: JSON.parse(JSON.stringify(estadoLocal)) }, '*');
+  }
+}
+
+function beep(f, d) { if (window.MIU_API) window.MIU_API.beep(f, d); }
+
+function recogerDatosUniverso(completo = false) {
+  const state = estadoLocal;
+  const universo = {
+    version: 'MATH-NEXUS v5.0',
+    timestamp: new Date().toISOString(),
+    checksum: btoa(JSON.stringify(state)).substring(0, 16),
+    miu: {
+      K_i: state.K_i,
+      ciclos: state.ciclos,
+      nodos: state.nodos || [],
+      aristas: state.aristas || [],
+      memoria: state.memoria || [],
+      D_f: state.D_f,
+      entropia: state.entropia,
+      K_i_minus: state.K_i_minus,
+      sombra: state.sombra,
+      version: state.version
+    }
+  };
+  if (completo) {
+    universo.batalla = localStorage.getItem('batalla_state') ? JSON.parse(localStorage.getItem('batalla_state')) : null;
+    universo.quantum = localStorage.getItem('quantum_teoremas') ? JSON.parse(localStorage.getItem('quantum_teoremas')) : null;
+  }
+  return universo;
+}
+
+async function exportarUniverso() {
+  document.body.classList.add('exporting');
+  document.getElementById('panelExport').classList.add('export');
+  document.getElementById('titulo').classList.add('success');
+  log('INICIANDO EXPORTACIÓN DEL UNIVERSO...');
+  beep(700, 0.2);
+  const progress = document.getElementById('progressBar');
+  for (let i = 0; i <= 100; i += 25) { progress.style.width = i + '%'; progress.textContent = i + '%'; await new Promise(r => setTimeout(r, 80)); }
+  const universo = recogerDatosUniverso(false);
+  const json = JSON.stringify(universo, null, 2);
+  document.getElementById('previewJson').textContent = json.substring(0, 2000) + (json.length > 2000 ? '\n... [truncado]' : '');
+  const blob = new Blob([json], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `MATH-NEXUS_Universo_${new Date().toISOString().split('T')[0]}.json`; a.click(); URL.revokeObjectURL(a.href);
+  log(`✅ Universo exportado | Nodos: ${(estadoLocal.nodos||[]).length} | K_i: ${(estadoLocal.K_i||0).toFixed(3)} | Checksum: ${universo.checksum}`);
+  beep(900, 0.3);
+  setTimeout(() => { document.body.classList.remove('exporting'); document.getElementById('panelExport').classList.remove('export'); document.getElementById('titulo').classList.remove('success'); }, 2000);
+}
+
+async function exportarCompleto() {
+  document.body.classList.add('exporting');
+  log('Exportando universo COMPLETO...');
+  beep(800, 0.3);
+  const progress = document.getElementById('progressBar');
+  for (let i = 0; i <= 100; i += 20) { progress.style.width = i + '%'; progress.textContent = i + '%'; await new Promise(r => setTimeout(r, 60)); }
+  const universo = recogerDatosUniverso(true);
+  const json = JSON.stringify(universo, null, 2);
+  document.getElementById('previewJson').textContent = json;
+  const blob = new Blob([json], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `MATH-NEXUS_Universo_COMPLETO_${new Date().toISOString().replace(/[:.]/g, '-').split('T')[0]}.json`; a.click(); URL.revokeObjectURL(a.href);
+  log(`✅ Exportación completa | Tamaño: ${(json.length/1024).toFixed(2)} KB | Checksum: ${universo.checksum}`);
+  beep(1100, 0.5);
+  setTimeout(() => { document.body.classList.remove('exporting'); }, 2000);
+}
+
+function importarUniverso(event) {
+  const file = event.target.files[0]; if (!file) return;
+  log(`Cargando archivo: ${file.name}...`); beep(600, 0.2);
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const universo = JSON.parse(e.target.result);
+      document.getElementById('previewJson').textContent = JSON.stringify(universo, null, 2).substring(0, 2000);
+      const checksumCalc = btoa(JSON.stringify(universo.miu || {})).substring(0, 16);
+      if (universo.checksum && universo.checksum !== checksumCalc) { log('⚠️ Advertencia: Checksum no coincide.'); beep(300, 0.3); }
+      if (universo.miu && window.MIU_API) {
+        window.MIU_API.importUniverso(universo);
+        estadoLocal = window.MIU_API.state; window.MIU = estadoLocal; actualizarStats();
+        log(`✅ Universo importado | Nodos: ${(estadoLocal.nodos||[]).length} | K_i: ${(estadoLocal.K_i||0).toFixed(3)}`);
+        beep(900, 0.4); reportarEstado();
+      }
+    } catch (err) { log(`❌ Error al parsear JSON: ${err.message}`); beep(200, 0.5); }
+  };
+  reader.readAsText(file);
+}
+
+function verificarArchivo() {
+  const fileInput = document.getElementById('fileInput');
+  if (!fileInput.files[0]) { alert('Selecciona un archivo primero'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const universo = JSON.parse(e.target.result);
+      const checksumCalc = btoa(JSON.stringify(universo.miu || {})).substring(0, 16);
+      const checksumOK = !universo.checksum || universo.checksum === checksumCalc;
+      log(`🔍 Verificación: Checksum ${checksumOK ? '✓ OK' : '✗ CORRUPTO'}`);
+      beep(checksumOK ? 800 : 200, 0.3);
+      alert(checksumOK ? 'Archivo íntegro. Puede ser importado.' : 'Archivo corrupto o checksum no coincide.');
+    } catch (err) { log(`❌ Error: ${err.message}`); beep(150, 0.5); }
+  };
+  reader.readAsText(fileInput.files[0]);
+}
+
+function limpiarUniverso() {
+  if (!confirm('¿Seguro? Esto borrará todo el universo actual.')) return;
+  if (window.MIU_API) {
+    window.MIU_API.state.nodos = []; window.MIU_API.state.memoria = []; window.MIU_API.state.K_i = 0.570; window.MIU_API.state.ciclos = 0;
+    window.MIU_API.save();
+    estadoLocal = window.MIU_API.state; window.MIU = estadoLocal; actualizarStats();
+    document.getElementById('previewJson').textContent = 'Universo limpio — Sin datos';
+    log('🗑️ Universo limpiado.'); beep(300, 0.4); reportarEstado();
+  }
+}
+
+function log(msg) { const d = document.getElementById('log'); d.textContent += '\n' + new Date().toLocaleTimeString() + ' - ' + msg; d.scrollTop = d.scrollHeight; }
+
+setTimeout(() => { if (window.parent !== window) parent.postMessage({ type: 'miu:request_sync', source: 'exportar' }, '*'); }, 300);
+setInterval(actualizarStats, 2000);
+</script>
+</body>
+</html>

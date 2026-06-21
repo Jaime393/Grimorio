@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GDCP Fractal Global - ALMA-NEXUS v4.1</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #000;
+  color: #e0e0e0;
+  font-family: 'Courier New', monospace;
+  padding: 20px;
+  transition: background 1.5s ease;
+}
+body.critical {
+  background: #0a0005;
+}
+body.degraded {
+  background: #0a0500;
+}
+h2 {
+  color: #00d4ff;
+  font-size: 1.3rem;
+  text-shadow: 0 0 15px #00d4ff;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #00d4ff;
+  padding-bottom: 8px;
+  transition: color 0.5s;
+}
+h2.critical {
+  color: #ff3366;
+  border-color: #ff3366;
+}
+.panel {
+  background: rgba(10,10,10,0.9);
+  border: 2px solid #00d4ff;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 15px;
+  transition: border-color 0.5s;
+}
+.panel.critical {
+  border-color: #ff3366;
+  box-shadow: 0 0 25px rgba(255,51,102,0.4);
+}
+.panel h3 {
+  color: #ffd700;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+.upload-area {
+  border: 3px dashed #333;
+  border-radius: 8px;
+  padding: 40px;
+  text-align: center;
+  margin-bottom: 15px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.upload-area:hover {
+  border-color: #00d4ff;
+  background: rgba(0,212,255,0.05);
+}
+.upload-area.dragover {
+  border-color: #00ff88;
+  background: rgba(0,255,136,0.1);
+}
+input[type="file"] {
+  display: none;
+}
+.btn {
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #00d4ff, #00aacc);
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  margin-right: 8px;
+  margin-top: 8px;
+  transition: all 0.3s;
+}
+.btn:hover {
+  box-shadow: 0 0 20px #00d4ff;
+}
+.btn.phi {
+  background: linear-gradient(135deg, #ffd700, #ffcc00);
+}
+.btn.red {
+  background: linear-gradient(135deg, #ff3366, #cc2255);
+  color: #fff;
+}
+.grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 15px;
+}
+canvas {
+  width: 100%;
+  height: 400px;
+  background: #000;
+  border: 2px solid #222;
+  border-radius: 8px;
+  transition: border-color 0.5s;
+}
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.stat-box {
+  background: #050505;
+  border: 1px solid #222;
+  padding: 12px;
+  border-radius: 6px;
+  transition: border-color 0.3s;
+}
+.stat-box.critical {
+  border-color: #ff3366;
+}
+.stat-label {
+  font-size: 11px;
+  color: #666;
+  text-transform: uppercase;
+}
+.stat-value {
+  font-size: 22px;
+  color: #00d4ff;
+  font-weight: bold;
+  margin-top: 5px;
+  transition: color 0.5s;
+}
+.stat-value.phi {
+  color: #ffd700;
+}
+.stat-value.critical {
+  color: #ff3366;
+  animation: blink 1s infinite;
+}
+@keyframes blink {
+ 50% { opacity: 0.5; }
+}
+.log {
+  background: #000;
+  border-left: 4px solid #00d4ff;
+  padding: 12px;
+  font-size: 11px;
+  max-height: 200px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  line-height: 1.6;
+  margin-top: 10px;
+  transition: border-color 0.5s;
+}
+.log.critical {
+  border-color: #ff3366;
+}
+.formula {
+  background: #050505;
+  border: 1px solid #333;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  margin-top: 10px;
+  color: #a0a0a0;
+}
+@media (max-width: 900px) {
+.grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<h2 id="titulo">🌍 GDCP - Fractal Climático + Dimensión Fractal D_f v4.1</h2>
+
+<div class="panel" id="panelUpload">
+  <h3>📁 Cargar Datos CSV</h3>
+  <div class="upload-area" id="dropZone">
+    <div>Arrastra tu archivo CSV aquí</div>
+    <div style="font-size: 11px; color: #666; margin-top: 8px;">Formato: año,temperatura,humedad</div>
+    <button class="btn" onclick="document.getElementById('fileInput').click()">Seleccionar Archivo</button>
+  </div>
+  <input type="file" id="fileInput" accept=".csv" onchange="cargarCSV(event)">
+
+  <button class="btn phi" onclick="generarDatosDemo()">Generar Datos Demo</button>
+  <button class="btn" onclick="calcularDF()">Calcular D_f Multifractal</button>
+  <button class="btn" onclick="limpiarDatos()">Limpiar</button>
+  <button class="btn red" id="btnMute" onclick="toggleMute()">🔊 Sonido ON</button>
+</div>
+
+<div class="grid">
+  <div class="panel" id="panelMapa">
+    <h3>Mapa Fractal Climático</h3>
+    <canvas id="mapCanvas"></canvas>
+  </div>
+
+  <div class="panel" id="panelStats">
+    <h3>Estadísticas D_f</h3>
+    <div class="stats">
+      <div class="stat-box">
+        <div class="stat-label">D_f Calculada</div>
+        <div class="stat-value phi" id="dfVal">0.000</div>
+      </div>
+      <div class="stat-box" id="boxPuntos">
+        <div class="stat-label">Puntos Datos</div>
+        <div class="stat-value" id="puntosVal">0</div>
+      </div>
+      <div class="stat-box" id="boxKiReg">
+        <div class="stat-label">K_i Regional</div>
+        <div class="stat-value" id="kiRegVal">0.000</div>
+      </div>
+      <div class="stat-box" id="boxEstado">
+        <div class="stat-label">Estado</div>
+        <div class="stat-value" id="estadoVal">Sin datos</div>
+      </div>
+    </div>
+
+    <div class="formula">
+      <b>Fórmula D_f Multifractal:</b><br>
+      D_f = log(N) / log(1/ε)<br>
+      N = número de cajas ocupadas<br>
+      ε = tamaño de caja
+    </div>
+
+    <div class="log" id="log">Esperando datos CSV...</div>
+  </div>
+</div>
+
+<script src="alma-shared.js"></script>
+<script>
+const canvas = document.getElementById('mapCanvas');
+const ctx = canvas.getContext('2d');
+let datos = [];
+let df = 0;
+let audioCtx = null;
+
+// FALLBACK SEGURO
+function getALMA() {
+  return (parent.ALMA && parent.ALMA.K_i!== undefined)? parent.ALMA : {
+    K_i: 0.570,
+    phi_inv: 0.6180339887,
+    nodos: [{f: 0.1}]
+  };
+}
+
+function getAudio() {
+  return (parent.ALMA_AUDIO && parent.ALMA_AUDIO.enabled!== undefined)? parent.ALMA_AUDIO : {enabled: true};
+}
+
+function beep(freq = 500, dur = 0.1) {
+  if (!getAudio().enabled) return;
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = audioCtx.createOscillator();
+  osc.frequency.value = freq;
+  osc.connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + dur);
+}
+
+function toggleMute() {
+  const audio = getAudio();
+  const estado = audio.toggle? audio.toggle() :!audio.enabled;
+  const btn = document.getElementById('btnMute');
+  btn.textContent = estado? '🔊 Sonido ON' : '🔇 Sonido OFF';
+  btn.classList.toggle('red',!estado);
+  beep(400, 0.1);
+}
+
+// Resize
+function resize() {
+  canvas.width = canvas.offsetWidth;
+  canvas.height = 400;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// Drag & Drop
+const dropZone = document.getElementById('dropZone');
+dropZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  dropZone.classList.add('dragover');
+});
+dropZone.addEventListener('dragleave', () => {
+  dropZone.classList.remove('dragover');
+});
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) leerArchivo(file);
+});
+
+function cargarCSV(event) {
+  const file = event.target.files[0];
+  if (file) leerArchivo(file);
+}
+
+function leerArchivo(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    parseCSV(e.target.result);
+    document.getElementById('log').textContent = `Archivo cargado: ${file.name}\nPuntos: ${datos.length}\n`;
+    beep(600, 0.1);
+  };
+  reader.readAsText(file);
+}
+
+function parseCSV(text) {
+  datos = [];
+  const lineas = text.split('\n');
+  for (let i = 1; i < lineas.length; i++) {
+    const cols = lineas[i].split(',');
+    if (cols.length >= 3) {
+      datos.push({
+        año: parseFloat(cols[0]),
+        temp: parseFloat(cols[1]),
+        humedad: parseFloat(cols[2])
+      });
+    }
+  }
+  document.getElementById('puntosVal').textContent = datos.length;
+  dibujarMapa();
+}
+
+function generarDatosDemo() {
+  datos = [];
+  for (let i = 0; i < 500; i++) {
+    datos.push({
+      año: 2000 + Math.random() * 25,
+      temp: 15 + Math.random() * 20 + Math.sin(i * 0.1) * 5,
+      humedad: 40 + Math.random() * 40
+    });
+  }
+  document.getElementById('puntosVal').textContent = datos.length;
+  document.getElementById('log').textContent = 'Datos demo generados: 500 puntos sintéticos\n';
+  dibujarMapa();
+  beep(700, 0.15);
+}
+
+function calcularDF() {
+  if (datos.length === 0) {
+    alert('Carga datos primero');
+    beep(200, 0.2);
+    return;
+  }
+
+  const gridSize = 50;
+  const grid = {};
+
+  datos.forEach(d => {
+    const x = Math.floor((d.temp - 10) / 30 * gridSize);
+    const y = Math.floor(d.humedad / 100 * gridSize);
+    const key = `${x},${y}`;
+    grid[key] = true;
+  });
+
+  const N = Object.keys(grid).length;
+  const epsilon = 1 / gridSize;
+  df = Math.log(N) / Math.log(1 / epsilon);
+
+  const ALMA = getALMA();
+  const kiRegional = ALMA.phi_inv * df / 2.5;
+
+  document.getElementById('dfVal').textContent = df.toFixed(3);
+  document.getElementById('kiRegVal').textContent = kiRegional.toFixed(3);
+
+  const estado = kiRegional > 0.55? 'COHERENTE' : kiRegional > 0.3? 'ALERTA' : 'FRÁGIL';
+  const estadoEl = document.getElementById('estadoVal');
+  estadoEl.textContent = estado;
+  estadoEl.style.color = kiRegional > 0.55? '#00ff88' : kiRegional > 0.3? '#ffaa00' : '#ff3366';
+
+  document.getElementById('log').textContent += `\nD_f calculada: ${df.toFixed(3)}\nCajas ocupadas: ${N}\nK_i regional: ${kiRegional.toFixed(3)}\nEstado: ${estado}`;
+
+  actualizarColores(kiRegional);
+  dibujarMapa();
+  beep(800, 0.2);
+}
+
+function limpiarDatos() {
+  datos = [];
+  df = 0;
+  document.getElementById('puntosVal').textContent = '0';
+  document.getElementById('dfVal').textContent = '0.000';
+  document.getElementById('kiRegVal').textContent = '0.000';
+  document.getElementById('estadoVal').textContent = 'Sin datos';
+  document.getElementById('log').textContent = 'Datos limpiados';
+  dibujarMapa();
+  beep(400, 0.1);
+}
+
+function dibujarMapa() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (datos.length === 0) {
+    ctx.fillStyle = '#333';
+    ctx.font = '14px Courier';
+    ctx.textAlign = 'center';
+    ctx.fillText('Sin datos - Carga un CSV', canvas.width/2, canvas.height/2);
+    return;
+  }
+
+  const ALMA = getALMA();
+  const ki = ALMA.K_i;
+  const bgGradient = ctx.createRadialGradient(
+    canvas.width/2, canvas.height/2, 0,
+    canvas.width/2, canvas.height/2, Math.max(canvas.width, canvas.height)
+  );
+
+  if (ki < 0.3) {
+    bgGradient.addColorStop(0, 'rgba(255,0,0,0.15)');
+    bgGradient.addColorStop(1, 'rgba(10,0,5,1)');
+    canvas.style.borderColor = '#ff0000';
+  } else if (ki < 0.55) {
+    bgGradient.addColorStop(0, 'rgba(255,170,0,0.1)');
+    bgGradient.addColorStop(1, 'rgba(10,5,0,1)');
+    canvas.style.borderColor = '#ffaa00';
+  } else {
+    canvas.style.borderColor = '#00d4ff';
+  }
+
+  ctx.fillStyle = bgGradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  datos.forEach(d => {
+    const x = (d.temp - 10) / 30 * canvas.width;
+    const y = (100 - d.humedad) / 100 * canvas.height;
+
+    const intensity = d.temp / 35;
+    const r = Math.floor(255 * intensity);
+    const g = Math.floor(255 * (1 - intensity));
+
+    ctx.fillStyle = `rgb(${r}, ${g}, 100)`;
+    ctx.beginPath();
+    ctx.arc(x, y, 2, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  ctx.strokeStyle = '#333';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, canvas.height);
+  ctx.lineTo(canvas.width, canvas.height);
+  ctx.moveTo(0, 0);
+  ctx.lineTo(0, canvas.height);
+  ctx.stroke();
+
+  ctx.fillStyle = '#666';
+  ctx.font = '10px Courier';
+  ctx.fillText('Temp °C', canvas.width - 50, canvas.height - 5);
+  ctx.save();
+  ctx.translate(10, 20);
+  ctx.rotate(-Math.PI/2);
+  ctx.fillText('Humedad %', 0, 0);
+  ctx.restore();
+}
+
+function actualizarColores(kiReg = 0) {
+  const body = document.body;
+  const titulo = document.getElementById('titulo');
+  const panelMapa = document.getElementById('panelMapa');
+  const panelStats = document.getElementById('panelStats');
+  const logDiv = document.getElementById('log');
+  const boxKiReg = document.getElementById('boxKiReg');
+  const kiRegVal = document.getElementById('kiRegVal');
+
+  const audio = getAudio();
+  document.getElementById('btnMute').textContent = audio.enabled? '🔊 Sonido ON' : '🔇 Sonido OFF';
+  document.getElementById('btnMute').classList.toggle('red',!audio.enabled);
+
+  body.classList.remove('critical', 'degraded');
+  titulo.classList.remove('critical');
+  panelMapa.classList.remove('critical');
+  panelStats.classList.remove('critical');
+  logDiv.classList.remove('critical');
+  boxKiReg.classList.remove('critical');
+  kiRegVal.classList.remove('critical');
+
+  if (kiReg < 0.3) {
+    body.classList.add('critical');
+    titulo.classList.add('critical');
+    panelMapa.classList.add('critical');
+    panelStats.classList.add('critical');
+    logDiv.classList.add('critical');
+    boxKiReg.classList.add('critical');
+    kiRegVal.classList.add('critical');
+  } else if (kiReg < 0.55) {
+    body.classList.add('degraded');
+  }
+}
+
+setInterval(() => {
+  const ALMA = getALMA();
+  if (ALMA.K_i < 0.3) {
+    document.body.classList.add('critical');
+  } else {
+    document.body.classList.remove('critical');
+  }
+  actualizarColores();
+}, 1000);
+
+dibujarMapa();
+</script>
+</body>
+</html>

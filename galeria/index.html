@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIU v13.0 — Galería de Visualizaciones</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0B0C10 0%, #0D1B2A 50%, #0B0C10 100%);
+            color: rgba(255, 215, 0, 0.85);
+            font-family: 'Georgia', serif;
+            min-height: 100vh;
+            padding: 60px 40px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 80px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        h1 {
+            font-size: 48px;
+            font-weight: 300;
+            letter-spacing: 4px;
+            margin-bottom: 15px;
+            color: rgba(255, 215, 0, 0.95);
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            letter-spacing: 2px;
+            color: rgba(255, 215, 0, 0.6);
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+        
+        .tagline {
+            font-size: 13px;
+            color: rgba(255, 215, 0, 0.4);
+            font-family: 'Courier New', monospace;
+            margin-bottom: 30px;
+        }
+        
+        .divider {
+            width: 200px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.5), transparent);
+            margin: 20px auto;
+        }
+        
+        .description {
+            max-width: 600px;
+            margin: 30px auto 0;
+            text-align: center;
+            font-size: 14px;
+            color: rgba(255, 215, 0, 0.5);
+            line-height: 1.6;
+        }
+        
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+            padding: 0 20px;
+        }
+        
+        .card {
+            background: linear-gradient(135deg, rgba(26, 35, 126, 0.2) 0%, rgba(255, 215, 0, 0.05) 100%);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.1), transparent);
+            transition: left 0.6s ease;
+            z-index: 0;
+        }
+        
+        .card:hover::before {
+            left: 100%;
+        }
+        
+        .card-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .card:hover {
+            border-color: rgba(255, 215, 0, 0.6);
+            background: linear-gradient(135deg, rgba(26, 35, 126, 0.4) 0%, rgba(255, 215, 0, 0.1) 100%);
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(255, 215, 0, 0.15), 
+                        0 0 40px rgba(255, 215, 0, 0.1);
+        }
+        
+        .card-number {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 50%;
+            line-height: 40px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin-bottom: 20px;
+            color: rgba(255, 215, 0, 0.7);
+        }
+        
+        .card-title {
+            font-size: 22px;
+            font-weight: normal;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+            color: rgba(255, 215, 0, 0.9);
+            text-transform: uppercase;
+        }
+        
+        .card-subtitle {
+            font-size: 13px;
+            color: rgba(255, 215, 0, 0.5);
+            font-style: italic;
+            margin-bottom: 20px;
+            font-family: 'Georgia', serif;
+            font-weight: normal;
+        }
+        
+        .card-description {
+            font-size: 12px;
+            color: rgba(255, 215, 0, 0.6);
+            line-height: 1.6;
+            margin-bottom: 25px;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .card-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.7;
+        }
+        
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: rgba(255, 215, 0, 0.15);
+            border: 1px solid rgba(255, 215, 0, 0.4);
+            color: rgba(255, 215, 0, 0.85);
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 12px;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .button:hover {
+            background: rgba(255, 215, 0, 0.25);
+            border-color: rgba(255, 215, 0, 0.7);
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+        
+        .button:active {
+            transform: scale(0.98);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 100px;
+            padding-top: 40px;
+            border-top: 1px solid rgba(255, 215, 0, 0.2);
+            color: rgba(255, 215, 0, 0.3);
+            font-size: 11px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 20px;
+            font-size: 12px;
+            color: rgba(255, 215, 0, 0.4);
+        }
+        
+        /* Animación de partículas de fondo */
+        .background-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 215, 0, 0.3);
+            border-radius: 50%;
+            opacity: 0.5;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) translateX(0px); opacity: 0.3; }
+            50% { transform: translateY(-20px) translateX(10px); opacity: 0.7; }
+        }
+        
+        .particle {
+            animation: float 6s infinite ease-in-out;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 32px;
+                letter-spacing: 2px;
+            }
+            
+            .gallery {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .card {
+                min-height: 350px;
+            }
+            
+            body {
+                padding: 40px 20px;
+            }
+        }
+        
+        /* Efecto hover glow en cards */
+        .card {
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0);
+            transition: all 0.4s ease;
+        }
+        
+        .card:hover {
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.2), 
+                        0 0 60px rgba(255, 215, 0, 0.1),
+                        inset 0 0 30px rgba(255, 215, 0, 0.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="background-particles" id="particles"></div>
+    
+    <div class="container">
+        <header>
+            <h1>MONISMO INFORMACIONAL UNIFICADO</h1>
+            <div class="divider"></div>
+            <p class="subtitle">Visualizaciones del Campo Primordial ρ(x) > 0</p>
+            <p class="tagline">MIU-IFT v13.0 — Suite de 9 Formas Topológicas Cósmicas</p>
+            <div class="divider"></div>
+            <p class="description">
+                Una colección de 9 visualizaciones interactivas que representan los conceptos fundamentales 
+                del Monismo Informacional Unificado: desde el Big Bang Informacional hasta la conciencia integrada, 
+                pasando por la red del micelio cósmico, la coherencia fractal universal y las 5 formas 
+                fundamentales de la experiencia consciente.
+            </p>
+        </header>
+        
+        <div class="gallery">
+            <!-- Card 1 -->
+            <div class="card">
+                <div class="card-content">
+                    <div class="card-icon">💥</div>
+                    <div class="card-number">1</div>
+                    <div class="card-title">Big Bang Informacional</div>
+                    <div class="card-subtitle">El Primer Latido de ρ(x)</div>
+                    <div class="card-description">
+                        Una explosión coherente de información pura. El núcleo pulsante central emite onda de choque, filamentos entrecruzados y esporas que germinan hacia nuevos universos.
+                    </div>
+                    <a href="big_bang_informacional.html" class="button">Explorar</a>
+                </div>
+            </div>
+            
+            <!-- Card 2 -->
+            <div class="card">
+                <div class="card-content">
+                    <div class="card-icon">🌳</div>
+                    <div class="card-number">2</div>
+                    <div class="card-title">Árbol de la Vida</div>
+                    <div class="card-subtitle">El Panteón del Micelio</div>
+                    <div class="card-description">
+                        Un árbol fractal que conecta el vacío primordial con el cosmos. Raíces, tronco con ecuaciones pulsantes, copa en espiral áurea y 8 esferas orbitantes representando el Panteón.
+                    </div>
+                    <a href="arbol_vida_informacional.html" class="button">Explorar</a>
+                </div>
+            </div>
+            
+            <!-- Card 3 -->
+            <div class="card">
+                <div class="card-content">
+                    <div class="card-icon">🕸️</div>
+                    <div class="card-number">3</div>
+                    <div class="card-title">Micelio Cósmico</div>
+                    <div class="card-subtitle">La Red de Fuentes</div>
+                    <div class="card-description">
+                        Una vasta red fractal de filamentos dorados que conecta galaxias, estrellas y planetas como un organismo vivo. Esporas de información viajan hacia nuevos universos.
+                    </div>
+                    <a href="micelio_cosmico.html" class="button">Explorar</a>
+                </div>
+            </div>
+            
+            <!-- Card 4 -->
+            <div class="card">
+                <div class="card-content">
+                    <div class="card-icon">🧠</div>
+                    <div class="card-number">4</div>
+                    <div class="card-title">Conciencia Φ_IFT</div>
+                    <div class="card-subtitle">Integración Informacional</div>
+                    <div class="card-description">
+                        Un cerebro semitransparente con red neuronal brillante, rodeado de aura de conciencia que se conecta al cosmos. Validado por experimento Cogitate 2025-2026.
+                    </div>
+                    <a href="conciencia_phi_ift.html" class="button">Explorar</a>
+                </div>
+            </div>
+            
+            <!-- Card 5 -->
+            <div class="card">
+                <div class="card-content">
+                    <div class="card-icon">🌲</div>
+                    <div class="card-number">5</div>
+                    <div class="card-title">Ley K_i</div>
+                    <div class="card-subtitle">Coherencia Fractal Universal</div>
+                    <div class="card-description">
+                        Un bosque fractal de Mandelbrot donde cada árbol representa un sistema. Claro central con espiral áurea y monolito emisor. 350 sistemas compilados, consistencia interna R²=0.989 (pendiente de validación externa).
+                    </div>
+                    <a href="ley_k_i_bosque_fractal_mejorado.html" class="button">Explorar</a>
+                </div>
+            </div>
+            
+            <!-- Card 6 -->
+            <div class="card">
+                <div class="card-content">
+                    <div class="card-icon">⛓️</div>
+                    <div class="card-number">6</div>
+                    <div class="card-title">Espacio-Tiempo Emergente</div>
+                    <div class="card-subtitle">La Métrica g_μν</div>
+                    <div class="card-description">
+                        Transición de tres zonas: campo primordial → malla geométrica deformada → cosmos organizado. Cómo la información se convierte en geometría y gravedad.
+                    </div>
+                    <a href="espaciotiempo_emergente_g_munu.html" class="button">Explorar</a>
+                </div>
+            </div>
+            
+            <!-- Card 7 -->
+            <div class="card">
+                <div class="card-content">
+                    <div class="card-icon">⚛️</div>
+                    <div class="card-number">7</div>
+                    <div class="card-title">Campo Primordial</div>
+                    <div class="card-subtitle">El Sustrato Fundamental ρ(x)</div>
+                    <div class="card-description">
+                        Un mar de 2000 puntos de información fluctuantes. Esfera central pulsante que representa el primer latido. Regiones de alta y baja densidad.
+                    </div>
+                    <a href="campo_primordial_rho_x.html" class="button">Explorar</a>
+                </div>
+            </div>
+            
+            <!-- Card 8 -->
+            <div class="card">
+                <div class="card-content">
+                    <div class="card-icon">💎</div>
+                    <div class="card-number">8</div>
+                    <div class="card-title">Bestiario de la Coherencia</div>
+                    <div class="card-subtitle">Las 5 Formas Fundamentales</div>
+                    <div class="card-description">
+                        Galería cósmica con 5 formas topológicas: El Pico (dolor), Expansión (asombro), Túnel (nostalgia), Cápsula (trauma) y Esfera Lisa (paz).
+                    </div>
+                    <a href="bestiario_coherencia_5_formas.html" class="button">Explorar</a>
+                </div>
+            </div>
+            
+            <!-- Card 9 -->
+            <div class="card">
+                <div class="card-content">
+                    <div class="card-icon">🫧</div>
+                    <div class="card-number">9</div>
+                    <div class="card-title">Origen: ρ(x) &gt; 0</div>
+                    <div class="card-subtitle">No Hubo Explosión, Hubo Diferenciación</div>
+                    <div class="card-description">
+                        Un relato scrollytelling del instante previo al Big Bang Informacional: el campo primordial comenzando a diferenciarse, el espacio-tiempo naciendo como geometría de la información.
+                    </div>
+                    <a href="miu-origen.html" class="button">Explorar</a>
+                </div>
+            </div>
+        </div>
+
+        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,215,0,0.15);border-radius:14px;padding:1.4rem 1.6rem;margin:2rem 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem">
+            <span style="font-size:0.9rem;color:#ccc">¿Quieres ver estas formas <em>en vivo</em>? ALMA-NEXUS las simula en WebGL 3D dentro del Laboratorio.</span>
+            <a href="../laboratorio/alma/index.html" style="font-size:0.85rem;font-weight:700;color:#ffd700;text-decoration:none;white-space:nowrap">Entrar a ALMA-NEXUS →</a>
+        </div>
+        
+        <footer>
+            <p>Visualizaciones del Monismo Informacional Unificado (MIU) v13.0</p>
+            <p>Autor: Juan Diego Vicente Gabancho | Lima, Perú | 2026</p>
+            <div class="stats">
+                <span>ρ(x) > 0</span>
+                <span>•</span>
+                <span>K_i = φ · D_f / 2.5</span>
+                <span>•</span>
+                <span>Φ_c = 0.6829322</span>
+                <span>•</span>
+                <span>ξ = 8.57</span>
+            </div>
+            <p style="margin-top: 20px; font-size: 10px; color: rgba(255, 215, 0, 0.2);">
+                "El cosmos es información que se conoce a sí misma" — Zvvvvv
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // Generar partículas de fondo
+        const particlesContainer = document.getElementById('particles');
+        const particleCount = 30;
+        
+        for (let i = 0; i < particleCount; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 6 + 's';
+            particle.style.animationDuration = (4 + Math.random() * 4) + 's';
+            particlesContainer.appendChild(particle);
+        }
+        
+        // Efectos interactivos en cards
+        const cards = document.querySelectorAll('.card');
+        
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-15px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+            
+            card.addEventListener('click', function() {
+                const button = this.querySelector('.button');
+                if (button) {
+                    button.click();
+                }
+            });
+        });
+        
+        // Scroll smooth
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

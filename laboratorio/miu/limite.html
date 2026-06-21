@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Límite Absoluto v5.0</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #000; color: #e0e0e0; font-family: 'Courier New', monospace; padding: 20px; transition: background 2s ease; }
+  body.breaking { background: radial-gradient(ellipse at center, #1a0000 0%, #000 100%); animation: reality-break 2s infinite; }
+  @keyframes reality-break { 0%,100%{ filter:hue-rotate(0deg) saturate(1) } 25%{ filter:hue-rotate(90deg) saturate(2) } 50%{ filter:hue-rotate(180deg) saturate(3) } 75%{ filter:hue-rotate(270deg) saturate(2) } }
+  h2 { color: #ff0044; font-size: 1.8rem; text-shadow: 0 0 35px #ff0044; margin-bottom: 20px; text-align: center; border-bottom: 4px solid #ff0044; padding-bottom: 10px; }
+  h2.breaking { color: #ff00ff; text-shadow: 0 0 50px #ff00ff; border-color: #ff00ff; animation: glitch 0.3s infinite; }
+  @keyframes glitch { 0%{ transform:translateX(0) } 25%{ transform:translateX(-2px) } 50%{ transform:translateX(2px) } 75%{ transform:translateX(-1px) } 100%{ transform:translateX(0) } }
+  .universo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
+  .universo { background: rgba(10,10,10,0.95); border: 4px solid #333; border-radius: 15px; padding: 20px; cursor: pointer; transition: all 0.5s; position: relative; overflow: hidden; }
+  .universo::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, transparent 30%, rgba(255,255,255,0.1) 70%); transform: rotate(0deg); opacity: 0; transition: opacity 0.5s; }
+  .universo:hover::before { opacity: 1; animation: scan 3s infinite linear; }
+  @keyframes scan { 0%{ transform:rotate(0deg) } 100%{ transform:rotate(360deg) } }
+  .universo.active { border-color: #ff00ff; box-shadow: 0 0 50px rgba(255,0,255,0.8); transform: scale(1.08); z-index: 10; }
+  .universo-nombre { font-size: 16px; font-weight: bold; color: #ffd700; margin-bottom: 10px; text-align: center; }
+  .universo-ley { font-size: 14px; color: #00ff88; text-align: center; margin: 10px 0; font-family: monospace; }
+  .universo-desc { font-size: 10px; color: #888; text-align: center; line-height: 1.5; margin-top: 10px; }
+  .consistencia-bar { height: 12px; background: #111; border-radius: 6px; margin: 10px 0; overflow: hidden; }
+  .consistencia-fill { height: 100%; transition: width 0.5s ease; }
+  .consistencia-fill.high { background: linear-gradient(90deg, #00ff88, #00cc66); }
+  .consistencia-fill.medium { background: linear-gradient(90deg, #ffaa00, #ff8800); }
+  .consistencia-fill.low { background: linear-gradient(90deg, #ff3366, #cc2255); }
+  .panel { background: rgba(10,10,10,0.95); border: 3px solid #ff0044; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+  .panel.breaking { border-color: #ff00ff; box-shadow: 0 0 60px rgba(255,0,255,0.7); }
+  .panel h3 { color: #ffd700; font-size: 14px; margin-bottom: 12px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 10px; margin: 15px 0; }
+  .stat-box { background: #050505; border: 2px solid #333; padding: 15px; border-radius: 8px; text-align: center; }
+  .stat-label { font-size: 9px; color: #666; text-transform: uppercase; }
+  .stat-value { font-size: 22px; color: #ff0044; font-weight: bold; margin-top: 5px; transition: color 0.5s; }
+  .stat-value.breaking { color: #ff00ff; animation: blink 0.5s infinite; }
+  @keyframes blink { 50%{ opacity:0.5 } }
+  .btn-group { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 10px; margin: 15px 0; }
+  .btn { padding: 16px; background: linear-gradient(135deg, #ff0044, #cc0033); color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-family: inherit; font-size: 11px; text-transform: uppercase; transition: all 0.3s; }
+  .btn:hover { box-shadow: 0 0 35px #ff0044; transform: scale(1.1); }
+  .btn.phi { background: linear-gradient(135deg, #ffd700, #ffcc00); color: #000; }
+  .btn.purple { background: linear-gradient(135deg, #ff00ff, #cc00cc); }
+  .btn.green { background: linear-gradient(135deg, #00ff88, #00cc66); color: #000; }
+  .teorema-demo { background: #000; border: 3px solid #333; border-radius: 10px; padding: 20px; margin: 15px 0; text-align: center; transition: all 0.5s; }
+  .teorema-demo.active { border-color: #ff00ff; box-shadow: 0 0 40px rgba(255,0,255,0.8); background: rgba(255,0,255,0.1); }
+  .teorema-text { font-size: 28px; color: #ff0044; font-family: 'Courier New', monospace; margin: 15px 0; transition: all 0.5s; }
+  .teorema-text.breaking { color: #ff00ff; font-size: 36px; text-shadow: 0 0 30px #ff00ff; animation: shake 0.5s infinite; }
+  @keyframes shake { 0%,100%{ transform:translateX(0) } 25%{ transform:translateX(-3px) } 75%{ transform:translateX(3px) } }
+  .log { background: #000; border-left: 4px solid #ff0044; padding: 12px; font-size: 11px; max-height: 200px; overflow-y: auto; white-space: pre-wrap; line-height: 1.6; }
+  @media (max-width: 900px) { .universo-grid { grid-template-columns: 1fr; } .btn-group { grid-template-columns: 1fr 1fr; } .stats-grid { grid-template-columns: 1fr 1fr; } .teorema-text { font-size: 20px; } }
+</style>
+</head>
+<body>
+<style>
+#lab-backnav{position:fixed;top:12px;right:12px;z-index:99999;display:flex;gap:6px;font-family:'Courier New',monospace;font-size:11px;}
+#lab-backnav a{color:#d4a843;text-decoration:none;background:rgba(10,10,15,0.75);border:1px solid rgba(212,168,67,0.4);border-radius:6px;padding:5px 10px;backdrop-filter:blur(4px);transition:all .2s;}
+#lab-backnav a:hover{background:rgba(212,168,67,0.15);border-color:#d4a843;}
+</style>
+<div id="lab-backnav"><a href="index.html">← MIU Laboratorio</a><a href="../../index.html">Inicio</a></div>
+
+<h2 id="titulo">🌌 LÍMITE ABSOLUTO v5.0 — Universos Axiomáticos Alternativos</h2>
+<div class="panel" id="panelUniversos">
+  <h3>Selecciona un Universo Matemático Alternativo</h3>
+  <div class="universo-grid" id="universosContainer"></div>
+</div>
+<div class="panel" id="panelDemo">
+  <h3>Demostración en Universo Activo</h3>
+  <div class="stats-grid">
+    <div class="stat-box"><div class="stat-label">Consistencia</div><div class="stat-value" id="consistencia">100%</div></div>
+    <div class="stat-box"><div class="stat-label">Paradojas</div><div class="stat-value" id="paradojas">0</div></div>
+    <div class="stat-box"><div class="stat-label">K_i Local</div><div class="stat-value" id="kiLocal">0.570</div></div>
+    <div class="stat-box"><div class="stat-label">K_i Global</div><div class="stat-value" id="kiGlobal">0.570</div></div>
+    <div class="stat-box"><div class="stat-label">Dimensión</div><div class="stat-value" id="dimension">3D</div></div>
+  </div>
+  <div class="teorema-demo" id="teoremaDemo">
+    <div style="font-size:12px;color:#666">Teorema Fundamental:</div>
+    <div class="teorema-text" id="teoremaText">2 + 2 = 4</div>
+    <div style="font-size:11px;color:#888;margin-top:10px" id="teoremaDesc">Lógica clásica — Consistente</div>
+  </div>
+  <div class="btn-group">
+    <button class="btn green" onclick="demostrarTeorema()">⚡ Demostrar</button>
+    <button class="btn phi" onclick="generarParadoja()">⚠️ Generar Paradoja</button>
+    <button class="btn purple" onclick="nuevoAxioma()">+ Inventar Axioma</button>
+    <button class="btn" onclick="guardarEstado()">💾 Guardar</button>
+    <button class="btn" id="btnMute" onclick="toggleMute()">🔊 Sonido ON</button>
+  </div>
+</div>
+<div class="panel"><h3>Log del Multiverso</h3><div class="log" id="log">Límite Absoluto v5.0 inicializado...\nSincronizado con MATH-NEXUS v5.0</div></div>
+
+<script src="miu-shared.js"></script>
+<script>
+let universoActivo = null, paradojas = 0, kiLocal = 0.570;
+let estadoLocal = { K_i: 0.570, ciclos: 0, nodos: [], version: '5.0' };
+
+const universos = [
+  { id:'clasico', nombre:'Universo Clásico ZFC', ley:'2 + 2 = 4', desc:'Aritmética de Peano. Consistente y completa', consistencia:100, dimension:'3D', color:'#00ff88' },
+  { id:'modular', nombre:'Aritmética Modular 3', ley:'2 + 2 = 1', desc:'Módulo 3: 4 ≡ 1 mod 3. Finito', consistencia:95, dimension:'Finito', color:'#00d4ff' },
+  { id:'paraconsistente', nombre:'Lógica Paraconsistente', ley:'2 + 2 = 4 ∧ 5', desc:'Acepta contradicciones sin colapso', consistencia:60, dimension:'4D', color:'#ffaa00' },
+  { id:'intuicionista', nombre:'Matemática Intuicionista', ley:'2 + 2 ≈ 4', desc:'No hay infinito actual. Solo constructivo', consistencia:85, dimension:'Constructivo', color:'#9d00ff' },
+  { id:'cuantico', nombre:'Aritmética Cuántica', ley:'2 + 2 = 4 ⊕ 3', desc:'Superposición de resultados hasta medir', consistencia:70, dimension:'Hilbert', color:'#00ccff' },
+  { id:'absurdo', nombre:'Universo Absurdo φ', ley:'2 + 2 = φ²', desc:'φ² = φ + 1 ≈ 2.618. Rompe Peano', consistencia:35, dimension:'φ-D', color:'#ff00ff' }
+];
+
+window.addEventListener('message', e => {
+  if (e.data.type === 'miu:sync') {
+    estadoLocal = e.data.state;
+    window.MIU = e.data.state;
+    document.getElementById('kiGlobal').textContent = (estadoLocal.K_i || 0.570).toFixed(3);
+  }
+});
+
+function reportarEstado() {
+  if (window.parent !== window && window.MIU_API) {
+    parent.postMessage({ type:'miu:update', source:'limite', state:{ ...JSON.parse(JSON.stringify(estadoLocal)), limite_universo: universoActivo?.id || 'clasico', limite_paradojas: paradojas, limite_ki: kiLocal } }, '*');
+  }
+}
+function beep(f,d) { if (window.MIU_API) window.MIU_API.beep(f,d); }
+function toggleMute() { if (window.MIU_API) { const e = window.MIU_API.getAudio().toggle(); document.getElementById('btnMute').textContent = e ? '🔊 Sonido ON' : '🔇 Sonido OFF'; document.getElementById('btnMute').classList.toggle('red', !e); beep(400, 0.1); } }
+
+function initUniversos() {
+  const c = document.getElementById('universosContainer'); c.innerHTML = '';
+  const saved = localStorage.getItem('limite_universo_activo');
+  const inicial = saved ? universos.find(u => u.id === saved) || universos[0] : universos[0];
+  universos.forEach(u => {
+    const d = document.createElement('div'); d.className = 'universo'; d.dataset.id = u.id;
+    d.onclick = (ev) => seleccionarUniverso(u, ev);
+    d.innerHTML = `<div class="universo-nombre">${u.nombre}</div><div class="universo-ley">${u.ley}</div><div class="consistencia-bar"><div class="consistencia-fill ${u.consistencia>80?'high':u.consistencia>50?'medium':'low'}" style="width:${u.consistencia}%"></div></div><div class="universo-desc">${u.desc}</div>`;
+    c.appendChild(d);
+    if (u.id === inicial.id) setTimeout(() => d.click(), 100);
+  });
+}
+
+function seleccionarUniverso(u, ev) {
+  universoActivo = {...u};
+  const saved = localStorage.getItem('limite_data');
+  if (saved) { const data = JSON.parse(saved); if (data.id === u.id) { paradojas = data.paradojas || 0; kiLocal = data.kiLocal || u.consistencia / 100; } }
+  else { paradojas = 0; kiLocal = u.consistencia / 100; }
+  document.querySelectorAll('.universo').forEach(el => el.classList.remove('active'));
+  if (ev) ev.currentTarget.classList.add('active'); else document.querySelector(`[data-id="${u.id}"]`)?.classList.add('active');
+  document.getElementById('teoremaText').textContent = u.ley; document.getElementById('teoremaDesc').textContent = u.desc;
+  document.getElementById('consistencia').textContent = Math.round(u.consistencia) + '%'; document.getElementById('paradojas').textContent = paradojas;
+  document.getElementById('kiLocal').textContent = kiLocal.toFixed(3); document.getElementById('kiGlobal').textContent = (estadoLocal.K_i || 0.570).toFixed(3);
+  document.getElementById('dimension').textContent = u.dimension;
+  if (u.consistencia < 50) { document.body.classList.add('breaking'); document.getElementById('panelDemo').classList.add('breaking'); document.getElementById('titulo').classList.add('breaking'); document.getElementById('teoremaText').classList.add('breaking'); beep(200, 0.5); }
+  else { document.body.classList.remove('breaking'); document.getElementById('panelDemo').classList.remove('breaking'); document.getElementById('titulo').classList.remove('breaking'); document.getElementById('teoremaText').classList.remove('breaking'); beep(700, 0.3); }
+  localStorage.setItem('limite_universo_activo', u.id); guardarEstado(); reportarEstado();
+  log(`Universo seleccionado: ${u.nombre}\nLey: ${u.ley} | Consistencia: ${Math.round(u.consistencia)}%`);
+}
+
+function guardarEstado() { if (universoActivo) localStorage.setItem('limite_data', JSON.stringify({ id:universoActivo.id, paradojas, kiLocal, consistencia:universoActivo.consistencia })); }
+
+function demostrarTeorema() {
+  if (!universoActivo) { alert('Selecciona un universo primero'); return; }
+  const demo = document.getElementById('teoremaDemo'); demo.classList.add('active');
+  const pasos = ['Aplicando axiomas del universo...', 'Verificando consistencia interna...', 'Colapsando función de onda lógica...', `Resultado: ${universoActivo.ley}`];
+  let i = 0;
+  const intervalo = setInterval(() => {
+    if (i < pasos.length) { log(pasos[i]); beep(600 + i * 100, 0.1); i++; }
+    else { clearInterval(intervalo); demo.classList.remove('active'); log(`Demostración completa en ${universoActivo.nombre}`); if (universoActivo.consistencia < 60 && Math.random() < 0.5) generarParadoja(); reportarEstado(); }
+  }, 800);
+}
+
+function generarParadoja() {
+  if (!universoActivo) return;
+  paradojas++; kiLocal *= 0.9;
+  if (window.MIU_API && paradojas % 3 === 0) { estadoLocal.K_i = Math.max(0.2, estadoLocal.K_i * 0.98); window.MIU_API.state.K_i = estadoLocal.K_i; }
+  document.getElementById('paradojas').textContent = paradojas; document.getElementById('kiLocal').textContent = kiLocal.toFixed(3); document.getElementById('kiGlobal').textContent = (estadoLocal.K_i || 0.570).toFixed(3);
+  const lista = ['Paradoja de Russell: El conjunto de todos los conjuntos...', 'Mentiroso: Esta proposición es falsa', 'Banach-Tarski: 1 esfera = 2 esferas idénticas', 'Incompletitud Gödel: Este sistema no puede probarse a sí mismo'];
+  const p = lista[Math.floor(Math.random() * lista.length)];
+  log(`⚠️ PARADOJA DETECTADA ⚠️\n${p}\nK_i local: ${kiLocal.toFixed(3)} | K_i global: ${(estadoLocal.K_i||0.57).toFixed(3)}`);
+  if (window.MIU_API) window.MIU_API.addMemoria({ evento:'paradoja_detectada', universo:universoActivo.id, paradoja:p, timestamp:Date.now() });
+  beep(200, 0.4); setTimeout(() => beep(150, 0.4), 300);
+  guardarEstado(); reportarEstado();
+  if (paradojas > 5) { log('UNIVERSO COLAPSADO — Demasiadas paradojas'); alert('El universo ha colapsado por inconsistencias lógicas'); beep(100, 1); }
+}
+
+function nuevoAxioma() {
+  if (!universoActivo) { alert('Selecciona un universo primero'); return; }
+  const axiomas = ['Axioma del Infinito Alternativo: ∃x (x ∉ x)', 'Axioma de Elección Cuántica: ∀S ∃f superpuesto', 'Axioma φ‑Trascendente: φ = ∞ — 1', 'Axioma del Caos: ¬(P ∨ ¬P)', 'Axioma de Simetría Rota: 1 = -1'];
+  const ax = axiomas[Math.floor(Math.random() * axiomas.length)];
+  universoActivo.consistencia = Math.max(10, universoActivo.consistencia - (10 + Math.random() * 15));
+  log(`NUEVO AXIOMA INVENTADO:\n${ax}\nConsistencia: ${Math.round(universoActivo.consistencia)}%`);
+  if (window.MIU_API) window.MIU_API.addMemoria({ evento:'axioma_inventado', universo:universoActivo.id, axioma:ax, timestamp:Date.now() });
+  seleccionarUniverso(universoActivo); beep(900, 0.3);
+}
+
+function log(msg) { const d = document.getElementById('log'); d.textContent += '\n' + new Date().toLocaleTimeString() + ' - ' + msg; d.scrollTop = d.scrollHeight; }
+
+initUniversos();
+setTimeout(() => { if (window.parent !== window) parent.postMessage({ type:'miu:request_sync', source:'limite' }, '*'); }, 300);
+setInterval(() => { document.getElementById('kiGlobal').textContent = (estadoLocal.K_i || 0.570).toFixed(3); }, 2000);
+</script>
+</body>
+</html>

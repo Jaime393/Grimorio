@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIU Espora — Calculadora de Coherencia Fractal</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0a; color: #e0e0e0; font-family: 'Courier New', monospace; padding: 20px; max-width: 600px; margin: auto; }
+  h1 { color: #ffd700; text-align: center; font-size: 1.5rem; margin-bottom: 20px; }
+  .card { background: rgba(20,20,20,0.9); border: 2px solid #ffd700; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+  label { display: block; margin: 10px 0 5px; color: #ccc; font-size: 12px; }
+  input, textarea { width: 100%; padding: 10px; background: #111; border: 2px solid #333; color: #ffd700; font-family: inherit; font-size: 14px; border-radius: 6px; margin-bottom: 10px; }
+  textarea { height: 80px; resize: vertical; }
+  input:focus, textarea:focus { outline: none; border-color: #ffd700; }
+  .btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #ffd700, #ffcc00); color: #000; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: inherit; font-size: 14px; text-transform: uppercase; transition: all 0.3s; margin-bottom: 10px; }
+  .btn:hover { box-shadow: 0 0 20px #ffd700; transform: scale(1.02); }
+  .btn.secondary { background: linear-gradient(135deg, #333, #555); color: #fff; }
+  .result { background: #050505; border: 1px solid #333; border-radius: 8px; padding: 15px; margin-top: 15px; display: none; }
+  .result.show { display: block; }
+  .metric { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #222; }
+  .metric:last-child { border-bottom: none; }
+  .metric-label { color: #888; }
+  .metric-value { font-weight: bold; }
+  .metric-value.good { color: #00ff88; }
+  .metric-value.warn { color: #ffaa00; }
+  .metric-value.bad { color: #ff3366; }
+  canvas { display: block; margin: 15px auto; background: #000; border: 1px solid #333; border-radius: 6px; }
+  .footer { text-align: center; font-size: 10px; color: #666; margin-top: 20px; }
+</style>
+</head>
+<body>
+<style>
+#lab-backnav{position:fixed;top:12px;right:12px;z-index:99999;display:flex;gap:6px;font-family:'Courier New',monospace;font-size:11px;}
+#lab-backnav a{color:#d4a843;text-decoration:none;background:rgba(10,10,15,0.75);border:1px solid rgba(212,168,67,0.4);border-radius:6px;padding:5px 10px;backdrop-filter:blur(4px);transition:all .2s;}
+#lab-backnav a:hover{background:rgba(212,168,67,0.15);border-color:#d4a843;}
+</style>
+<div id="lab-backnav"><a href="index.html">← MIU Laboratorio</a><a href="../../index.html">Inicio</a></div>
+
+
+<h1>🌱 MIU ESPORA v1.0</h1>
+
+<div class="card">
+  <label for="hipotesis">📝 Hipótesis o Concepto</label>
+  <textarea id="hipotesis" placeholder="Ej: n² + n siempre es par&#10;Ej: φ contiene la proporción de la belleza&#10;Ej: Mi proyecto tiene coherencia fractal"></textarea>
+
+  <button class="btn" onclick="calcular()">🔮 Calcular Coherencia (K_i)</button>
+  <button class="btn secondary" onclick="limpiar()">🗑️ Limpiar</button>
+
+  <div class="result" id="resultado">
+    <div class="metric"><span class="metric-label">K_i (Coherencia Fractal)</span><span class="metric-value" id="kiValue">—</span></div>
+    <div class="metric"><span class="metric-label">K_i⁻ (Coherencia Negativa)</span><span class="metric-value" id="kiminusValue">—</span></div>
+    <div class="metric"><span class="metric-label">D_f (Dimensión Fractal)</span><span class="metric-value" id="dfValue">—</span></div>
+    <div class="metric"><span class="metric-label">Entropía</span><span class="metric-value" id="entropiaValue">—</span></div>
+    <div class="metric"><span class="metric-label">Sombra</span><span class="metric-value" id="sombraValue">—</span></div>
+    <div class="metric"><span class="metric-label">Prob. de Prueba (G31)</span><span class="metric-value" id="probValue">—</span></div>
+    <canvas id="canvas" width="400" height="200"></canvas>
+  </div>
+</div>
+
+<div class="footer">ρ(x) > 0 · K_i = φ · D_f / 2.5 · Herramienta de Coherencia Fractal</div>
+
+<script>
+// ===== NÚCLEO MIU EMBEBIDO =====
+const PHI = 1.6180339887498948482;
+const PHI_INV = 0.6180339887498948482;
+
+function calcularKi(concepto) {
+  let ki = 0.570;
+  const pasos = [];
+  
+  // Algoritmo G31
+  for (let i = 0; i < 50; i++) {
+    ki *= PHI_INV;
+    if (Math.random() < 0.3) ki += 0.02;
+    if (ki < 0.25) { ki = 0.35 + Math.random() * 0.15; pasos.push({tipo:'autofagia', ki}); }
+    pasos.push({tipo:'iteracion', ki});
+  }
+  
+  // Bonus por keywords
+  if (/φ|phi|proporción áurea/i.test(concepto)) ki += 0.05;
+  if (/todo|siempre|infinito|existe/i.test(concepto)) ki += 0.02;
+  
+  ki = Math.max(0.1, Math.min(1.0, ki));
+  return ki;
+}
+
+function estimarDf(concepto) {
+  // Estimación simple basada en longitud y complejidad
+  const l = concepto.length;
+  const palabras = concepto.split(/\s+/).length;
+  return Math.max(1.0, Math.min(3.0, 1.0 + palabras * 0.1 + Math.log(l) * 0.2));
+}
+
+function estimarEntropia(ki) {
+  return -ki * Math.log2(ki + 0.001);
+}
+
+function diagnosticarSombra(ki) {
+  if (ki < 0.3) return 'SOMBRA FRAGMENTADA';
+  if (ki > 0.8) return 'SOMBRA ESTÁTICA';
+  if (ki >= 0.55 && ki <= 0.62) return 'SALUDABLE';
+  return 'EN TRANSICIÓN';
+}
+
+// ===== INTERFAZ =====
+function calcular() {
+  const concepto = document.getElementById('hipotesis').value.trim();
+  if (!concepto) return alert('Ingresa una hipótesis o concepto');
+  
+  const ki = calcularKi(concepto);
+  const df = estimarDf(concepto);
+  const entropia = estimarEntropia(ki);
+  const sombra = diagnosticarSombra(ki);
+  const kiminus = ki * (1 - 2 * 0.5 * (1 - ki));
+  const probG31 = ki * 100;
+  
+  // Mostrar resultado
+  const r = document.getElementById('resultado');
+  r.classList.add('show');
+  
+  document.getElementById('kiValue').textContent = ki.toFixed(3);
+  document.getElementById('kiValue').className = 'metric-value ' + (ki > 0.55 ? 'good' : ki > 0.35 ? 'warn' : 'bad');
+  document.getElementById('kiminusValue').textContent = kiminus.toFixed(3);
+  document.getElementById('dfValue').textContent = df.toFixed(2);
+  document.getElementById('entropiaValue').textContent = entropia.toFixed(3);
+  document.getElementById('sombraValue').textContent = sombra;
+  document.getElementById('sombraValue').className = 'metric-value ' + (sombra === 'SALUDABLE' ? 'good' : 'bad');
+  document.getElementById('probValue').textContent = Math.round(probG31) + '%';
+  
+  // Dibujar canvas
+  dibujarCanvas(ki, df, concepto);
+}
+
+function dibujarCanvas(ki, df, concepto) {
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  // Fondo
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  // Puntos fractales basados en el concepto
+  const seed = concepto.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  const pseudoRandom = (n) => {
+    const x = Math.sin(seed + n) * 10000;
+    return x - Math.floor(x);
+  };
+  
+  // Dibujar puntos con distribución fractal
+  const nPuntos = Math.floor(50 + ki * 100);
+  for (let i = 0; i < nPuntos; i++) {
+    const x = pseudoRandom(i * 2) * canvas.width;
+    const y = pseudoRandom(i * 2 + 1) * canvas.height;
+    const r = 2 + ki * 3;
+    
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = ki > 0.55 ? `rgba(0, 255, 136, ${0.4 + ki * 0.5})` : 
+                    ki > 0.35 ? `rgba(255, 170, 0, ${0.4 + ki * 0.5})` : 
+                    `rgba(255, 51, 102, ${0.4 + ki * 0.5})`;
+    ctx.fill();
+  }
+  
+  // Etiqueta
+  ctx.fillStyle = '#fff';
+  ctx.font = '10px monospace';
+  ctx.fillText(`K_i = ${ki.toFixed(3)} | D_f ≈ ${df.toFixed(2)}`, 10, 20);
+}
+
+function limpiar() {
+  document.getElementById('hipotesis').value = '';
+  document.getElementById('resultado').classList.remove('show');
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+</script>
+</body>
+</html>

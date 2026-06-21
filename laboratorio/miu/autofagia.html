@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIU Autofagia v1.0 — Simulador de Coherencia Fractal</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0a; color: #e0e0e0; font-family: 'Courier New', monospace; padding: 15px; max-width: 900px; margin: auto; }
+  h1 { color: #ff6600; text-align: center; font-size: 1.5rem; margin-bottom: 5px; }
+  .subtitle { text-align: center; color: #888; font-size: 10px; margin-bottom: 15px; }
+  .panel { background: rgba(20,20,20,0.9); border: 2px solid #ff6600; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+  .row { display: flex; gap: 15px; flex-wrap: wrap; }
+  .col { flex: 1; min-width: 200px; }
+  label { display: block; margin: 8px 0 4px; color: #ccc; font-size: 11px; }
+  input[type=range] { width: 100%; accent-color: #ff6600; }
+  .range-value { color: #ff6600; font-weight: bold; }
+  .btn { padding: 10px 20px; background: linear-gradient(135deg, #ff6600, #cc5200); color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: inherit; font-size: 13px; text-transform: uppercase; transition: all 0.3s; margin: 5px; }
+  .btn:hover { box-shadow: 0 0 20px #ff6600; transform: scale(1.02); }
+  .btn.secondary { background: linear-gradient(135deg, #333, #555); }
+  canvas { display: block; background: #000; border: 1px solid #333; border-radius: 6px; width: 100%; margin-top: 10px; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 10px 0; }
+  .stat { background: #050505; border: 1px solid #333; padding: 10px; border-radius: 6px; text-align: center; }
+  .stat-label { font-size: 9px; color: #666; }
+  .stat-value { font-size: 20px; font-weight: bold; color: #ff6600; }
+  .log { background: #000; border-left: 3px solid #ff6600; padding: 10px; font-size: 10px; max-height: 100px; overflow-y: auto; margin-top: 10px; }
+  @media (max-width: 500px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<style>
+#lab-backnav{position:fixed;top:12px;right:12px;z-index:99999;display:flex;gap:6px;font-family:'Courier New',monospace;font-size:11px;}
+#lab-backnav a{color:#d4a843;text-decoration:none;background:rgba(10,10,15,0.75);border:1px solid rgba(212,168,67,0.4);border-radius:6px;padding:5px 10px;backdrop-filter:blur(4px);transition:all .2s;}
+#lab-backnav a:hover{background:rgba(212,168,67,0.15);border-color:#d4a843;}
+</style>
+<div id="lab-backnav"><a href="index.html">← MIU Laboratorio</a><a href="../../index.html">Inicio</a></div>
+
+
+<h1>🧬 MIU AUTOFAGIA v1.0</h1>
+<div class="subtitle">Simulador de Coherencia Fractal con Poda G31 · K_i = φ · D_f / 2.5</div>
+
+<div class="panel">
+  <div class="row">
+    <div class="col">
+      <label for="nodos">🧮 Nodos iniciales: <span class="range-value" id="nodosVal">100</span></label>
+      <input type="range" id="nodos" min="20" max="200" value="100" oninput="document.getElementById('nodosVal').textContent=this.value">
+      <label for="umbral">🎯 Umbral de poda (K_i <): <span class="range-value" id="umbralVal">0.25</span></label>
+      <input type="range" id="umbral" min="0.1" max="0.5" step="0.01" value="0.25" oninput="document.getElementById('umbralVal').textContent=this.value">
+      <label for="inferencia">⚡ Prob. de inferencia: <span class="range-value" id="infVal">0.30</span></label>
+      <input type="range" id="inferencia" min="0.1" max="0.6" step="0.01" value="0.30" oninput="document.getElementById('infVal').textContent=this.value">
+    </div>
+    <div class="col">
+      <label for="ciclos">🔄 Ciclos a simular: <span class="range-value" id="ciclosVal">50</span></label>
+      <input type="range" id="ciclos" min="10" max="100" value="50" oninput="document.getElementById('ciclosVal').textContent=this.value">
+      <label for="renacer">🌱 Renacer K_i post-poda: <span class="range-value" id="renacerVal">0.40</span></label>
+      <input type="range" id="renacer" min="0.2" max="0.6" step="0.01" value="0.40" oninput="document.getElementById('renacerVal').textContent=this.value">
+      <button class="btn" onclick="iniciarSimulacion()">⚡ Iniciar Simulación</button>
+      <button class="btn secondary" onclick="detenerSimulacion()">⏹️ Detener</button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-label">K_i Global</div><div class="stat-value" id="kiGlobal">0.570</div></div>
+    <div class="stat"><div class="stat-label">Nodos Vivos</div><div class="stat-value" id="nodosVivos">0</div></div>
+    <div class="stat"><div class="stat-label">Ciclo</div><div class="stat-value" id="cicloActual">0</div></div>
+    <div class="stat"><div class="stat-label">Podados</div><div class="stat-value" id="totalPodados">0</div></div>
+  </div>
+
+  <canvas id="canvasEvolucion" width="800" height="180"></canvas>
+  <canvas id="canvasRed" width="800" height="250"></canvas>
+  <div class="log" id="log"></div>
+</div>
+
+<script>
+const PHI = 1.6180339887498948482;
+const PHI_INV = 0.6180339887498948482;
+let animacionActiva = false;
+let nodos = [];
+let historialKi = [];
+let totalPodados = 0;
+let cicloActual = 0;
+
+function crearNodos(n) {
+  const arr = [];
+  for (let i = 0; i < n; i++) {
+    arr.push({
+      id: i,
+      ki: 0.3 + Math.random() * 0.4,
+      x: Math.random() * 780,
+      y: Math.random() * 230,
+      vivo: true
+    });
+  }
+  return arr;
+}
+
+function calcularKiGlobal() {
+  const vivos = nodos.filter(n => n.vivo);
+  if (vivos.length === 0) return 0.1;
+  return vivos.reduce((s, n) => s + n.ki, 0) / vivos.length;
+}
+
+function calcularDf() {
+  const vivos = nodos.filter(n => n.vivo);
+  if (vivos.length < 3) return 1.0;
+  const escalas = [20, 40, 80];
+  const counts = escalas.map(e => {
+    const cajas = new Set();
+    vivos.forEach(n => { cajas.add(`${Math.floor(n.x/e)},${Math.floor(n.y/e)}`); });
+    return cajas.size;
+  });
+  const logE = Math.log(escalas[0] / escalas[2]);
+  const logN = Math.log(counts[2] / counts[0]);
+  return Math.max(1.0, Math.min(3.0, logN / logE));
+}
+
+function dibujarRed(canvasId) {
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  nodos.forEach(n => {
+    if (!n.vivo) return;
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, 3 + n.ki * 3, 0, Math.PI * 2);
+    ctx.fillStyle = n.ki > 0.55 ? '#00ff88' : n.ki > 0.35 ? '#ffaa00' : '#ff3366';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+    ctx.stroke();
+  });
+}
+
+function dibujarEvolucion(canvasId) {
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  if (historialKi.length < 2) return;
+  const pasoX = canvas.width / historialKi.length;
+  ctx.beginPath();
+  ctx.strokeStyle = '#ff6600';
+  ctx.lineWidth = 2;
+  historialKi.forEach((ki, i) => {
+    const x = i * pasoX;
+    const y = canvas.height - (ki * canvas.height * 0.9);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+  
+  ctx.fillStyle = '#fff';
+  ctx.font = '10px monospace';
+  ctx.fillText('Evolución de K_i', 10, 18);
+}
+
+function log(msg) {
+  const div = document.getElementById('log');
+  div.textContent += '\n' + new Date().toLocaleTimeString() + ' - ' + msg;
+  div.scrollTop = div.scrollHeight;
+}
+
+function actualizarStats() {
+  const vivos = nodos.filter(n => n.vivo);
+  document.getElementById('kiGlobal').textContent = calcularKiGlobal().toFixed(3);
+  document.getElementById('nodosVivos').textContent = vivos.length;
+  document.getElementById('cicloActual').textContent = cicloActual;
+  document.getElementById('totalPodados').textContent = totalPodados;
+}
+
+function cicloSimulacion(umbral, probInf, renacer) {
+  nodos.forEach(n => {
+    if (!n.vivo) return;
+    n.ki *= PHI_INV;
+    if (Math.random() < probInf) n.ki += 0.02;
+    if (n.ki < umbral) {
+      n.vivo = false;
+      totalPodados++;
+      log(`🔧 Poda: nodo ${n.id} (K_i = ${n.ki.toFixed(3)})`);
+    }
+  });
+  // Renacer algunos nodos aleatorios para mantener diversidad
+  if (Math.random() < 0.1) {
+    const muertos = nodos.filter(n => !n.vivo);
+    if (muertos.length > 0) {
+      const renacido = muertos[Math.floor(Math.random() * muertos.length)];
+      renacido.vivo = true;
+      renacido.ki = renacer;
+      log(`🌱 Renacer: nodo ${renacido.id} (K_i = ${renacer.toFixed(2)})`);
+    }
+  }
+  cicloActual++;
+  const kiGlobal = calcularKiGlobal();
+  historialKi.push(kiGlobal);
+  actualizarStats();
+  dibujarEvolucion('canvasEvolucion');
+  dibujarRed('canvasRed');
+}
+
+let intervaloSimulacion = null;
+
+function iniciarSimulacion() {
+  if (animacionActiva) return;
+  animacionActiva = true;
+  const n = parseInt(document.getElementById('nodos').value);
+  const umbral = parseFloat(document.getElementById('umbral').value);
+  const probInf = parseFloat(document.getElementById('inferencia').value);
+  const ciclos = parseInt(document.getElementById('ciclos').value);
+  const renacer = parseFloat(document.getElementById('renacer').value);
+  
+  nodos = crearNodos(n);
+  historialKi = [calcularKiGlobal()];
+  totalPodados = 0;
+  cicloActual = 0;
+  document.getElementById('log').textContent = 'Simulación iniciada...';
+  dibujarEvolucion('canvasEvolucion');
+  dibujarRed('canvasRed');
+  actualizarStats();
+  
+  let contador = 0;
+  intervaloSimulacion = setInterval(() => {
+    cicloSimulacion(umbral, probInf, renacer);
+    contador++;
+    if (contador >= ciclos) {
+      detenerSimulacion();
+      log('✅ Simulación completada.');
+    }
+  }, 150);
+}
+
+function detenerSimulacion() {
+  if (intervaloSimulacion) clearInterval(intervaloSimulacion);
+  animacionActiva = false;
+}
+</script>
+</body>
+</html>

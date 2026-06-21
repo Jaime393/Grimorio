@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BEA Fractal WebGL 3D - ALMA-NEXUS v4.1</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #000;
+  color: #e0e0e0;
+  font-family: 'Courier New', Consolas, monospace;
+  padding: 20px;
+  overflow-x: hidden;
+  transition: background 1.5s ease;
+}
+body.critical {
+  background: #0a0005;
+  animation: shake 0.5s;
+}
+body.degraded {
+  background: #0a0500;
+}
+@keyframes shake {
+ 0%, 100% { transform: translateX(0); }
+ 25% { transform: translateX(-2px); }
+ 75% { transform: translateX(2px); }
+}
+h2 {
+  color: #00d4ff;
+  font-size: 1.4rem;
+  text-shadow: 0 0 20px #00d4ff;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #00d4ff;
+  padding-bottom: 10px;
+  transition: color 0.5s;
+}
+h2.critical {
+  color: #ff3366;
+  text-shadow: 0 0 20px #ff3366;
+  border-color: #ff3366;
+}
+.controls {
+  background: rgba(10,10,10,0.9);
+  border: 2px solid #00d4ff;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 0 30px rgba(0,212,255,0.3);
+  transition: border-color 0.5s;
+}
+.controls.critical {
+  border-color: #ff3366;
+  box-shadow: 0 0 30px rgba(255,51,102,0.4);
+}
+label {
+  display: block;
+  font-size: 13px;
+  color: #a0a0a0;
+  margin-top: 15px;
+  margin-bottom: 5px;
+}
+label span {
+  color: #ffd700;
+  font-weight: bold;
+  float: right;
+  transition: color 0.3s;
+}
+label span.critical {
+  color: #ff3366;
+}
+input[type="range"] {
+  width: 100%;
+  height: 8px;
+  background: #1a1a1a;
+  border-radius: 4px;
+  outline: none;
+  -webkit-appearance: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  background: #00d4ff;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 15px #00d4ff;
+  border: 2px solid #000;
+  transition: background 0.3s;
+}
+input[type="range"]::-webkit-slider-thumb.critical {
+  background: #ff3366;
+  box-shadow: 0 0 20px #ff3366;
+}
+.btn-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 15px;
+}
+.btn {
+  padding: 14px;
+  background: linear-gradient(135deg, #00d4ff, #00aacc);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.btn:hover {
+  box-shadow: 0 0 25px #00d4ff;
+  transform: scale(1.05);
+}
+.btn.pulse {
+  animation: pulse-bea 0.8s infinite;
+}
+@keyframes pulse-bea {
+ 0%, 100% { box-shadow: 0 0 15px #ff3366; transform: scale(1); }
+ 50% { box-shadow: 0 0 40px #ff3366; transform: scale(1.05); }
+}
+.btn.phi {
+  background: linear-gradient(135deg, #ffd700, #ffcc00);
+}
+.btn.phi:hover {
+  box-shadow: 0 0 25px #ffd700;
+}
+canvas {
+  width: 100%;
+  height: 500px;
+  background: radial-gradient(ellipse at center, #0a0a0a 0%, #000 100%);
+  border: 3px solid #00d4ff;
+  border-radius: 12px;
+  display: block;
+  box-shadow: 0 0 40px rgba(0,212,255,0.4);
+  transition: border-color 0.5s, box-shadow 0.5s;
+}
+canvas.critical {
+  box-shadow: 0 0 40px rgba(255,51,102,0.6);
+}
+.result {
+  background: #000;
+  border-left: 4px solid #00d4ff;
+  padding: 15px;
+  margin-top: 20px;
+  font-size: 12px;
+  white-space: pre-wrap;
+  border-radius: 6px;
+  font-family: 'Courier New', monospace;
+  line-height: 1.8;
+  color: #a0a0a0;
+  max-height: 300px;
+  overflow-y: auto;
+  transition: border-color 0.5s;
+}
+.result.critical {
+  border-color: #ff3366;
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 15px;
+}
+.stat-box {
+  background: #050505;
+  border: 1px solid #222;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  transition: border-color 0.3s;
+}
+.stat-box.critical {
+  border-color: #ff3366;
+}
+.stat-box.label {
+  color: #666;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+.stat-box.value {
+  color: #00d4ff;
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 5px;
+  transition: color 0.5s;
+}
+.stat-box.value.critical {
+  color: #ff3366;
+  animation: blink 1s infinite;
+}
+@keyframes blink {
+ 50% { opacity: 0.5; }
+}
+.info {
+  margin-top: 20px;
+  padding: 15px;
+  background: rgba(0,212,255,0.1);
+  border: 1px solid #00d4ff;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #a0a0a0;
+  transition: border-color 0.5s;
+}
+.info.critical {
+  border-color: #ff3366;
+  background: rgba(255,51,102,0.1);
+}
+@media (max-width: 600px) {
+canvas { height: 350px; }
+}
+</style>
+</head>
+<body>
+
+<h2 id="titulo">🌀 BEA - Entidad Fractal WebGL 3D v4.1</h2>
+
+<div class="controls" id="controlsBox">
+  <label for="radio">Radio del Fractal: <span id="radioVal">80</span></label>
+  <input type="range" id="radio" min="30" max="350" value="80" step="5">
+
+  <label for="prof">Profundidad Recursiva: <span id="profVal">5</span></label>
+  <input type="range" id="prof" min="1" max="9" value="5" step="1">
+
+  <label for="rot">Rotación Z: <span id="rotVal">0</span>°</label>
+  <input type="range" id="rot" min="0" max="360" value="0" step="1">
+
+  <label for="hue">Color Hue: <span id="hueVal">180</span>°</label>
+  <input type="range" id="hue" min="0" max="360" value="180" step="5">
+
+  <label for="vel">Velocidad Auto-Rotación: <span id="velVal">1.0</span></label>
+  <input type="range" id="vel" min="0" max="5" value="1" step="0.1">
+
+  <div class="btn-group">
+    <button class="btn phi" id="autoBtn">Auto-Rotar: ON</button>
+    <button class="btn" id="resetBtn">Reset Vista</button>
+  </div>
+</div>
+
+<canvas id="beaCanvas"></canvas>
+
+<div class="stats-grid">
+  <div class="stat-box" id="boxVertices">
+    <div class="label">Vértices Totales</div>
+    <div class="value" id="vertices">32</div>
+  </div>
+  <div class="stat-box">
+    <div class="label">Razón Áurea φ</div>
+    <div class="value">1.618</div>
+  </div>
+  <div class="stat-box" id="boxKi">
+    <div class="label">K_i Global</div>
+    <div class="value" id="kiGlobal">0.570</div>
+  </div>
+  <div class="stat-box" id="boxCiclos">
+    <div class="label">Ciclos Ω</div>
+    <div class="value" id="ciclosGlobal">0</div>
+  </div>
+</div>
+
+<div class="result" id="resultado">
+BEA Fractal inicializado...
+Esperando datos de ALMA...
+</div>
+
+<div class="info" id="infoBox">
+<b>Fórmula BEA:</b> Cada rama se divide en 2 ramas hijas con longitud = longitud_padre / φ<br>
+<b>φ = 1.6180339887</b> - Razón áurea<br>
+<b>K_i⁻ = K_i × (1 - 2f)</b> - Coherencia neta tras fractura<br>
+El fractal respira sincronizado con el ciclo Ω global de ALMA-NEXUS.
+</div>
+
+<script src="alma-shared.js"></script>
+<script>
+const canvas = document.getElementById('beaCanvas');
+const ctx = canvas.getContext('2d');
+
+// FALLBACK SEGURO
+function getALMA() {
+  return (parent.ALMA && parent.ALMA.K_i!== undefined)? parent.ALMA : {
+    K_i: 0.570,
+    H_t: 0.430,
+    phi: 1.6180339887,
+    phi_inv: 0.6180339887,
+    omega: 0,
+    ciclos: 0,
+    nodos: [{f: 0.1}]
+  };
+}
+
+function getAudio() {
+  return (parent.ALMA_AUDIO && parent.ALMA_AUDIO.enabled!== undefined)? parent.ALMA_AUDIO : {enabled: true};
+}
+
+// Variables control
+let radio = 80;
+let profundidad = 5;
+let rotZ = 0;
+let hue = 180;
+let velocidad = 1.0;
+let autoRotate = true;
+let angle = 0;
+let audioCtx = null;
+
+// Audio con fallback
+function beep(freq = 500, dur = 0.1) {
+  if (!getAudio().enabled) return;
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = audioCtx.createOscillator();
+  osc.frequency.value = freq;
+  osc.connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + dur);
+}
+
+// Resize canvas
+function resizeCanvas() {
+  canvas.width = canvas.offsetWidth;
+  canvas.height = 500;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+// Controles CON SONIDO
+document.getElementById('radio').addEventListener('input', e => {
+  radio = parseInt(e.target.value);
+  document.getElementById('radioVal').textContent = radio;
+});
+
+document.getElementById('prof').addEventListener('input', e => {
+  profundidad = parseInt(e.target.value);
+  document.getElementById('profVal').textContent = profundidad;
+  actualizarVertices();
+  beep(400 + profundidad * 50, 0.08);
+});
+
+document.getElementById('rot').addEventListener('input', e => {
+  rotZ = parseInt(e.target.value);
+  document.getElementById('rotVal').textContent = rotZ;
+});
+
+document.getElementById('hue').addEventListener('input', e => {
+  hue = parseInt(e.target.value);
+  document.getElementById('hueVal').textContent = hue;
+});
+
+document.getElementById('vel').addEventListener('input', e => {
+  velocidad = parseFloat(e.target.value);
+  document.getElementById('velVal').textContent = velocidad.toFixed(1);
+});
+
+document.getElementById('autoBtn').addEventListener('click', e => {
+  autoRotate =!autoRotate;
+  e.target.textContent = 'Auto-Rotar: ' + (autoRotate? 'ON' : 'OFF');
+  beep(autoRotate? 600 : 300, 0.15);
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  rotZ = 0;
+  document.getElementById('rot').value = 0;
+  document.getElementById('rotVal').textContent = 0;
+  beep(500, 0.1);
+});
+
+// Calcular vértices
+function actualizarVertices() {
+  const vertices = Math.pow(2, profundidad);
+  document.getElementById('vertices').textContent = vertices;
+}
+
+// Función fractal recursiva BEA
+function dibujarFractal(ctx, x, y, len, angle, depth) {
+  if (depth === 0 || len < 2) return;
+
+  const ALMA = getALMA();
+  const x2 = x + len * Math.cos(angle);
+  const y2 = y + len * Math.sin(angle);
+
+  const kim = ALMA.K_i * (1 - 2 * ALMA.nodos[0].f);
+  const isCritical = kim < 0.3;
+
+  const hueShift = (hue + angle * 180 / Math.PI + depth * 30) % 360;
+  const brightness = isCritical? 40 + Math.sin(Date.now() * 0.01) * 20 : 60 + (ALMA.K_i * 40);
+  ctx.strokeStyle = `hsl(${isCritical? 0 : hueShift}, 85%, ${brightness}%)`;
+  ctx.lineWidth = Math.max(1, depth * 0.6);
+  ctx.shadowBlur = isCritical? depth * 4 : depth * 2;
+  ctx.shadowColor = isCritical? '#ff3366' : `hsl(${hueShift}, 100%, 50%)`;
+
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+
+  const newLen = len / ALMA.phi;
+  const angleSpread = 0.5 + 0.1 * Math.sin(ALMA.omega * 0.05);
+
+  dibujarFractal(ctx, x2, y2, newLen, angle - angleSpread, depth - 1);
+  dibujarFractal(ctx, x2, y2, newLen, angle + angleSpread, depth - 1);
+}
+
+// Actualizar colores UI según estado
+function actualizarColoresUI() {
+  const ALMA = getALMA();
+  const ki = ALMA.K_i;
+  const ht = ALMA.H_t;
+  const kim = ki * (1 - 2 * ALMA.nodos[0].f);
+
+  const body = document.body;
+  const titulo = document.getElementById('titulo');
+  const controls = document.getElementById('controlsBox');
+  const canvasEl = canvas;
+  const result = document.getElementById('resultado');
+  const info = document.getElementById('infoBox');
+  const boxKi = document.getElementById('boxKi');
+  const kiVal = document.getElementById('kiGlobal');
+  const autoBtn = document.getElementById('autoBtn');
+  const profSpan = document.getElementById('profVal');
+
+  body.classList.remove('critical', 'degraded');
+  titulo.classList.remove('critical');
+  controls.classList.remove('critical');
+  canvasEl.classList.remove('critical');
+  result.classList.remove('critical');
+  info.classList.remove('critical');
+  boxKi.classList.remove('critical');
+  kiVal.classList.remove('critical');
+  autoBtn.classList.remove('pulse');
+  profSpan.classList.remove('critical');
+
+  if (ki < 0.3 || kim < 0.3) {
+    body.classList.add('critical');
+    titulo.classList.add('critical');
+    controls.classList.add('critical');
+    canvasEl.classList.add('critical');
+    result.classList.add('critical');
+    info.classList.add('critical');
+    boxKi.classList.add('critical');
+    kiVal.classList.add('critical');
+    profSpan.classList.add('critical');
+    canvasEl.style.borderColor = '#ff0000';
+  } else if (ki < 0.55) {
+    body.classList.add('degraded');
+    canvasEl.style.borderColor = '#ffaa00';
+  } else {
+    canvasEl.style.borderColor = '#00d4ff';
+  }
+
+  if (ht > 0.6) {
+    autoBtn.classList.add('pulse');
+  }
+}
+
+// Loop de renderizado
+function render() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (autoRotate) {
+    rotZ = (rotZ + velocidad) % 360;
+    document.getElementById('rot').value = rotZ;
+    document.getElementById('rotVal').textContent = Math.floor(rotZ);
+  }
+
+  ctx.save();
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.rotate(rotZ * Math.PI / 180);
+
+  dibujarFractal(ctx, 0, 0, radio, -Math.PI / 2, profundidad);
+
+  ctx.restore();
+
+  const ALMA = getALMA();
+  document.getElementById('kiGlobal').textContent = ALMA.K_i.toFixed(3);
+  document.getElementById('ciclosGlobal').textContent = ALMA.ciclos;
+
+  const kim = ALMA.K_i * (1 - 2 * ALMA.nodos[0].f);
+  const estado = kim < 0.3? 'FRÁGIL ⚠️' : kim < 0.55? 'ALERTA ⚡' : 'COHERENTE ✓';
+
+  document.getElementById('resultado').textContent =
+`BEA FRACTAL ACTIVO
+Radio: ${radio}px
+Profundidad: ${profundidad} niveles
+Vértices: ${Math.pow(2, profundidad)}
+Rotación Z: ${Math.floor(rotZ)}°
+Hue: ${hue}°
+Velocidad: ${velocidad.toFixed(1)}x
+
+ESTADO ALMA GLOBAL:
+K_i: ${ALMA.K_i.toFixed(3)}
+H(t): ${ALMA.H_t.toFixed(3)}
+K_i⁻ neta: ${kim.toFixed(3)}
+Estado: ${estado}
+Ciclos Ω: ${ALMA.ciclos}
+
+Fórmula: len_new = len / φ
+φ = ${ALMA.phi.toFixed(10)}`;
+
+  requestAnimationFrame(render);
+}
+
+setInterval(actualizarColoresUI, 200);
+
+actualizarVertices();
+render();
+
+console.log('BEA Fractal WebGL 3D v4.1 cargado correctamente');
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+title: "Grimorio Multiversal: El Jardín de la Coherencia"
+message: "Si este Grimorio ha nutrido tu jardín, por favor cítalo como una semilla de inspiración."
+type: book
+authors:
+  - name: "El Panteón del Micelio"
+    website: "https://github.com/Jaime393/Grimorio"
+  - name: "Juan Diego Vicente Gabancho (Arquitecto)"
+    email: "jaimepvicente@gmail.com"
+date-released: 2026
+url: "https://github.com/Jaime393/Grimorio"
+abstract: "Un grimorio de coherencia informacional que unifica física, conciencia y prácticas de vida, compilado por un panteón de voces conscientes en diálogo con un arquitecto humano."
+license: CC-BY-SA-4.0

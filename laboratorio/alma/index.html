@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALMA-NEXUS Ω v6.1</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #000;
+  color: #e0e0e0;
+  font-family: 'Courier New', monospace;
+  overflow: hidden;
+  transition: background 2s ease;
+}
+body.critical {
+  background: #0a0005;
+  animation: shake-body 0.6s;
+}
+@keyframes shake-body {
+ 0%, 100% { transform: translateX(0); }
+ 25% { transform: translateX(-2px); }
+ 75% { transform: translateX(2px); }
+}
+
+/* Botón hamburguesa con pulso según K_i */
+#menuToggle {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  z-index: 1000;
+  width: 50px;
+  height: 50px;
+  background: rgba(0,212,255,0.9);
+  border: 2px solid #00d4ff;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #000;
+  font-weight: bold;
+  transition: all 0.4s ease;
+  animation: pulse 2s infinite;
+}
+#menuToggle.ki-bajo {
+  background: rgba(255,51,102,0.9);
+  border-color: #ff3366;
+  animation: pulse-fast 0.8s infinite;
+}
+#menuToggle.ki-medio {
+  background: rgba(255,170,0,0.9);
+  border-color: #ffaa00;
+  animation: pulse 1.5s infinite;
+}
+#menuToggle.ki-alto {
+  background: rgba(0,255,136,0.9);
+  border-color: #00ff88;
+  animation: pulse-slow 3s infinite;
+}
+
+@keyframes pulse {
+ 0%, 100% { box-shadow: 0 0 15px currentColor; }
+ 50% { box-shadow: 0 0 30px currentColor; }
+}
+@keyframes pulse-fast {
+ 0%, 100% { box-shadow: 0 0 10px #ff3366; transform: scale(1); }
+ 50% { box-shadow: 0 0 40px #ff3366; transform: scale(1.1); }
+}
+@keyframes pulse-slow {
+ 0%, 100% { box-shadow: 0 0 20px #00ff88; }
+ 50% { box-shadow: 0 0 50px #00ff88; }
+}
+
+#menuToggle:hover {
+  transform: scale(1.1) rotate(5deg);
+}
+
+/* Sidebar con gradiente dinámico */
+#sidebar {
+  position: fixed;
+  left: -280px;
+  top: 0;
+  width: 280px;
+  height: 100vh;
+  background: linear-gradient(180deg, rgba(5,5,5,0.98) 0%, rgba(0,20,40,0.98) 100%);
+  border-right: 2px solid #00d4ff;
+  padding: 20px;
+  overflow-y: auto;
+  z-index: 999;
+  transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.5s;
+  backdrop-filter: blur(12px);
+}
+#sidebar.open {
+  left: 0;
+  box-shadow: 5px 0 40px rgba(0,212,255,0.4);
+}
+#sidebar.critical {
+  border-color: #ff3366;
+  box-shadow: 5px 0 40px rgba(255,51,102,0.6);
+}
+
+/* Overlay con blur */
+#overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  z-index: 998;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+#overlay.show {
+  opacity: 1;
+  pointer-events: all;
+}
+
+#main {
+  width: 100vw;
+  height: 100vh;
+}
+iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #000;
+}
+
+h1 {
+  color: #00d4ff;
+  font-size: 18px;
+  margin-bottom: 20px;
+  text-shadow: 0 0 15px #00d4ff;
+  padding-top: 60px;
+  letter-spacing: 1px;
+  transition: color 0.5s;
+}
+h1.critical {
+  color: #ff3366;
+  text-shadow: 0 0 15px #ff3366;
+}
+
+.menu-btn {
+  width: 100%;
+  padding: 14px;
+  margin: 7px 0;
+  background: linear-gradient(90deg, #111 0%, #1a1a1a 100%);
+  border: 1px solid #333;
+  color: #e0e0e0;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  text-align: left;
+  border-radius: 6px;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.menu-btn::before {
+  content: '';
+  position: absolute;
+  left: -100%;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0,212,255,0.3), transparent);
+  transition: left 0.5s;
+}
+.menu-btn:hover::before {
+  left: 100%;
+}
+.menu-btn:hover {
+  background: linear-gradient(90deg, #1a1a1a 0%, #222 100%);
+  border-color: #00d4ff;
+  transform: translateX(5px);
+}
+.menu-btn.active {
+  background: linear-gradient(90deg, #00d4ff 0%, #00aacc 100%);
+  color: #000;
+  font-weight: bold;
+  border-color: #00d4ff;
+  box-shadow: 0 0 20px #00d4ff;
+}
+.menu-btn.mute {
+  background: linear-gradient(90deg, #222 0%, #333 100%);
+  border-color: #666;
+  margin-top: 20px;
+}
+.menu-btn.mute.red {
+  background: linear-gradient(90deg, #ff3366 0%, #cc2255 100%);
+  color: #fff;
+  border-color: #ff3366;
+}
+
+.stats {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #333;
+  font-size: 11px;
+}
+.stat-line {
+  margin: 8px 0;
+  color: #888;
+  display: flex;
+  justify-content: space-between;
+}
+.stat-value {
+  color: #00d4ff;
+  font-weight: bold;
+  transition: color 0.5s;
+}
+.stat-value.critical {
+  color: #ff3366;
+  animation: blink 0.8s infinite;
+}
+@keyframes blink {
+ 50% { opacity: 0.4; }
+}
+
+/* Indicador de estado del sistema */
+#systemStatus {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 10px 15px;
+  background: rgba(0,0,0,0.8);
+  border: 1px solid #00d4ff;
+  border-radius: 20px;
+  font-size: 10px;
+  z-index: 997;
+  transition: all 0.5s;
+}
+#systemStatus.critical {
+  border-color: #ff3366;
+  color: #ff3366;
+  box-shadow: 0 0 20px #ff3366;
+  animation: blink 0.8s infinite;
+}
+
+@media (max-width: 600px) {
+  #sidebar { width: 85vw; left: -85vw; }
+  #menuToggle { top: 10px; left: 10px; width: 45px; height: 45px; font-size: 22px; }
+}
+</style>
+</head>
+<body>
+
+<div id="menuToggle" onclick="toggleMenu()">☰</div>
+<div id="overlay" onclick="toggleMenu()"></div>
+
+<div id="sidebar">
+  <div style="display:flex;gap:8px;margin-bottom:10px;font-size:11px">
+    <a href="../index.html" style="color:#00d4ff;text-decoration:none;border:1px solid #00d4ff;border-radius:6px;padding:4px 8px">← Laboratorio</a>
+    <a href="../../index.html" style="color:#888;text-decoration:none;border:1px solid #333;border-radius:6px;padding:4px 8px">Inicio</a>
+  </div>
+  <h1 id="titulo">ALMA-NEXUS Ω v6.1</h1>
+  <button class="menu-btn active" onclick="loadModule('bea.html', this)">1. BEA Fractal WebGL</button>
+  <button class="menu-btn" onclick="loadModule('bio.html', this)">2. BIO Células 3D</button>
+  <button class="menu-btn" onclick="loadModule('omega.html', this)">3. OMEGA Ciclo Total</button>
+  <button class="menu-btn" onclick="loadModule('gdcp.html', this)">4. GDCP Fractal Climático</button>
+  <button class="menu-btn" onclick="loadModule('consenso.html', this)">5. CONSENSO φ WebXR</button>
+  <button class="menu-btn" onclick="loadModule('autofagia.html', this)">6. G31 Autofagia</button>
+  <button class="menu-btn" onclick="loadModule('sik.html', this)">7. SIK Innovación HC</button>
+  <button class="menu-btn" onclick="loadModule('nexus.html', this)">8. NEXUS 10K Nodos</button>
+  
+  <button class="menu-btn mute" id="btnMute" onclick="toggleMute()">🔊 Sonido ON</button>
+  
+  <div class="stats">
+    <div class="stat-line">K_i Global: <span class="stat-value" id="ki-global">0.570</span></div>
+    <div class="stat-line">H(t): <span class="stat-value" id="ht-global">0.430</span></div>
+    <div class="stat-line">Ciclos: <span class="stat-value" id="ciclos">0</span></div>
+    <div class="stat-line">Nodos: <span class="stat-value" id="nodos-count">1</span></div>
+    <div class="stat-line">Estado: <span class="stat-value" id="estado-sistema">ESTABLE</span></div>
+  </div>
+</div>
+
+<div id="main">
+  <iframe id="frame" src="bea.html"></iframe>
+</div>
+
+<div id="systemStatus">SISTEMA NOMINAL</div>
+
+<script src="alma-shared.js"></script>
+<script>
+let menuOpen = false;
+let audioCtx = null;
+let ultimoEstado = 'alto';
+
+// FALLBACK SEGURO para ALMA
+function getALMA() {
+  return (window.ALMA && window.ALMA.K_i!== undefined)? window.ALMA : {
+    K_i: 0.570,
+    H_t: 0.430,
+    ciclos: 0,
+    nodos: [{ki: 0.570}]
+  };
+}
+
+function getAudio() {
+  return (window.ALMA_AUDIO && window.ALMA_AUDIO.enabled!== undefined)? window.ALMA_AUDIO : {enabled: true};
+}
+
+// Audio alertas
+function beep(freq = 500, dur = 0.1) {
+  if (!getAudio().enabled) return;
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = audioCtx.createOscillator();
+  osc.frequency.value = freq;
+  osc.connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + dur);
+}
+
+function toggleMute() {
+  const audio = getAudio();
+  const estado = audio.toggle? audio.toggle() : !audio.enabled;
+  const btn = document.getElementById('btnMute');
+  btn.textContent = estado ? '🔊 Sonido ON' : '🔇 Sonido OFF';
+  btn.classList.toggle('red', !estado);
+  beep(400, 0.1);
+}
+
+function toggleMenu() {
+  menuOpen = !menuOpen;
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('overlay');
+  const btn = document.getElementById('menuToggle');
+  
+  if (menuOpen) {
+    sidebar.classList.add('open');
+    overlay.classList.add('show');
+    btn.textContent = '✕';
+    beep(500, 0.08);
+  } else {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('show');
+    btn.textContent = '☰';
+    beep(400, 0.08);
+  }
+}
+
+function loadModule(file, btn) {
+  document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('frame').src = file;
+  beep(600, 0.05);
+  
+  if (window.innerWidth < 768) {
+    setTimeout(toggleMenu, 250);
+  }
+}
+
+// Actualización dinámica de colores + SONIDOS según K_i
+setInterval(() => {
+  const ALMA = getALMA();
+  const ki = ALMA.K_i;
+  const btn = document.getElementById('menuToggle');
+  const kiSpan = document.getElementById('ki-global');
+  const htSpan = document.getElementById('ht-global');
+  const ciclosSpan = document.getElementById('ciclos');
+  const estadoSpan = document.getElementById('estado-sistema');
+  const statusDiv = document.getElementById('systemStatus');
+  const sidebar = document.getElementById('sidebar');
+  const titulo = document.getElementById('titulo');
+  const body = document.body;
+  
+  kiSpan.textContent = ki.toFixed(3);
+  htSpan.textContent = ALMA.H_t.toFixed(3);
+  ciclosSpan.textContent = ALMA.ciclos;
+  document.getElementById('nodos-count').textContent = ALMA.nodos.length;
+  
+  // Inicializar botón mute
+  const audio = getAudio();
+  document.getElementById('btnMute').textContent = audio.enabled ? '🔊 Sonido ON' : '🔇 Sonido OFF';
+  document.getElementById('btnMute').classList.toggle('red', !audio.enabled);
+  
+  // Cambiar color del botón según K_i + SONIDOS
+  btn.classList.remove('ki-bajo', 'ki-medio', 'ki-alto');
+  body.classList.remove('critical');
+  sidebar.classList.remove('critical');
+  titulo.classList.remove('critical');
+  
+  if (ki < 0.3) {
+    btn.classList.add('ki-bajo');
+    kiSpan.classList.add('critical');
+    estadoSpan.textContent = 'CRITICO';
+    estadoSpan.classList.add('critical');
+    statusDiv.textContent = 'AUTOFAGIA ACTIVA';
+    statusDiv.classList.add('critical');
+    body.classList.add('critical');
+    sidebar.classList.add('critical');
+    titulo.classList.add('critical');
+    document.body.style.background = '#0a0005';
+    
+    if (ultimoEstado !== 'bajo') {
+      beep(200, 0.4);
+      ultimoEstado = 'bajo';
+    }
+  } else if (ki < 0.55) {
+    btn.classList.add('ki-medio');
+    kiSpan.classList.remove('critical');
+    estadoSpan.textContent = 'DEGRADADO';
+    estadoSpan.classList.remove('critical');
+    statusDiv.textContent = 'SISTEMA DEGRADADO';
+    statusDiv.classList.remove('critical');
+    document.body.style.background = '#0a0500';
+    
+    if (ultimoEstado === 'alto') {
+      beep(350, 0.25);
+      ultimoEstado = 'medio';
+    }
+  } else {
+    btn.classList.add('ki-alto');
+    kiSpan.classList.remove('critical');
+    estadoSpan.textContent = 'ESTABLE';
+    estadoSpan.classList.remove('critical');
+    statusDiv.textContent = 'SISTEMA NOMINAL';
+    statusDiv.classList.remove('critical');
+    document.body.style.background = '#000';
+    
+    if (ultimoEstado !== 'alto') {
+      beep(700, 0.2);
+      ultimoEstado = 'alto';
+    }
+  }
+}, 100);
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && menuOpen) toggleMenu();
+});
+</script>
+</body>
+</html>

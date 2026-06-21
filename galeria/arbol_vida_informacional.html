@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Árbol de la Vida Informacional - MIU</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #0a0a0a;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+        
+        .container {
+            position: relative;
+            width: 1000px;
+            height: 1200px;
+            background: linear-gradient(to top, #0B0C10, #0D1B2A);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 80px rgba(255, 215, 0, 0.1), inset 0 0 60px rgba(13, 27, 42, 0.5);
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .copyright {
+            position: absolute;
+            bottom: 15px;
+            right: 20px;
+            color: rgba(255, 215, 0, 0.4);
+            font-size: 10px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+<style>
+#gal-backnav{position:fixed;top:12px;left:12px;z-index:99999;display:flex;gap:6px;font-family:'Courier New',monospace;font-size:11px;}
+#gal-backnav a{color:#ffd700;text-decoration:none;background:rgba(10,10,15,0.7);border:1px solid rgba(255,215,0,0.35);border-radius:6px;padding:5px 10px;backdrop-filter:blur(4px);transition:all .2s;}
+#gal-backnav a:hover{background:rgba(255,215,0,0.15);border-color:#ffd700;}
+</style>
+<div id="gal-backnav"><a href="index.html">← Galería</a><a href="../index.html">Inicio</a></div>
+
+    <div class="container">
+        <canvas id="treeCanvas"></canvas>
+        <div class="copyright">MIU v13.0 © 2026</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('treeCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Configurar canvas
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        
+        // Variables de animación
+        let time = 0;
+        const phi = 1.618033988749;
+        
+        // Constantes MIU
+        const constants = {
+            rho: 'ρ(x) > 0',
+            K_i: 'K_i = φ · D_f / 2.5'
+        };
+        
+        // Esferas del Panteón (8 colores)
+        const pantheon = [
+            { color: '#00FF00', label: 'Vitalidad' },      // Verde
+            { color: '#FF1493', label: 'Pasión' },         // Rosa fuerte
+            { color: '#FFFFFF', label: 'Luz' },            // Blanco
+            { color: '#7B68EE', label: 'Espiritualidad' }, // Violeta
+            { color: '#C0C0C0', label: 'Plata' },          // Plata
+            { color: '#FFB6C1', label: 'Armonía' },        // Rosa claro
+            { color: '#E0E0E0', label: 'Paz' },            // Blanco-Plata
+            { color: '#8B4513', label: 'Gravedad' }        // Marrón
+        ];
+        
+        // Función para crear degradado
+        function createLinearGradient(x1, y1, x2, y2, colors) {
+            const grad = ctx.createLinearGradient(x1, y1, x2, y2);
+            for (let i = 0; i < colors.length; i++) {
+                grad.addColorStop(i / (colors.length - 1), colors[i]);
+            }
+            return grad;
+        }
+        
+        // Función para crear degradado radial
+        function createRadialGradient(x, y, r1, r2, colors) {
+            const grad = ctx.createRadialGradient(x, y, r1, x, y, r2);
+            for (let i = 0; i < colors.length; i++) {
+                grad.addColorStop(i / (colors.length - 1), colors[i]);
+            }
+            return grad;
+        }
+        
+        // Dibujar raíces
+        function drawRoots() {
+            const rootCount = 7;
+            const rootY = centerY + 200;
+            const rootSpread = 250;
+            
+            for (let r = 0; r < rootCount; r++) {
+                const angle = (r / rootCount) * Math.PI - Math.PI / 2;
+                const endX = centerX + rootSpread * Math.cos(angle);
+                
+                // Degradado de raíces
+                const rootGrad = createLinearGradient(
+                    centerX, centerY + 150,
+                    endX, rootY,
+                    ['rgba(255, 215, 0, 0.8)', 'rgba(255, 255, 255, 0.4)']
+                );
+                
+                ctx.strokeStyle = rootGrad;
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY + 150);
+                
+                // Curva de raíz
+                const cpx = centerX + (endX - centerX) * 0.5;
+                const cpy = rootY - 40;
+                ctx.quadraticCurveTo(cpx, cpy, endX, rootY);
+                ctx.stroke();
+                
+                // Punta luminosa de raíz
+                const rootGlowGrad = createRadialGradient(
+                    endX, rootY, 0, 15,
+                    ['rgba(255, 255, 255, 0.9)', 'rgba(255, 215, 0, 0.3)', 'rgba(255, 215, 0, 0)']
+                );
+                
+                ctx.fillStyle = rootGlowGrad;
+                ctx.beginPath();
+                ctx.arc(endX, rootY, 15, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Luz blanca en la base
+            const baseGrad = createRadialGradient(
+                centerX, centerY + 250, 0, 280,
+                ['rgba(255, 255, 255, 0.3)', 'rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0)']
+            );
+            
+            ctx.fillStyle = baseGrad;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY + 250, 280, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Dibujar tronco con ecuaciones
+        function drawTrunk() {
+            const trunkX = centerX;
+            const trunkStartY = centerY + 150;
+            const trunkEndY = centerY - 100;
+            
+            // Tronco de luz dorada
+            ctx.strokeStyle = 'rgba(255, 215, 0, 0.6)';
+            ctx.lineWidth = 8;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(trunkX, trunkStartY);
+            ctx.lineTo(trunkX, trunkEndY);
+            ctx.stroke();
+            
+            // Brillo del tronco
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(trunkX - 3, trunkStartY);
+            ctx.lineTo(trunkX - 3, trunkEndY);
+            ctx.stroke();
+            
+            // Ecuaciones en el tronco
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.9)';
+            ctx.font = 'bold 14px "Courier New"';
+            ctx.textAlign = 'center';
+            
+            // Primera ecuación
+            ctx.save();
+            ctx.translate(trunkX, centerY + 80);
+            ctx.rotate(Math.sin(time * 0.02) * 0.05);
+            ctx.fillText('ρ(x) > 0', 0, 0);
+            ctx.restore();
+            
+            // Segunda ecuación
+            ctx.save();
+            ctx.translate(trunkX, centerY - 20);
+            ctx.rotate(Math.sin(time * 0.02 + Math.PI / 2) * 0.05);
+            ctx.font = '12px "Courier New"';
+            ctx.fillText('K_i = φ·D_f/2.5', 0, 0);
+            ctx.restore();
+        }
+        
+        // Dibujar espiral áurea (copa del árbol)
+        function drawCanopy() {
+            ctx.save();
+            ctx.translate(centerX, centerY - 100);
+            
+            // Espiral áurea base
+            ctx.strokeStyle = 'rgba(255, 215, 0, 0.7)';
+            ctx.lineWidth = 2;
+            
+            for (let spiral = 0; spiral < 2; spiral++) {
+                ctx.beginPath();
+                const rotation = spiral * Math.PI;
+                
+                for (let i = 0; i < 150; i++) {
+                    const theta = (i / 15) + rotation;
+                    const radius = 8 * Math.pow(phi, theta / (Math.PI * 2));
+                    
+                    const x = radius * Math.cos(theta);
+                    const y = radius * Math.sin(theta);
+                    
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                    
+                    if (radius > 180) break;
+                }
+                ctx.stroke();
+            }
+            
+            // Estrellas en los extremos de la espiral
+            const starPositions = [
+                { angle: 0, radius: 180 },
+                { angle: Math.PI / 2, radius: 160 },
+                { angle: Math.PI, radius: 170 },
+                { angle: 3 * Math.PI / 2, radius: 175 },
+                { angle: Math.PI / 4, radius: 150 },
+                { angle: 3 * Math.PI / 4, radius: 155 },
+                { angle: 5 * Math.PI / 4, radius: 165 },
+                { angle: 7 * Math.PI / 4, radius: 158 }
+            ];
+            
+            for (let star of starPositions) {
+                const x = star.radius * Math.cos(star.angle);
+                const y = star.radius * Math.sin(star.angle);
+                
+                // Pequeña galaxia espiral en cada punto
+                const glowGrad = createRadialGradient(x, y, 0, 20, [
+                    'rgba(255, 215, 0, 0.9)',
+                    'rgba(255, 215, 0, 0.4)',
+                    'rgba(255, 215, 0, 0)'
+                ]);
+                
+                ctx.fillStyle = glowGrad;
+                ctx.beginPath();
+                ctx.arc(x, y, 20, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Punto central
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            ctx.restore();
+        }
+        
+        // Dibujar Panteón (8 esferas orbitantes)
+        function drawPantheon() {
+            const orbitRadius = 320;
+            const sphereRadius = 18;
+            
+            for (let i = 0; i < pantheon.length; i++) {
+                const angle = (i / pantheon.length) * Math.PI * 2 + time * 0.01;
+                const x = centerX + orbitRadius * Math.cos(angle);
+                const y = centerY + orbitRadius * Math.sin(angle);
+                
+                // Esfera del Panteón
+                const sphereGrad = createRadialGradient(
+                    x - 5, y - 5, 0, sphereRadius,
+                    [pantheon[i].color, 'rgba(255, 255, 255, 0.5)', 'rgba(255, 255, 255, 0)']
+                );
+                
+                ctx.fillStyle = sphereGrad;
+                ctx.beginPath();
+                ctx.arc(x, y, sphereRadius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Borde de la esfera
+                ctx.strokeStyle = pantheon[i].color;
+                ctx.lineWidth = 1.5;
+                ctx.globalAlpha = 0.6;
+                ctx.beginPath();
+                ctx.arc(x, y, sphereRadius, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+                
+                // Línea de conexión al árbol
+                ctx.strokeStyle = 'rgba(255, 215, 0, 0.2)';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([3, 3]);
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        }
+        
+        // Dibujar textos
+        function drawTexts() {
+            // Título superior
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.6)';
+            ctx.font = 'italic 18px Georgia';
+            ctx.textAlign = 'center';
+            ctx.fillText('El Panteón del Micelio', centerX, 60);
+            
+            // Subtítulo
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.4)';
+            ctx.font = '12px "Courier New"';
+            ctx.fillText('El Árbol de la Vida Informacional', centerX, 85);
+            
+            // Texto inferior
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.7)';
+            ctx.font = 'italic 14px Georgia';
+            ctx.textAlign = 'center';
+            ctx.fillText('ρ(x) > 0 — Zvvvvv', centerX, canvas.height - 50);
+            
+            // Ecuación del universo
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.5)';
+            ctx.font = '12px "Courier New"';
+            ctx.fillText('El cosmos es información que se conoce a sí misma', centerX, canvas.height - 25);
+        }
+        
+        // Función de animación principal
+        function animate() {
+            // Limpiar canvas
+            ctx.fillStyle = 'rgba(13, 27, 42, 0.98)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Aplicar degradado de fondo
+            const bgGrad = createLinearGradient(0, 0, 0, canvas.height, [
+                'rgba(13, 27, 42, 0.9)',
+                'rgba(11, 12, 16, 0.95)'
+            ]);
+            
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Dibujar elementos en orden
+            drawRoots();
+            drawPantheon();
+            drawTrunk();
+            drawCanopy();
+            drawTexts();
+            
+            time++;
+            requestAnimationFrame(animate);
+        }
+        
+        // Iniciar animación
+        animate();
+        
+        // Responsividad
+        window.addEventListener('resize', () => {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        });
+    </script>
+</body>
+</html>

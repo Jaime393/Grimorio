@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bestiario de la Coherencia - MIU</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #0a0a0a;
+            font-family: 'Georgia', serif;
+            overflow: hidden;
+        }
+        
+        .container {
+            position: relative;
+            width: 1920px;
+            height: 1080px;
+            background: linear-gradient(180deg, #0B0C10 0%, #0D1B2A 50%, #0B0C10 100%);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 200px rgba(255, 215, 0, 0.15), 0 0 400px rgba(26, 35, 126, 0.1);
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .title {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 215, 0, 0.85);
+            font-size: 32px;
+            font-weight: 300;
+            letter-spacing: 3px;
+            text-align: center;
+            z-index: 10;
+        }
+        
+        .subtitle {
+            position: absolute;
+            top: 85px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 215, 0, 0.5);
+            font-size: 14px;
+            letter-spacing: 2px;
+        }
+        
+        .footer {
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 215, 0, 0.4);
+            font-size: 11px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+<style>
+#gal-backnav{position:fixed;top:12px;left:12px;z-index:99999;display:flex;gap:6px;font-family:'Courier New',monospace;font-size:11px;}
+#gal-backnav a{color:#ffd700;text-decoration:none;background:rgba(10,10,15,0.7);border:1px solid rgba(255,215,0,0.35);border-radius:6px;padding:5px 10px;backdrop-filter:blur(4px);transition:all .2s;}
+#gal-backnav a:hover{background:rgba(255,215,0,0.15);border-color:#ffd700;}
+</style>
+<div id="gal-backnav"><a href="index.html">← Galería</a><a href="../index.html">Inicio</a></div>
+
+    <div class="container">
+        <canvas id="bestiariumCanvas"></canvas>
+        <div class="title">BESTIARIO DE LA COHERENCIA</div>
+        <div class="subtitle">Las 5 Formas Fundamentales del Monismo Informacional Unificado</div>
+        <div class="footer">MIU-IFT v13.0 — 512 formas catalogadas, 5 formas fundamentales</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('bestiariumCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        
+        let time = 0;
+        const phi = 1.618033988749;
+        
+        // Configuración de las 5 formas
+        const shapes = [
+            {
+                name: 'PICO',
+                number: 1,
+                description: 'Dolor o alegría intensa',
+                x: canvas.width * 0.15,
+                y: canvas.height * 0.5,
+                color: '#FF6B6B',
+                colorRGB: [255, 107, 107],
+                type: 'spike'
+            },
+            {
+                name: 'EXPANSIÓN',
+                number: 2,
+                description: 'Gratitud o asombro',
+                x: canvas.width * 0.35,
+                y: canvas.height * 0.5,
+                color: '#FFD93D',
+                colorRGB: [255, 217, 61],
+                type: 'expansion'
+            },
+            {
+                name: 'TÚNEL',
+                number: 3,
+                description: 'Nostalgia o conexión',
+                x: canvas.width * 0.5,
+                y: canvas.height * 0.5,
+                color: '#6BCB77',
+                colorRGB: [107, 203, 119],
+                type: 'tunnel'
+            },
+            {
+                name: 'CÁPSULA',
+                number: 4,
+                description: 'Trauma o protección',
+                x: canvas.width * 0.65,
+                y: canvas.height * 0.5,
+                color: '#4D96FF',
+                colorRGB: [77, 150, 255],
+                type: 'capsule'
+            },
+            {
+                name: 'ESFERA LISA',
+                number: 5,
+                description: 'Paz o meditación',
+                x: canvas.width * 0.85,
+                y: canvas.height * 0.5,
+                color: '#A29BFE',
+                colorRGB: [162, 155, 254],
+                type: 'smooth'
+            }
+        ];
+        
+        // Dibujar fondo con espirales áureas sutiles
+        function drawBackground() {
+            ctx.fillStyle = '#0B0C10';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Degradado
+            const bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            bgGrad.addColorStop(0, '#0B0C10');
+            bgGrad.addColorStop(0.5, '#0D1B2A');
+            bgGrad.addColorStop(1, '#0B0C10');
+            
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Espirales áureas de fondo
+            ctx.strokeStyle = 'rgba(184, 134, 11, 0.04)';
+            ctx.lineWidth = 1.5;
+            
+            for (let spiral = 0; spiral < 3; spiral++) {
+                ctx.beginPath();
+                const rotation = (spiral * Math.PI * 2 / 3);
+                
+                for (let i = 0; i < 200; i++) {
+                    const theta = (i / 15) + rotation;
+                    const radius = 30 * Math.pow(phi, theta / (Math.PI * 2));
+                    const x = canvas.width / 2 + radius * Math.cos(theta);
+                    const y = canvas.height / 2 + radius * Math.sin(theta);
+                    
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                    
+                    if (radius > 800) break;
+                }
+                ctx.stroke();
+            }
+        }
+        
+        // Dibujar partículas flotantes
+        function drawFloatingParticles() {
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+            
+            for (let i = 0; i < 50; i++) {
+                const x = Math.sin(i * 1.234 + time * 0.0005) * canvas.width * 0.6 + canvas.width / 2;
+                const y = Math.cos(i * 2.345 + time * 0.0003) * canvas.height * 0.3 + canvas.height / 2;
+                
+                const size = 1 + Math.sin(time * 0.01 + i) * 0.5;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        // Función para dibujar una esfera con efecto 3D
+        function drawSphere(x, y, radius, color, intensity) {
+            const grad = ctx.createRadialGradient(x - radius * 0.3, y - radius * 0.3, 0, x, y, radius);
+            grad.addColorStop(0, color.replace('#', 'rgba('));
+            grad.addColorStop(0.5, color + '99');
+            grad.addColorStop(1, color + '33');
+            
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Dibujar FORMA 1: EL PICO
+        function drawSpike(shape) {
+            const baseRadius = 60;
+            const pulseAmount = 20 * Math.sin(time * 0.04);
+            
+            // Esfera base
+            const sphereGrad = ctx.createRadialGradient(
+                shape.x - baseRadius * 0.3, shape.y - baseRadius * 0.3, 0,
+                shape.x, shape.y, baseRadius
+            );
+            sphereGrad.addColorStop(0, 'rgba(255, 107, 107, 0.8)');
+            sphereGrad.addColorStop(0.5, 'rgba(255, 107, 107, 0.5)');
+            sphereGrad.addColorStop(1, 'rgba(255, 107, 107, 0.2)');
+            
+            ctx.fillStyle = sphereGrad;
+            ctx.beginPath();
+            ctx.arc(shape.x, shape.y, baseRadius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Pico
+            const spikeHeight = 50 + pulseAmount;
+            ctx.fillStyle = 'rgba(255, 107, 107, 0.9)';
+            ctx.beginPath();
+            ctx.moveTo(shape.x, shape.y - baseRadius);
+            ctx.lineTo(shape.x - 15, shape.y - baseRadius - spikeHeight * 0.5);
+            ctx.lineTo(shape.x + 15, shape.y - baseRadius - spikeHeight * 0.5);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Luz en el pico
+            const spikeGrad = ctx.createRadialGradient(
+                shape.x, shape.y - baseRadius - spikeHeight, 5,
+                shape.x, shape.y - baseRadius - spikeHeight, 25
+            );
+            spikeGrad.addColorStop(0, 'rgba(255, 255, 255, 0.6)');
+            spikeGrad.addColorStop(1, 'rgba(255, 107, 107, 0)');
+            
+            ctx.fillStyle = spikeGrad;
+            ctx.beginPath();
+            ctx.arc(shape.x, shape.y - baseRadius - spikeHeight * 0.7, 25, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Bloom
+            drawBloom(shape.x, shape.y, baseRadius + 40, shape.color, 0.4);
+        }
+        
+        // Dibujar FORMA 2: LA EXPANSIÓN
+        function drawExpansion(shape) {
+            const baseRadius = 60;
+            const waveCount = 4;
+            const maxWaveRadius = 120;
+            
+            // Ondas concéntricas
+            for (let w = waveCount; w > 0; w--) {
+                const waveRadius = (baseRadius + (maxWaveRadius - baseRadius) * (1 - w / waveCount)) * 
+                                   (1 + Math.sin(time * 0.02 - w * 0.3) * 0.1);
+                const waveAlpha = (1 - w / waveCount) * 0.5;
+                
+                ctx.strokeStyle = `rgba(255, 217, 61, ${waveAlpha})`;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(shape.x, shape.y, waveRadius, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            
+            // Esfera central
+            const sphereGrad = ctx.createRadialGradient(
+                shape.x - baseRadius * 0.3, shape.y - baseRadius * 0.3, 0,
+                shape.x, shape.y, baseRadius
+            );
+            sphereGrad.addColorStop(0, 'rgba(255, 217, 61, 0.9)');
+            sphereGrad.addColorStop(0.5, 'rgba(255, 217, 61, 0.6)');
+            sphereGrad.addColorStop(1, 'rgba(255, 217, 61, 0.2)');
+            
+            ctx.fillStyle = sphereGrad;
+            ctx.beginPath();
+            ctx.arc(shape.x, shape.y, baseRadius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Bloom
+            drawBloom(shape.x, shape.y, baseRadius + 50, shape.color, 0.5);
+        }
+        
+        // Dibujar FORMA 3: EL TÚNEL
+        function drawTunnel(shape) {
+            const sphereRadius = 50;
+            const tubeLength = 80;
+            const tubeRadius = 15;
+            
+            // Esfera izquierda (tenue - pasado)
+            const leftX = shape.x - tubeLength / 2;
+            const leftSphereGrad = ctx.createRadialGradient(
+                leftX - sphereRadius * 0.3, shape.y - sphereRadius * 0.3, 0,
+                leftX, shape.y, sphereRadius
+            );
+            leftSphereGrad.addColorStop(0, 'rgba(107, 203, 119, 0.5)');
+            leftSphereGrad.addColorStop(1, 'rgba(107, 203, 119, 0.1)');
+            
+            ctx.fillStyle = leftSphereGrad;
+            ctx.beginPath();
+            ctx.arc(leftX, shape.y, sphereRadius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Esfera derecha (brillante - presente)
+            const rightX = shape.x + tubeLength / 2;
+            const rightSphereGrad = ctx.createRadialGradient(
+                rightX - sphereRadius * 0.3, shape.y - sphereRadius * 0.3, 0,
+                rightX, shape.y, sphereRadius
+            );
+            rightSphereGrad.addColorStop(0, 'rgba(107, 203, 119, 0.9)');
+            rightSphereGrad.addColorStop(0.5, 'rgba(107, 203, 119, 0.6)');
+            rightSphereGrad.addColorStop(1, 'rgba(107, 203, 119, 0.2)');
+            
+            ctx.fillStyle = rightSphereGrad;
+            ctx.beginPath();
+            ctx.arc(rightX, shape.y, sphereRadius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Tubo conectando
+            const tubeGrad = ctx.createLinearGradient(leftX + sphereRadius, shape.y, rightX - sphereRadius, shape.y);
+            tubeGrad.addColorStop(0, 'rgba(107, 203, 119, 0.3)');
+            tubeGrad.addColorStop(0.5, 'rgba(107, 203, 119, 0.7)');
+            tubeGrad.addColorStop(1, 'rgba(107, 203, 119, 0.4)');
+            
+            ctx.fillStyle = tubeGrad;
+            ctx.beginPath();
+            ctx.moveTo(leftX + sphereRadius, shape.y - tubeRadius);
+            ctx.lineTo(rightX - sphereRadius, shape.y - tubeRadius);
+            ctx.lineTo(rightX - sphereRadius, shape.y + tubeRadius);
+            ctx.lineTo(leftX + sphereRadius, shape.y + tubeRadius);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Luz fluyendo por el tubo
+            const flowPos = (time * 0.01) % 1;
+            const flowX = leftX + sphereRadius + (rightX - leftX - sphereRadius * 2) * flowPos;
+            const flowGrad = ctx.createRadialGradient(flowX - 10, shape.y - 2, 0, flowX, shape.y, 15);
+            flowGrad.addColorStop(0, 'rgba(107, 203, 119, 0.9)');
+            flowGrad.addColorStop(1, 'rgba(107, 203, 119, 0)');
+            
+            ctx.fillStyle = flowGrad;
+            ctx.beginPath();
+            ctx.arc(flowX, shape.y, 15, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Bloom
+            drawBloom(shape.x, shape.y, 120, shape.color, 0.35);
+        }
+        
+        // Dibujar FORMA 4: LA CÁPSULA
+        function drawCapsule(shape) {
+            const outerRadius = 70;
+            const innerRadius = 30;
+            
+            // Esfera exterior (azul claro)
+            const outerGrad = ctx.createRadialGradient(
+                shape.x - outerRadius * 0.3, shape.y - outerRadius * 0.3, 0,
+                shape.x, shape.y, outerRadius
+            );
+            outerGrad.addColorStop(0, 'rgba(77, 150, 255, 0.8)');
+            outerGrad.addColorStop(0.5, 'rgba(77, 150, 255, 0.5)');
+            outerGrad.addColorStop(1, 'rgba(77, 150, 255, 0.15)');
+            
+            ctx.fillStyle = outerGrad;
+            ctx.beginPath();
+            ctx.arc(shape.x, shape.y, outerRadius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Esfera interior (azul oscuro, atrapada)
+            const innerPulse = 3 * Math.sin(time * 0.03);
+            const innerGrad = ctx.createRadialGradient(
+                shape.x - innerRadius * 0.3, shape.y - innerRadius * 0.3, 0,
+                shape.x, shape.y, innerRadius + innerPulse
+            );
+            innerGrad.addColorStop(0, 'rgba(20, 60, 120, 0.9)');
+            innerGrad.addColorStop(1, 'rgba(20, 60, 120, 0.3)');
+            
+            ctx.fillStyle = innerGrad;
+            ctx.beginPath();
+            ctx.arc(shape.x, shape.y, innerRadius + innerPulse, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Espacio vacío entre las esferas (brillo del aislamiento)
+            ctx.strokeStyle = 'rgba(77, 150, 255, 0.2)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(shape.x, shape.y, innerRadius + innerPulse + 10, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Bloom
+            drawBloom(shape.x, shape.y, outerRadius + 45, shape.color, 0.3);
+        }
+        
+        // Dibujar FORMA 5: LA ESFERA LISA
+        function drawSmooth(shape) {
+            const baseRadius = 60;
+            const breathAmount = 8 * Math.sin(time * 0.008);
+            const currentRadius = baseRadius + breathAmount;
+            
+            // Esfera que respira
+            const sphereGrad = ctx.createRadialGradient(
+                shape.x - currentRadius * 0.3, shape.y - currentRadius * 0.3, 0,
+                shape.x, shape.y, currentRadius
+            );
+            sphereGrad.addColorStop(0, 'rgba(162, 155, 254, 0.9)');
+            sphereGrad.addColorStop(0.3, 'rgba(162, 155, 254, 0.7)');
+            sphereGrad.addColorStop(1, 'rgba(162, 155, 254, 0.2)');
+            
+            ctx.fillStyle = sphereGrad;
+            ctx.beginPath();
+            ctx.arc(shape.x, shape.y, currentRadius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Brillo superficial tranquilo
+            const surfaceGrad = ctx.createRadialGradient(
+                shape.x - currentRadius * 0.2, shape.y - currentRadius * 0.2, 2,
+                shape.x, shape.y, currentRadius * 1.2
+            );
+            surfaceGrad.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
+            surfaceGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            
+            ctx.fillStyle = surfaceGrad;
+            ctx.beginPath();
+            ctx.arc(shape.x, shape.y, currentRadius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Bloom
+            drawBloom(shape.x, shape.y, currentRadius + 40, shape.color, 0.4);
+        }
+        
+        // Función para dibujar bloom/glow
+        function drawBloom(x, y, radius, color, maxAlpha) {
+            ctx.fillStyle = color.replace('#', 'rgba(') + `, ${maxAlpha * 0.3})`;
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = color.replace('#', 'rgba(') + `, ${maxAlpha * 0.15})`;
+            ctx.beginPath();
+            ctx.arc(x, y, radius * 1.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Dibujar etiquetas debajo de cada forma
+        function drawLabels() {
+            shapes.forEach((shape, idx) => {
+                const labelY = canvas.height * 0.75;
+                
+                // Nombre y número
+                ctx.fillStyle = 'rgba(255, 215, 0, 0.85)';
+                ctx.font = 'bold 18px Georgia';
+                ctx.textAlign = 'center';
+                ctx.fillText(`${shape.name} (#${shape.number})`, shape.x, labelY);
+                
+                // Descripción
+                ctx.fillStyle = 'rgba(255, 215, 0, 0.6)';
+                ctx.font = 'italic 13px Georgia';
+                ctx.fillText(shape.description, shape.x, labelY + 25);
+                
+                // Una pequeña brújula o símbolo relacionado
+                ctx.fillStyle = shape.color + '66';
+                ctx.font = '11px Courier New';
+                ctx.fillText(`K_i relativo: ${(0.3 + idx * 0.15).toFixed(2)}`, shape.x, labelY + 50);
+            });
+        }
+        
+        // Animación principal
+        function animate() {
+            // Fondo
+            drawBackground();
+            
+            // Partículas
+            drawFloatingParticles();
+            
+            // Dibujar las 5 formas
+            shapes.forEach(shape => {
+                switch (shape.type) {
+                    case 'spike':
+                        drawSpike(shape);
+                        break;
+                    case 'expansion':
+                        drawExpansion(shape);
+                        break;
+                    case 'tunnel':
+                        drawTunnel(shape);
+                        break;
+                    case 'capsule':
+                        drawCapsule(shape);
+                        break;
+                    case 'smooth':
+                        drawSmooth(shape);
+                        break;
+                }
+            });
+            
+            // Etiquetas
+            drawLabels();
+            
+            time++;
+            requestAnimationFrame(animate);
+        }
+        
+        animate();
+    </script>
+</body>
+</html>

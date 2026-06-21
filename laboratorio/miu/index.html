@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="MIU Laboratorio — 15 herramientas de cálculo, simulación y prueba de la Ley Kᵢ de coherencia fractal.">
+<title>MIU Laboratorio — Herramientas de Coherencia Fractal</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#070B14;--bg2:#0D1524;--bg3:#162036;
+  --text:#E8EDF5;--text2:#8B9DC3;--text3:#3A4A6A;
+  --phi:#A78BFA;
+  --sans:-apple-system,'Segoe UI','Helvetica Neue',Arial,sans-serif;
+  --mono:'Courier New',Consolas,monospace;
+}
+@media(prefers-color-scheme:light){
+  :root{--bg:#F0F4FF;--bg2:#FFFFFF;--bg3:#E2E8F8;--text:#0D1524;--text2:#3A4A6A;--text3:#8B9DC3;}
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+.wrap{max-width:980px;margin:0 auto;padding:0 1.25rem}
+.topnav{display:flex;justify-content:space-between;align-items:center;padding:1.1rem 0;font-size:.78rem}
+.topnav a{color:var(--text2);text-decoration:none}
+.topnav a:hover{color:var(--phi)}
+.hero{text-align:center;padding:2.5rem 1rem 3rem;position:relative}
+.hero-phi{font-size:5rem;font-family:var(--mono);font-weight:200;color:var(--phi);display:block;line-height:1;margin-bottom:1.2rem;animation:pulse 4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.9;text-shadow:0 0 40px rgba(167,139,250,.4)}50%{opacity:.4;text-shadow:0 0 80px rgba(167,139,250,.8)}}
+.hero h1{font-size:clamp(1.8rem,5.5vw,2.8rem);font-weight:700;letter-spacing:-.03em;margin-bottom:.4rem}
+.hero-tagline{font-size:.78rem;letter-spacing:.18em;color:var(--phi);text-transform:uppercase;margin-bottom:1.2rem;font-weight:600}
+.hero-intro{color:var(--text2);max-width:600px;margin:0 auto 1.2rem;font-size:.95rem}
+.hero-note{font-size:.75rem;color:var(--text3);max-width:560px;margin:0 auto}
+.section-title{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);margin:2.5rem 0 1rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1.1rem;padding-bottom:1rem}
+.card{display:block;text-decoration:none;color:inherit;background:var(--bg2);border-radius:14px;padding:1.4rem;border:1px solid var(--bg3);border-top:3px solid var(--c,#A78BFA);transition:all .25s ease;position:relative;overflow:hidden}
+.card:hover{border-color:var(--c);transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.3)}
+.card-icon{font-size:1.8rem;margin-bottom:.6rem}
+.card-domain{font-size:.62rem;letter-spacing:.13em;text-transform:uppercase;color:var(--c,#A78BFA);margin-bottom:.4rem;font-weight:700}
+.card-name{font-size:1.05rem;font-weight:700;margin-bottom:.3rem;letter-spacing:-.01em}
+.card-desc{font-size:.8rem;color:var(--text2);line-height:1.5;margin-bottom:.9rem}
+.card-cta{font-size:.74rem;font-weight:700;letter-spacing:.05em;color:var(--c,#A78BFA)}
+.utility-row{display:flex;gap:.8rem;flex-wrap:wrap;margin-bottom:1rem}
+.utility-row a{font-size:.78rem;color:var(--text2);text-decoration:none;background:var(--bg2);border:1px solid var(--bg3);padding:.5rem .9rem;border-radius:8px}
+.utility-row a:hover{border-color:var(--phi);color:var(--phi)}
+footer{border-top:1px solid var(--bg3);padding:1.4rem 0;text-align:center;color:var(--text3);font-size:.72rem;font-family:var(--mono);letter-spacing:.04em;margin-top:2rem;margin-bottom:2rem}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="topnav">
+    <a href="../index.html">← Laboratorio</a>
+    <a href="../../index.html">Inicio del Grimorio</a>
+  </nav>
+
+  <section class="hero">
+    <span class="hero-phi" aria-hidden="true">φ</span>
+    <h1>MIU Laboratorio</h1>
+    <p class="hero-tagline">Cálculo · Simulación · Prueba de Teoremas</p>
+    <p class="hero-intro">Quince instrumentos independientes para explorar la Ley Kᵢ desde ángulos distintos: calculadoras de texto, redes, biología, mente, oráculos, un visor 3D multiescala, un probador de teoremas y utilidades de exportación.</p>
+    <p class="hero-note">Cada herramienta es autocontenida y funciona sin conexión. Antes vivían repartidas en dos portales con enlaces rotos; luego se unieron en este índice, pero 14 de ellas seguían siendo callejones sin salida una vez abiertas. Ahora cada herramienta lleva su propio camino de vuelta — a este índice y al Grimorio.</p>
+  </section>
+
+  <h2 class="section-title">Calculadoras de coherencia</h2>
+  <div class="grid">
+    <a href="miu_espora.html" class="card" style="--c:#22C55E">
+      <div class="card-icon">🌱</div>
+      <div class="card-domain">Texto</div>
+      <h3 class="card-name">MIU Espora</h3>
+      <p class="card-desc">Analiza cualquier texto y devuelve Kᵢ, dimensión fractal, entropía, sombra y probabilidad de prueba G31.</p>
+      <div class="card-cta">Abrir →</div>
+    </a>
+    <a href="miu_bio.html" class="card" style="--c:#10B981">
+      <div class="card-icon">🧬</div>
+      <div class="card-domain">Biología</div>
+      <h3 class="card-name">MIU Bio</h3>
+      <p class="card-desc">Coherencia fractal aplicada a sistemas vivos: analiza patrones biológicos y referencias asociadas.</p>
+      <div class="card-cta">Abrir →</div>
+    </a>
+    <a href="miu_mente.html" class="card" style="--c:#A78BFA">
+      <div class="card-icon">🧠</div>
+      <div class="card-domain">Cognición</div>
+      <h3 class="card-name">MIU Mente</h3>
+      <p class="card-desc">Test de coherencia cognitiva: responde y obtén tu Kᵢ mental al instante.</p>
+      <div class="card-cta">Abrir →</div>
+    </a>
+    <a href="miu_lab.html" class="card" style="--c:#F59E0B">
+      <div class="card-icon">🌌</div>
+      <div class="card-domain">Laboratorio</div>
+      <h3 class="card-name">MIU Universal</h3>
+      <p class="card-desc">Cinco pestañas — Ley Kᵢ, datos, predicciones, laboratorio y espora — en un solo panel de exploración.</p>
+      <div class="card-cta">Abrir →</div>
+    </a>
+  </div>
+
+  <h2 class="section-title">Redes y oráculos</h2>
+  <div class="grid">
+    <a href="miu_red.html" class="card" style="--c:#3B82F6">
+      <div class="card-icon">🌐</div>
+      <div class="card-domain">Grafo</div>
+      <h3 class="card-name">MIU Red</h3>
+      <p class="card-desc">Constructor de redes de coherencia: crea nodos, conéctalos y mide Kᵢ y dimensión fractal del conjunto.</p>
+      <div class="card-cta">Abrir →</div>
+    </a>
+    <a href="miu_nexo.html" class="card" style="--c:#8B5CF6">
+      <div class="card-icon">🔮</div>
+      <div class="card-domain">Análisis</div>
+      <h3 class="card-name">MIU Nexo</h3>
+      <p class="card-desc">Oráculo, fractal (box-counting), colmena de consenso y panel de historial en una sola herramienta.</p>
+      <div class="card-cta">Abrir →</div>
+    </a>
+    <a href="oraculo_avanzado.html" class="card" style="--c:#EC4899">
+      <div class="card-icon">🔮</div>
+      <div class="card-domain">Análisis</div>
+      <h3 class="card-name">MIU Oráculo Avanzado</h3>
+      <p class="card-desc">Versión extendida con cuatro pestañas: oráculo, fractal sobre datos reales, colmena e historial.</p>
+      <div class="card-cta">Abrir →</div>
+    </a>
+    <a href="neural.html" class="card" style="--c:#06B6D4">
+      <div class="card-icon">🧠</div>
+      <div class="card-domain">Interfaz</div>
+      <h3 class="card-name">Interfaz Neural</h3>
+      <p class="card-desc">Dibuja fórmulas matemáticas a mano y la interfaz las interpreta dentro del marco Kᵢ.</p>
+      <div class="card-cta">Abrir →</div>
+    </a>
+  </div>
+
+  <h2 class="section-title">Simulación y prueba</h2>
+  <div class="grid">
+    <a href="autofagia.html" class="card" style="--c:#EF4444">
+      <div class="card-icon">🧬</div>
+      <div class="card-domain">Simulación</div>
+      <h3 class="card-name">MIU Autofagia</h3>
+      <p class="card-desc">Simulador con poda G31: visualiza la evolución de Kᵢ en una red de 100 nodos con autofagia automática.</p>
+      <div class="card-cta">Abrir →</div>
+    </a>
+    <a href="solver_g31.html" class="card" style="--c:#F97316">
+      <div class="card-icon">⚡</div>
+      <div class="card-domain">Solver</div>
+      <h3 class="card-name">MIU Solver G31</h3>
+      <p class="card-desc">Probador de teoremas: ejecuta el algoritmo G31 completo y muestra la trayectoria de Kᵢ paso a paso.</p>
+      <div class="card-cta">Abrir →</div>
+    </a>
+    <a href="batalla.html" class="card" style="--c:#DC2626">
+      <div class="card-icon">⚔️</div>
+      <div class="card-domain">Comparación</div>
+      <h3 class="card-name">Batalla de Teorías</h3>
+      <p class="card-desc">Enfrenta hipótesis axiomáticas entre sí y observa cuál sostiene mayor coherencia bajo presión.</p>
+      <div class="card-cta">Abrir →</div>
+    </a>
+    <a href="limite.html" class="card" style="--c:#7C3AED">
+      <div class="card-icon">🌌</div>
+      <div class="card-domain">Exploración</div>
+      <h3 class="card-name">Límite Absoluto</h3>
+      <p class="card-desc">Explora universos axiomáticos alternativos en los bordes del marco Kᵢ.</p>
+      <div class="card-cta">Abrir →</div>
+    </a>
+    <a href="miu-sim.html" class="card" style="--c:#D4A843">
+      <div class="card-icon">🐝</div>
+      <div class="card-domain">Simulación 3D</div>
+      <h3 class="card-name">Campo Primordial · La Colmena</h3>
+      <p class="card-desc">Visor multiescala de ρ(x) en three.js: navega desde la escala de Planck hasta el cosmos, con poda y datos en vivo.</p>
+      <div class="card-cta">Abrir →</div>
+    </a>
+  </div>
+
+  <h2 class="section-title">Utilidades</h2>
+  <div class="utility-row">
+    <a href="config.html">⚙️ Configuración de la espora canónica</a>
+    <a href="exportar.html">💾 Exportar / importar universo MIU portable</a>
+    <a href="data/universo_default.json" download>📦 Semilla: universo por defecto</a>
+    <a href="data/memoria_inicial.json" download>📦 Semilla: memoria inicial</a>
+  </div>
+  <p style="font-size:.74rem;color:var(--text3);margin-bottom:1rem">Las semillas son archivos .json descargables — úsalos en <a href="exportar.html" style="color:var(--phi)">Exportar → Importar universo</a> para arrancar desde un estado conocido.</p>
+
+  <footer>
+    ρ(x) > 0 · MIU Laboratorio · 15 herramientas autocontenidas · Sin internet · Sin datos enviados
+  </footer>
+</div>
+</body>
+</html>

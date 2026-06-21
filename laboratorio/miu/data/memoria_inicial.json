@@ -1,0 +1,13 @@
+{
+  "ciclos": 0,
+  "K_i": 0.570,
+  "teoremas": [
+    {
+      "id": "T0",
+      "nombre": "Identidad de Euler",
+      "estado": "base",
+      "timestamp": "2026-10-04T00:00:00Z"
+    }
+  ],
+  "observaciones": []
+}

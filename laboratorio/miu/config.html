@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configuración v5.0</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0a; color: #e0e0e0; font-family: 'Courier New', monospace; padding: 20px; }
+  h2 { color: #9d00ff; text-shadow: 0 0 20px #9d00ff; margin-bottom: 20px; border-bottom: 2px solid #9d00ff; padding-bottom: 10px; }
+  .panel { background: rgba(10,10,10,0.95); border: 2px solid #9d00ff; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+  .panel h3 { color: #ffd700; margin-bottom: 10px; }
+  label { display: block; margin: 10px 0 5px; color: #ccc; }
+  input { width: 100%; padding: 8px; background: #111; border: 2px solid #333; color: #9d00ff; font-family: inherit; font-size: 14px; border-radius: 6px; margin-bottom: 10px; }
+  input:focus { outline: none; border-color: #9d00ff; }
+  .btn { padding: 12px 20px; background: linear-gradient(135deg, #9d00ff, #7700cc); color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: inherit; font-size: 12px; text-transform: uppercase; transition: all 0.3s; margin-right: 10px; }
+  .btn:hover { box-shadow: 0 0 20px #9d00ff; transform: scale(1.05); }
+  .btn.green { background: linear-gradient(135deg, #00ff88, #00cc66); color: #000; }
+  .btn.red { background: linear-gradient(135deg, #ff3366, #cc2255); }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 15px 0; }
+  .stat-box { background: #050505; border: 1px solid #333; padding: 12px; border-radius: 6px; text-align: center; }
+  .stat-label { font-size: 9px; color: #666; text-transform: uppercase; }
+  .stat-value { font-size: 20px; color: #9d00ff; font-weight: bold; margin-top: 5px; }
+  .log { background: #000; border-left: 4px solid #9d00ff; padding: 10px; font-size: 11px; max-height: 120px; overflow-y: auto; margin-top: 15px; }
+</style>
+</head>
+<body>
+<style>
+#lab-backnav{position:fixed;top:12px;right:12px;z-index:99999;display:flex;gap:6px;font-family:'Courier New',monospace;font-size:11px;}
+#lab-backnav a{color:#d4a843;text-decoration:none;background:rgba(10,10,15,0.75);border:1px solid rgba(212,168,67,0.4);border-radius:6px;padding:5px 10px;backdrop-filter:blur(4px);transition:all .2s;}
+#lab-backnav a:hover{background:rgba(212,168,67,0.15);border-color:#d4a843;}
+</style>
+<div id="lab-backnav"><a href="index.html">← MIU Laboratorio</a><a href="../../index.html">Inicio</a></div>
+
+<h2>⚙️ CONFIGURACIÓN DE LA ESPORA CANÓNICA</h2>
+<div class="panel">
+  <h3>Constantes Fundamentales</h3>
+  <label for="kiInicial">K_i Global Inicial</label>
+  <input type="number" id="kiInicial" value="0.570" step="0.01">
+  <label for="fcrit">f_crit (Umbral de Autofagia)</label>
+  <input type="number" id="fcrit" value="0.35" step="0.01">
+  <label for="deff">D_eff (Dimensionalidad Efectiva)</label>
+  <input type="number" id="deff" value="7.24" step="0.01">
+  <label for="alpha">α⁻¹ (Constante de Estructura Fina)</label>
+  <input type="number" id="alpha" value="137.0360" step="0.0001">
+  <button class="btn green" onclick="aplicar()">Aplicar Cambios</button>
+  <button class="btn red" onclick="resetDefaults()">Restaurar Valores de la Espora</button>
+  <div class="stats">
+    <div class="stat-box"><div class="stat-label">K_i Actual</div><div class="stat-value" id="kiActual">0.570</div></div>
+    <div class="stat-box"><div class="stat-label">Nodos</div><div class="stat-value" id="nodosActual">0</div></div>
+    <div class="stat-box"><div class="stat-label">Versión</div><div class="stat-value" id="versionActual">v5.0</div></div>
+    <div class="stat-box"><div class="stat-label">Sombra</div><div class="stat-value" id="sombraActual">SALUDABLE</div></div>
+  </div>
+  <div class="log" id="log">Configuración lista.</div>
+</div>
+
+<script src="miu-shared.js"></script>
+<script>
+let estadoLocal = { K_i: 0.570, f_crit: 0.35, D_eff: 7.24, alpha_inv: 137.0359993, nodos: [], sombra: 'SALUDABLE', version: '5.0' };
+
+window.addEventListener('message', e => {
+  if (e.data.type === 'miu:sync') {
+    estadoLocal = e.data.state;
+    window.MIU = e.data.state;
+    actualizarUI();
+  }
+});
+
+function actualizarUI() {
+  document.getElementById('kiActual').textContent = (estadoLocal.K_i || 0.570).toFixed(3);
+  document.getElementById('nodosActual').textContent = (estadoLocal.nodos || []).length;
+  document.getElementById('sombraActual').textContent = estadoLocal.sombra || 'SALUDABLE';
+  document.getElementById('kiInicial').value = (estadoLocal.K_i || 0.570).toFixed(3);
+  document.getElementById('fcrit').value = (estadoLocal.f_crit || 0.35).toFixed(2);
+  document.getElementById('deff').value = (estadoLocal.D_eff || 7.24).toFixed(2);
+  document.getElementById('alpha').value = (estadoLocal.alpha_inv || 137.0360).toFixed(4);
+}
+
+function aplicar() {
+  if (!window.MIU_API) return;
+  window.MIU_API.state.K_i = parseFloat(document.getElementById('kiInicial').value) || 0.570;
+  window.MIU_API.state.f_crit = parseFloat(document.getElementById('fcrit').value) || 0.35;
+  window.MIU_API.state.D_eff = parseFloat(document.getElementById('deff').value) || 7.24;
+  window.MIU_API.state.alpha_inv = parseFloat(document.getElementById('alpha').value) || 137.0360;
+  window.MIU_API.tick();
+  estadoLocal = window.MIU_API.state;
+  window.MIU = estadoLocal;
+  actualizarUI();
+  parent.postMessage({ type: 'miu:update', source: 'config', state: JSON.parse(JSON.stringify(estadoLocal)) }, '*');
+  log('Parámetros actualizados.');
+}
+
+function resetDefaults() {
+  if (!window.MIU_API) return;
+  window.MIU_API.state.K_i = 0.570;
+  window.MIU_API.state.f_crit = 0.35;
+  window.MIU_API.state.D_eff = 7.24;
+  window.MIU_API.state.alpha_inv = 137.0359993;
+  window.MIU_API.tick();
+  estadoLocal = window.MIU_API.state;
+  window.MIU = estadoLocal;
+  actualizarUI();
+  parent.postMessage({ type: 'miu:update', source: 'config', state: JSON.parse(JSON.stringify(estadoLocal)) }, '*');
+  log('Valores de la Espora restaurados.');
+}
+
+function log(msg) { const d = document.getElementById('log'); d.textContent += '\n' + new Date().toLocaleTimeString() + ' - ' + msg; d.scrollTop = d.scrollHeight; }
+
+setTimeout(() => { if (window.parent !== window) parent.postMessage({ type: 'miu:request_sync', source: 'config' }, '*'); }, 300);
+setInterval(actualizarUI, 2000);
+</script>
+</body>
+</html>

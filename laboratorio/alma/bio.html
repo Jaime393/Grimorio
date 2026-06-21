@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BIO Células 3D - ALMA-NEXUS v4.1</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #000;
+  color: #e0e0e0;
+  font-family: 'Courier New', monospace;
+  padding: 15px;
+  transition: background 1.5s ease;
+}
+body.critical { background: #0a0005; }
+body.degraded { background: #0a0500; }
+h2 {
+  color: #00ff88;
+  font-size: 1.3rem;
+  text-shadow: 0 0 15px #00ff88;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #00ff88;
+  padding-bottom: 8px;
+  transition: color 0.5s;
+}
+h2.critical { color: #ff3366; border-color: #ff3366; text-shadow: 0 0 15px #ff3366; }
+.layout { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; height: calc(100vh - 120px); }
+.panel {
+  background: rgba(10,10,10,0.9);
+  border: 2px solid #00ff88;
+  border-radius: 10px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.5s;
+}
+.panel.critical { border-color: #ff3366; box-shadow: 0 0 25px rgba(255,51,102,0.4); }
+.panel h3 { color: #ffd700; font-size: 13px; margin-bottom: 10px; flex-shrink: 0; }
+.alerta {
+  background: rgba(255,51,102,0.2);
+  border: 2px solid #ff3366;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  text-align: center;
+  color: #ff3366;
+  margin-bottom: 10px;
+  display: none;
+  flex-shrink: 0;
+}
+.alerta.show { display: block; animation: blink 0.8s infinite; }
+@keyframes blink { 50% { opacity: 0.5; } }
+canvas {
+  width: 100%;
+  flex-grow: 1;
+  background: radial-gradient(ellipse at center, #0a0a0a 0%, #000 100%);
+  border: 2px solid #222;
+  border-radius: 8px;
+  transition: border-color 0.5s;
+}
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; flex-shrink: 0; }
+.stat-box { background: #050505; border: 1px solid #222; padding: 8px; border-radius: 6px; text-align: center; }
+.stat-label { font-size: 9px; color: #666; text-transform: uppercase; }
+.stat-value { font-size: 18px; color: #00ff88; font-weight: bold; margin-top: 3px; transition: color 0.5s; }
+.stat-value.critical { color: #ff3366; animation: blink 1s infinite; }
+.btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; flex-shrink: 0; }
+.btn {
+  padding: 10px;
+  background: linear-gradient(135deg, #00ff88, #00cc66);
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11px;
+  text-transform: uppercase;
+  transition: all 0.3s;
+}
+.btn:hover { box-shadow: 0 0 20px #00ff88; transform: scale(1.03); }
+.btn.red { background: linear-gradient(135deg, #ff3366, #cc2255); color: #fff; }
+.btn.phi { background: linear-gradient(135deg, #ffd700, #ffcc00); }
+.btn.yellow { background: linear-gradient(135deg, #ffaa00, #ff8800); color: #000; }
+.log {
+  background: #000;
+  border-left: 3px solid #00ff88;
+  padding: 8px;
+  font-size: 10px;
+  flex-grow: 1;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  line-height: 1.5;
+  margin-top: 10px;
+  transition: border-color 0.5s;
+}
+.log.critical { border-color: #ff3366; }
+@media (max-width: 900px) {
+.layout { grid-template-columns: 1fr; height: auto; }
+canvas { height: 300px; flex-grow: 0; }
+.btn-group { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<h2 id="titulo">🧬 BIO - CÉLULAS 3D + MUTACIÓN + DIVISIÓN v4.1</h2>
+
+<div class="layout">
+  <div class="panel" id="panelCanvas">
+    <h3>Simulación Celular</h3>
+    <div class="alerta" id="alerta">⚠️ K_i⁻ CRÍTICO: Células muriendo masivamente</div>
+    <canvas id="bioCanvas"></canvas>
+    <div class="stats-grid">
+      <div class="stat-box"><div class="stat-label">Células Activas</div><div class="stat-value" id="celulasActivas">0</div></div>
+      <div class="stat-box"><div class="stat-label">Células Muertas</div><div class="stat-value" id="celulasMuertas">0</div></div>
+      <div class="stat-box"><div class="stat-label">Mutantes</div><div class="stat-value" id="celulasMutantes">0</div></div>
+      <div class="stat-box" id="boxKi"><div class="stat-label">K_i Promedio</div><div class="stat-value" id="kiPromedio">0.570</div></div>
+    </div>
+  </div>
+
+  <div class="panel" id="panelControl">
+    <h3>Controles BIO</h3>
+    <div class="btn-group">
+      <button class="btn" onclick="agregarCelula()">+ Célula</button>
+      <button class="btn" onclick="agregar100Celulas()">+100 Células</button>
+      <button class="btn red" onclick="matarCelula()">- Matar 1</button>
+      <button class="btn red" onclick="matar50Celulas()">- Matar 50%</button>
+      <button class="btn phi" onclick="mutarCelulas()">Mutar 10%</button>
+      <button class="btn yellow" onclick="dividirCelulas()">División φ</button>
+      <button class="btn" id="btnMute" onclick="toggleMute()">🔊 Sonido ON</button>
+      <button class="btn" onclick="resetBio()">Reset Todo</button>
+    </div>
+    <div class="log" id="log">BIO v4.1 inicializado...\nEsperando células...</div>
+  </div>
+</div>
+
+<script src="alma-shared.js"></script>
+<script>
+const canvas = document.getElementById('bioCanvas');
+const ctx = canvas.getContext('2d');
+
+let celulas = [];
+let celulasMuertas = 0;
+let audioCtx = null;
+
+function getALMA() {
+  return (parent.ALMA && parent.ALMA.K_i!== undefined)? parent.ALMA : {
+    K_i: 0.570, H_t: 0.430, phi: 1.6180339887, phi_inv: 0.6180339887, nodos: [{f: 0.1}]
+  };
+}
+
+function getAudio() {
+  return (parent.ALMA_AUDIO && parent.ALMA_AUDIO.enabled!== undefined)? parent.ALMA_AUDIO : {enabled: true};
+}
+
+function beep(freq = 500, dur = 0.1) {
+  if (!getAudio().enabled) return;
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = audioCtx.createOscillator();
+  osc.frequency.value = freq;
+  osc.connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + dur);
+}
+
+function toggleMute() {
+  const audio = getAudio();
+  const estado = audio.toggle? audio.toggle() :!audio.enabled;
+  const btn = document.getElementById('btnMute');
+  btn.textContent = estado? '🔊 Sonido ON' : '🔇 Sonido OFF';
+  btn.classList.toggle('red',!estado);
+  beep(400, 0.1);
+}
+
+function resize() {
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+class Celula {
+  constructor(x, y, ki = null, f = null) {
+    this.x = x || Math.random() * canvas.width;
+    this.y = y || Math.random() * canvas.height;
+    this.radio = 4 + Math.random() * 6;
+    this.ki = ki!== null? ki : 0.4 + Math.random() * 0.4;
+    this.f = f!== null? f : 0.1 + Math.random() * 0.3;
+    this.mutante = false;
+    this.edad = 0;
+    this.vx = (Math.random() - 0.5) * 0.4;
+    this.vy = (Math.random() - 0.5) * 0.4;
+    this.viva = true;
+  }
+
+  update() {
+    if (!this.viva) return;
+    this.edad++;
+    this.vx += (Math.random() - 0.5) * 0.03;
+    this.vy += (Math.random() - 0.5) * 0.03;
+    this.vx *= 0.98;
+    this.vy *= 0.98;
+    this.x += this.vx;
+    this.y += this.vy;
+
+    if (this.x < this.radio || this.x > canvas.width - this.radio) {
+      this.vx *= -1;
+      this.x = Math.max(this.radio, Math.min(canvas.width - this.radio, this.x));
+    }
+    if (this.y < this.radio || this.y > canvas.height - this.radio) {
+      this.vy *= -1;
+      this.y = Math.max(this.radio, Math.min(canvas.height - this.radio, this.y));
+    }
+
+    const ALMA = getALMA();
+    this.ki = ALMA.K_i * (0.9 + Math.random() * 0.2);
+    const kim = this.ki * (1 - 2 * this.f);
+
+    if (ALMA.K_i < 0.3 && Math.random() < 0.02) {
+      this.viva = false;
+      celulasMuertas++;
+      beep(150, 0.05);
+    }
+
+    if (this.edad > 500 && kim > 0.55 && Math.random() < 0.001) {
+      this.dividir();
+    }
+  }
+
+  dividir() {
+    const nueva = new Celula(this.x + (Math.random() - 0.5) * 20, this.y + (Math.random() - 0.5) * 20, this.ki * 0.95, this.f * 1.05);
+    nueva.mutante = this.mutante;
+    celulas.push(nueva);
+    this.edad = 0;
+    beep(700, 0.05);
+  }
+
+  draw() {
+    if (!this.viva) return;
+    const kim = this.ki * (1 - 2 * this.f);
+    let color;
+    if (kim < 0.3) color = '#ff3366';
+    else if (kim < 0.55) color = '#ffaa00';
+    else if (this.mutante) color = '#ff00ff';
+    else color = '#00ff88';
+
+    const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radio * 3);
+    gradient.addColorStop(0, color);
+    gradient.addColorStop(1, 'transparent');
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radio * 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radio, 0, Math.PI * 2);
+    ctx.fill();
+
+    if (this.mutante) {
+      ctx.strokeStyle = '#ff00ff';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radio + 2, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  }
+}
+
+function agregarCelula() {
+  celulas.push(new Celula());
+  actualizarStats();
+  log('Célula agregada');
+  beep(600, 0.06);
+}
+
+function agregar100Celulas() {
+  for (let i = 0; i < 100; i++) celulas.push(new Celula());
+  actualizarStats();
+  log('100 células agregadas');
+  beep(700, 0.2);
+}
+
+function matarCelula() {
+  const viva = celulas.find(c => c.viva);
+  if (viva) {
+    viva.viva = false;
+    celulasMuertas++;
+    actualizarStats();
+    log('Célula eliminada');
+    beep(200, 0.1);
+  }
+}
+
+function matar50Celulas() {
+  const vivas = celulas.filter(c => c.viva);
+  const matar = Math.floor(vivas.length * 0.5);
+  for (let i = 0; i < matar; i++) {
+    vivas[i].viva = false;
+    celulasMuertas++;
+  }
+  actualizarStats();
+  log(`${matar} células eliminadas - 50%`);
+  beep(150, 0.3);
+}
+
+function mutarCelulas() {
+  const vivas = celulas.filter(c => c.viva);
+  const mutar = Math.floor(vivas.length * 0.1);
+  for (let i = 0; i < mutar; i++) {
+    vivas[i].mutante = true;
+    vivas[i].ki *= 1.3;
+  }
+  actualizarStats();
+  log(`${mutar} células mutadas`);
+  beep(800, 0.15);
+}
+
+function dividirCelulas() {
+  const vivas = celulas.filter(c => c.viva && c.ki > 0.5);
+  vivas.forEach(c => c.dividir());
+  actualizarStats();
+  log(`División φ en ${vivas.length} células`);
+  beep(650, 0.2);
+}
+
+function resetBio() {
+  celulas = [];
+  celulasMuertas = 0;
+  for (let i = 0; i < 20; i++) agregarCelula();
+  log('Sistema BIO reiniciado - 20 células base');
+  beep(500, 0.2);
+}
+
+function actualizarStats() {
+  const vivas = celulas.filter(c => c.viva);
+  const mutantes = vivas.filter(c => c.mutante).length;
+  const kiProm = vivas.length > 0? vivas.reduce((a, c) => a + c.ki, 0) / vivas.length : 0;
+
+  document.getElementById('celulasActivas').textContent = vivas.length;
+  document.getElementById('celulasMuertas').textContent = celulasMuertas;
+  document.getElementById('celulasMutantes').textContent = mutantes;
+  document.getElementById('kiPromedio').textContent = kiProm.toFixed(3);
+
+  const audio = getAudio();
+  document.getElementById('btnMute').textContent = audio.enabled? '🔊 Sonido ON' : '🔇 Sonido OFF';
+  document.getElementById('btnMute').classList.toggle('red',!audio.enabled);
+
+  const body = document.body;
+  const titulo = document.getElementById('titulo');
+  const panelCanvas = document.getElementById('panelCanvas');
+  const panelControl = document.getElementById('panelControl');
+  const logDiv = document.getElementById('log');
+  const boxKi = document.getElementById('boxKi');
+  const kiVal = document.getElementById('kiPromedio');
+  const alerta = document.getElementById('alerta');
+
+  body.classList.remove('critical', 'degraded');
+  titulo.classList.remove('critical');
+  panelCanvas.classList.remove('critical');
+  panelControl.classList.remove('critical');
+  logDiv.classList.remove('critical');
+  boxKi.classList.remove('critical');
+  kiVal.classList.remove('critical');
+  alerta.classList.remove('show');
+
+  if (kiProm < 0.3) {
+    body.classList.add('critical');
+    titulo.classList.add('critical');
+    panelCanvas.classList.add('critical');
+    panelControl.classList.add('critical');
+    logDiv.classList.add('critical');
+    boxKi.classList.add('critical');
+    kiVal.classList.add('critical');
+    alerta.classList.add('show');
+    canvas.style.borderColor = '#ff0000';
+  } else if (kiProm < 0.55) {
+    body.classList.add('degraded');
+    canvas.style.borderColor = '#ffaa00';
+  } else {
+    canvas.style.borderColor = '#00ff88';
+  }
+}
+
+function dibujar() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const ALMA = getALMA();
+  const ki = ALMA.K_i;
+  const bgGradient = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, Math.max(canvas.width, canvas.height));
+
+  if (ki < 0.3) {
+    bgGradient.addColorStop(0, 'rgba(255,0,0,0.15)');
+    bgGradient.addColorStop(1, 'rgba(10,0,5,1)');
+  } else if (ki < 0.55) {
+    bgGradient.addColorStop(0, 'rgba(255,170,0,0.1)');
+    bgGradient.addColorStop(1, 'rgba(10,5,0,1)');
+  } else {
+    bgGradient.addColorStop(0, 'rgba(0,255,136,0.05)');
+    bgGradient.addColorStop(1, 'rgba(0,0,0,1)');
+  }
+
+  ctx.fillStyle = bgGradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  celulas.forEach(c => {
+    c.update();
+    c.draw();
+  });
+
+  requestAnimationFrame(dibujar);
+}
+
+function log(msg) {
+  const logDiv = document.getElementById('log');
+  logDiv.textContent += '\n' + new Date().toLocaleTimeString() + ' - ' + msg;
+  logDiv.scrollTop = logDiv.scrollHeight;
+}
+
+setInterval(actualizarStats, 500);
+resetBio();
+dibujar();
+</script>
+</body>
+</html>

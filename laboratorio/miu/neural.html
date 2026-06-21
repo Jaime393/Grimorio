@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interfaz Neural v5.0</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #000; color: #e0e0e0; font-family: 'Courier New', monospace; padding: 20px; transition: background 2s ease; }
+  body.recognizing { background: radial-gradient(ellipse at center, #001a10 0%, #000 100%); }
+  h2 { color: #00ffaa; font-size: 1.6rem; text-shadow: 0 0 25px #00ffaa; margin-bottom: 20px; text-align: center; border-bottom: 3px solid #00ffaa; padding-bottom: 10px; }
+  h2.recognized { color: #ffd700; text-shadow: 0 0 30px #ffd700; border-color: #ffd700; animation: neural-pulse 1.5s infinite; }
+  @keyframes neural-pulse { 0%,100%{ transform:scale(1) } 50%{ transform:scale(1.03) } }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+  .panel { background: rgba(10,10,10,0.95); border: 2px solid #00ffaa; border-radius: 12px; padding: 20px; transition: border-color 0.5s; }
+  .panel.recognized { border-color: #ffd700; box-shadow: 0 0 40px rgba(255,215,0,0.5); }
+  .panel h3 { color: #ffd700; font-size: 14px; margin-bottom: 12px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+  .canvas-container { position: relative; background: #111; border: 3px solid #333; border-radius: 10px; overflow: hidden; margin: 15px 0; }
+  canvas { display: block; background: #000; cursor: crosshair; width: 100%; height: 300px; }
+  canvas.drawing { cursor: pointer; }
+  .btn-group { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; margin: 15px 0; }
+  .btn { padding: 14px; background: linear-gradient(135deg, #00ffaa, #00cc88); color: #000; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: inherit; font-size: 11px; text-transform: uppercase; transition: all 0.3s; }
+  .btn:hover { box-shadow: 0 0 25px #00ffaa; transform: scale(1.05); }
+  .btn.phi { background: linear-gradient(135deg, #ffd700, #ffcc00); }
+  .btn.purple { background: linear-gradient(135deg, #9d00ff, #7700cc); color: #fff; }
+  .btn.red { background: linear-gradient(135deg, #ff3366, #cc2255); color: #fff; }
+  .recognition-result { background: #050505; border: 3px solid #333; border-radius: 10px; padding: 20px; margin: 15px 0; transition: all 0.5s; }
+  .recognition-result.success { border-color: #00ff88; box-shadow: 0 0 30px rgba(0,255,136,0.6); background: rgba(0,255,136,0.1); }
+  .formula-text { font-size: 24px; color: #00ffaa; font-family: 'Courier New', monospace; text-align: center; margin: 10px 0; min-height: 40px; }
+  .formula-latex { font-size: 16px; color: #9d00ff; text-align: center; margin: 8px 0; font-family: monospace; }
+  .confidence { font-size: 12px; color: #666; text-align: center; margin-top: 10px; }
+  .confidence-bar { height: 8px; background: #111; border-radius: 4px; margin: 5px 0; overflow: hidden; }
+  .confidence-fill { height: 100%; background: linear-gradient(90deg, #ff3366, #00ffaa, #ffd700); transition: width 0.8s ease; }
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; margin: 15px 0; }
+  .stat-box { background: #050505; border: 1px solid #333; padding: 12px; border-radius: 6px; text-align: center; }
+  .stat-label { font-size: 9px; color: #666; text-transform: uppercase; }
+  .stat-value { font-size: 20px; color: #00ffaa; font-weight: bold; margin-top: 5px; }
+  .instructions { background: #050505; border-left: 4px solid #00ffaa; padding: 12px; font-size: 11px; color: #888; line-height: 1.6; margin: 10px 0; }
+  .log { background: #000; border-left: 4px solid #00ffaa; padding: 12px; font-size: 11px; max-height: 200px; overflow-y: auto; white-space: pre-wrap; line-height: 1.6; }
+  .log.recognition { border-color: #ffd700; color: #ffd700; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } .btn-group { grid-template-columns: 1fr 1fr; } canvas { height: 250px; } }
+</style>
+</head>
+<body>
+<style>
+#lab-backnav{position:fixed;top:12px;right:12px;z-index:99999;display:flex;gap:6px;font-family:'Courier New',monospace;font-size:11px;}
+#lab-backnav a{color:#d4a843;text-decoration:none;background:rgba(10,10,15,0.75);border:1px solid rgba(212,168,67,0.4);border-radius:6px;padding:5px 10px;backdrop-filter:blur(4px);transition:all .2s;}
+#lab-backnav a:hover{background:rgba(212,168,67,0.15);border-color:#d4a843;}
+</style>
+<div id="lab-backnav"><a href="index.html">← MIU Laboratorio</a><a href="../../index.html">Inicio</a></div>
+
+<h2 id="titulo">🧠 INTERFAZ NEURAL v5.0 — Dibujo de Fórmulas Matemáticas</h2>
+<div class="grid">
+  <div class="panel" id="panelCanvas">
+    <h3>Canvas Neural — Dibuja tu Fórmula</h3>
+    <div class="canvas-container"><canvas id="canvas" width="600" height="300"></canvas></div>
+    <div class="btn-group">
+      <button class="btn" onclick="reconocerFormula()">🔍 Reconocer Fórmula</button>
+      <button class="btn phi" onclick="probarTeorema()">⚡ Probar con MIU</button>
+      <button class="btn red" onclick="limpiarCanvas()">Limpiar</button>
+      <button class="btn purple" id="btnMute" onclick="toggleMute()">🔊 Sonido ON</button>
+    </div>
+    <div class="instructions">
+      <strong>Instrucciones:</strong> Dibuja con el mouse o dedo. Usa símbolos: +, -, =, φ, n, x, ², ∞, ∑<br>
+      Ejemplos: n²+n, φ^n = F_n*φ, x²+y²=z², ∀n∈N
+    </div>
+  </div>
+  <div class="panel" id="panelResultado">
+    <h3>Reconocimiento Neural MIU</h3>
+    <div class="stats-grid">
+      <div class="stat-box"><div class="stat-label">Confianza OCR</div><div class="stat-value" id="confianza">0%</div></div>
+      <div class="stat-box"><div class="stat-label">Símbolos</div><div class="stat-value" id="simbolos">0</div></div>
+      <div class="stat-box"><div class="stat-label">K_i Global</div><div class="stat-value" id="kiGlobal">0.570</div></div>
+      <div class="stat-box"><div class="stat-label">K_i Predicho</div><div class="stat-value" id="kiPred">0.570</div></div>
+    </div>
+    <div class="recognition-result" id="resultBox">
+      <div class="formula-text" id="formulaText">Dibuja una fórmula...</div>
+      <div class="formula-latex" id="formulaLatex"></div>
+      <div class="confidence-bar"><div class="confidence-fill" id="confBar" style="width:0%"></div></div>
+      <div class="confidence" id="confidenceText">Esperando trazo...</div>
+    </div>
+  </div>
+</div>
+<div class="panel"><h3>Log Neural</h3><div class="log" id="log">Interfaz Neural v5.0 inicializada...\nSincronizado con MATH-NEXUS v5.0</div></div>
+
+<script src="miu-shared.js"></script>
+<script>
+let canvas, ctx, drawing = false, trazos = [], formulaReconocida = '', confianza = 0;
+let estadoLocal = { K_i: 0.570, phi: 1.6180339887498948482, phi_inv: 0.6180339887498948482, ciclos: 0, version: '5.0' };
+
+window.addEventListener('message', e => {
+  if (e.data.type === 'miu:sync' && e.data.source) {
+    estadoLocal = e.data.state;
+    window.MIU = e.data.state;
+    document.getElementById('kiGlobal').textContent = (estadoLocal.K_i || 0.570).toFixed(3);
+  }
+});
+
+function reportarEstado() { if (window.parent !== window && window.MIU_API) parent.postMessage({ type:'miu:update', source:'neural', state:JSON.parse(JSON.stringify(estadoLocal)) }, '*'); }
+function beep(f,d) { if (window.MIU_API) window.MIU_API.beep(f,d); }
+function toggleMute() { if (window.MIU_API) { const e = window.MIU_API.getAudio().toggle(); document.getElementById('btnMute').textContent = e ? '🔊 Sonido ON' : '🔇 Sonido OFF'; document.getElementById('btnMute').classList.toggle('red', !e); beep(400, 0.1); } }
+
+function initCanvas() {
+  canvas = document.getElementById('canvas'); ctx = canvas.getContext('2d');
+  ctx.strokeStyle = '#00ffaa'; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  canvas.addEventListener('mousedown', startDrawing); canvas.addEventListener('mousemove', draw); canvas.addEventListener('mouseup', stopDrawing); canvas.addEventListener('mouseout', stopDrawing);
+  canvas.addEventListener('touchstart', e => { e.preventDefault(); startDrawing(e.touches[0]); });
+  canvas.addEventListener('touchmove', e => { e.preventDefault(); draw(e.touches[0]); });
+  canvas.addEventListener('touchend', stopDrawing);
+}
+
+function getPos(e) { const r = canvas.getBoundingClientRect(); return { x: (e.clientX - r.left) * (canvas.width / r.width), y: (e.clientY - r.top) * (canvas.height / r.height) }; }
+function startDrawing(e) { drawing = true; canvas.classList.add('drawing'); const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); trazos.push({x:p.x, y:p.y, tipo:'start'}); beep(500, 0.05); }
+function draw(e) { if (!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); trazos.push({x:p.x, y:p.y, tipo:'draw'}); }
+function stopDrawing() { if (drawing) { drawing = false; canvas.classList.remove('drawing'); trazos.push({tipo:'end'}); beep(600, 0.08); } }
+
+function limpiarCanvas() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height); trazos = []; formulaReconocida = ''; confianza = 0;
+  document.getElementById('formulaText').textContent = 'Dibuja una fórmula...'; document.getElementById('formulaLatex').textContent = '';
+  document.getElementById('confianza').textContent = '0%'; document.getElementById('simbolos').textContent = '0';
+  document.getElementById('confBar').style.width = '0%'; document.getElementById('confidenceText').textContent = 'Esperando trazo...';
+  document.getElementById('panelResultado').classList.remove('recognized'); document.getElementById('titulo').classList.remove('recognized');
+  log('Canvas limpiado'); beep(400, 0.2);
+}
+
+function reconocerFormula() {
+  if (trazos.length < 10) { alert('Dibuja algo primero'); return; }
+  document.body.classList.add('recognizing'); document.getElementById('panelResultado').classList.add('recognized'); document.getElementById('titulo').classList.add('recognized');
+  log('INICIANDO RECONOCIMIENTO NEURAL...'); beep(700, 0.3);
+  setTimeout(() => {
+    const analisis = analizarTrazos(trazos); formulaReconocida = analisis.formula; confianza = analisis.confianza;
+    mostrarReconocimiento(analisis);
+    if (window.MIU_API) window.MIU_API.addMemoria({ evento:'formula_reconocida', formula:formulaReconocida, confianza, timestamp:Date.now() });
+    beep(900, 0.4); reportarEstado();
+    setTimeout(() => { document.body.classList.remove('recognizing'); document.getElementById('panelResultado').classList.remove('recognized'); document.getElementById('titulo').classList.remove('recognized'); }, 2000);
+  }, 1500);
+}
+
+function analizarTrazos(trazos) {
+  const grid = Array(10).fill().map(() => Array(20).fill(0));
+  trazos.filter(t => t.tipo === 'draw').forEach(t => { const x = Math.floor((t.x / 600) * 20), y = Math.floor((t.y / 300) * 10); if (x >= 0 && x < 20 && y >= 0 && y < 10) grid[y][x] = 1; });
+  const tieneIgual = (() => { let l = 0; for (let y = 1; y < 9; y++) { const s = grid[y].reduce((a,b) => a+b, 0); if (s > 8 && Math.abs(grid[y-1].reduce((a,b) => a+b, 0) - s) < 3) l++; } return l >= 2; })();
+  const tieneSuperindice = grid.slice(0,3).flat().slice(15).reduce((a,b) => a+b, 0) > 3;
+  const tienePhi = (() => { const c = grid.slice(3,7).map(r => r.slice(8,12)).flat().reduce((a,b) => a+b, 0); const v = grid.map(r => r[10]).reduce((a,b) => a+b, 0); return c > 8 && v > 5; })();
+  const tieneN = (() => { const c1 = grid.map(r => r[5]).reduce((a,b) => a+b, 0), c2 = grid.map(r => r[15]).reduce((a,b) => a+b, 0); return c1 > 6 && c2 > 6; })();
+  let formula = 'f(x) = ?', conf = 0.4;
+  if (tieneN && tieneSuperindice) { formula = 'n² + n'; conf = 0.82; }
+  else if (tienePhi && tieneIgual) { formula = 'φ^n = F_n·φ + F_{n-1}'; conf = 0.75; }
+  else if (tieneIgual && grid.flat().filter(x => x === 1).length / 20 === 2) { formula = 'x² + y² = z²'; conf = 0.70; }
+  return { formula, confianza: conf, simbolos: Math.floor(grid.flat().filter(x => x === 1).length / 20) };
+}
+
+function mostrarReconocimiento(a) {
+  document.getElementById('formulaText').textContent = a.formula; document.getElementById('formulaLatex').textContent = `LaTeX: \\(${a.formula}\\)`;
+  document.getElementById('confianza').textContent = (a.confianza * 100).toFixed(1) + '%'; document.getElementById('simbolos').textContent = a.simbolos;
+  document.getElementById('confBar').style.width = (a.confianza * 100) + '%';
+  document.getElementById('confidenceText').textContent = a.confianza > 0.7 ? 'ALTA CONFIANZA' : 'CONFIANZA MEDIA';
+  document.getElementById('kiPred').textContent = (0.4 + a.confianza * 0.4 + (estadoLocal.K_i || 0.57) * 0.2).toFixed(3);
+  document.getElementById('kiGlobal').textContent = (estadoLocal.K_i || 0.570).toFixed(3);
+  log(`Reconocimiento completo | Fórmula: ${a.formula} | Confianza: ${(a.confianza*100).toFixed(1)}%`);
+}
+
+function probarTeorema() { if (!formulaReconocida) { alert('Reconoce una fórmula primero'); return; } log(`Enviando fórmula a MIU: "${formulaReconocida}"`); beep(1000, 0.4); }
+
+function log(msg) { const d = document.getElementById('log'); d.textContent += '\n' + new Date().toLocaleTimeString() + ' - ' + msg; d.scrollTop = d.scrollHeight; }
+
+initCanvas();
+document.getElementById('kiGlobal').textContent = (estadoLocal.K_i || 0.570).toFixed(3);
+setTimeout(() => { if (window.parent !== window) parent.postMessage({ type:'miu:request_sync', source:'neural' }, '*'); }, 300);
+setInterval(() => { document.getElementById('kiGlobal').textContent = (estadoLocal.K_i || 0.570).toFixed(3); }, 2000);
+</script>
+</body>
+</html>

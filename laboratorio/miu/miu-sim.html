@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIU · ρ(x)>0 · Campo Primordial · Simulación Científica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<style>
+:root{
+  --bg:#06061a; --bg2:#0a0a25;
+  --gold:#d4a843; --blue:#2460cc;
+  --teal:#00e8aa; --green:#4caf50;
+  --red:#e85840; --white:#f0f0f5;
+  --dim:#4a6080; --panel:rgba(6,6,26,0.9);
+  --border:rgba(212,168,67,0.18);
+  --fe:'Fira Code',monospace; --fi:'Inter',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--white);font-family:var(--fi);}
+#c{position:fixed;inset:0;display:block;width:100vw;height:100vh;}
+
+/* LOADING */
+#loading{position:fixed;inset:0;z-index:999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;transition:opacity 0.8s;}
+#loading.hidden{opacity:0;pointer-events:none;}
+.ld-rho{font-family:var(--fe);font-size:3rem;color:var(--gold);animation:bpulse 2s ease-in-out infinite;}
+.ld-txt{font-family:var(--fe);font-size:0.7rem;letter-spacing:0.3em;color:var(--dim);}
+@keyframes bpulse{0%,100%{opacity:0.4;}50%{opacity:1.0;}}
+
+/* SCALE TRACK */
+#stk{position:fixed;left:1rem;top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;align-items:flex-start;}
+.si{display:flex;align-items:center;gap:0.55rem;padding:0.3rem 0.4rem;cursor:pointer;transition:all 0.3s;border-left:1px solid transparent;}
+.si:hover,.si.on{border-left-color:var(--gold);}
+.sd{width:6px;height:6px;border-radius:50%;background:var(--dim);transition:all 0.3s;flex-shrink:0;}
+.si.on .sd{background:var(--gold);transform:scale(1.6);}
+.sl{font-family:var(--fe);font-size:0.6rem;color:var(--dim);transition:color 0.3s;line-height:1.4;}
+.si.on .sl,.si:hover .sl{color:var(--gold);}
+.sc{width:1px;height:22px;background:rgba(212,168,67,0.12);margin-left:11px;}
+
+/* SCALE INDICATOR */
+#sci{position:fixed;top:1rem;left:50%;transform:translateX(-50%);z-index:100;text-align:center;pointer-events:none;}
+.sci-r{font-family:var(--fe);font-size:0.68rem;color:var(--dim);letter-spacing:0.18em;}
+.sci-n{font-family:var(--fi);font-size:0.95rem;color:var(--gold);font-weight:500;margin-top:0.1rem;}
+
+/* LOGO */
+#logo{position:fixed;top:1rem;left:3.8rem;z-index:100;font-family:var(--fe);font-size:0.68rem;letter-spacing:0.08em;color:var(--dim);line-height:1.6;}
+.logo-r{color:var(--gold);font-size:0.82rem;font-weight:500;}
+
+/* BACK NAV */
+#backnav{position:fixed;top:1rem;right:1rem;z-index:101;display:flex;gap:0.5rem;font-family:var(--fe);font-size:0.65rem;}
+#backnav a{color:var(--dim);text-decoration:none;border:1px solid rgba(212,168,67,0.25);border-radius:6px;padding:0.3rem 0.6rem;transition:all 0.25s;}
+#backnav a:hover{color:var(--gold);border-color:var(--gold);}
+
+/* PANEL */
+#panel{position:fixed;right:0;top:0;bottom:0;width:295px;background:var(--panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-left:1px solid var(--border);z-index:100;display:flex;flex-direction:column;transform:translateX(0);transition:transform 0.4s ease;overflow-y:auto;}
+#panel.col{transform:translateX(272px);}
+#ptog{position:absolute;left:-27px;top:50%;transform:translateY(-50%);width:27px;height:56px;background:var(--panel);border:1px solid var(--border);border-right:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--gold);font-family:var(--fe);font-size:0.6rem;writing-mode:vertical-rl;letter-spacing:0.1em;user-select:none;}
+.ps{padding:1.1rem 1.3rem;border-bottom:1px solid rgba(212,168,67,0.06);}
+.ph{font-family:var(--fe);font-size:0.58rem;letter-spacing:0.22em;color:var(--dim);text-transform:uppercase;margin-bottom:0.7rem;}
+.pn{font-size:1.05rem;color:var(--gold);font-weight:600;margin-bottom:0.25rem;}
+.pr{font-family:var(--fe);font-size:0.68rem;color:var(--dim);margin-bottom:0.5rem;}
+.pd{font-size:0.78rem;line-height:1.65;color:rgba(240,240,245,0.72);}
+.eq{background:rgba(212,168,67,0.04);border:1px solid rgba(212,168,67,0.14);padding:0.6rem 0.85rem;margin:0.5rem 0;}
+.eid{font-family:var(--fe);font-size:0.56rem;letter-spacing:0.14em;color:var(--dim);margin-bottom:0.2rem;}
+.etx{font-family:var(--fe);font-size:0.73rem;color:var(--gold);line-height:1.85;}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;}
+.ci{background:rgba(36,96,204,0.06);border:1px solid rgba(36,96,204,0.14);padding:0.4rem 0.55rem;}
+.cn{font-family:var(--fe);font-size:0.58rem;color:var(--dim);margin-bottom:0.18rem;}
+.cv{font-family:var(--fe);font-size:0.76rem;color:var(--teal);font-weight:500;}
+#pstat{font-family:var(--fe);font-size:0.68rem;color:var(--teal);line-height:1.9;}
+
+/* KI LEGEND */
+#kil{position:fixed;bottom:1.4rem;right:1.4rem;z-index:100;background:var(--panel);border:1px solid var(--border);padding:0.75rem 0.95rem;width:175px;transition:right 0.4s;}
+#panel:not(.col) ~ #kil{right:308px;}
+.klt{font-family:var(--fe);font-size:0.58rem;letter-spacing:0.14em;color:var(--dim);text-transform:uppercase;margin-bottom:0.45rem;}
+.klb{height:8px;width:100%;border-radius:1px;background:linear-gradient(90deg,#1a1abe 0%,#2460cc 18%,#4caf50 44%,#d4a843 68%,#f0f0f5 84%,#fff 100%);}
+.klm{display:flex;justify-content:space-between;font-family:var(--fe);font-size:0.55rem;margin-top:0.28rem;}
+.klt2{font-family:var(--fe);font-size:0.6rem;color:var(--gold);border-top:1px solid rgba(212,168,67,0.25);padding-top:0.35rem;margin-top:0.35rem;}
+
+/* CONTROLS */
+#ctrl{position:fixed;bottom:1.4rem;left:50%;transform:translateX(-50%);z-index:100;display:flex;gap:0.45rem;align-items:center;background:var(--panel);border:1px solid var(--border);padding:0.45rem 0.9rem;}
+.cb{font-family:var(--fe);font-size:0.65rem;color:var(--dim);cursor:pointer;padding:0.28rem 0.55rem;border:1px solid transparent;background:none;transition:all 0.2s;letter-spacing:0.07em;}
+.cb:hover{color:var(--gold);border-color:rgba(212,168,67,0.3);}
+.cb.on{color:var(--gold);border-color:rgba(212,168,67,0.5);}
+.csep{width:1px;height:15px;background:rgba(212,168,67,0.12);}
+.ch{font-family:var(--fe);font-size:0.58rem;color:var(--dim);letter-spacing:0.1em;}
+
+/* PRUNE TOGGLE */
+#ptg{position:fixed;top:50%;right:308px;transform:translateY(-50%);z-index:100;background:var(--panel);border:1px solid var(--border);padding:0.75rem 0.9rem;display:none;font-family:var(--fe);}
+#ptg.vis{display:block;}
+.ptl{font-size:0.6rem;color:var(--dim);letter-spacing:0.15em;margin-bottom:0.55rem;}
+.pto{font-size:0.66rem;cursor:pointer;padding:0.28rem 0.5rem;border:1px solid transparent;transition:all 0.2s;margin-bottom:0.3rem;display:flex;justify-content:space-between;align-items:center;}
+.pto:hover{border-color:var(--border);}
+.pto.on{border-color:rgba(0,232,170,0.4);color:var(--teal);}
+.ptv{font-size:0.6rem;color:var(--dim);margin-left:0.8rem;}
+
+/* DATA OVERLAY */
+#dov{position:fixed;inset:0;z-index:200;background:rgba(6,6,26,0.94);display:none;align-items:center;justify-content:center;flex-direction:column;gap:1.2rem;}
+#dov.vis{display:flex;}
+#dtit{font-family:var(--fe);font-size:0.72rem;letter-spacing:0.18em;color:var(--gold);}
+#dchart{background:rgba(10,10,30,0.8);border:1px solid var(--border);}
+#dclose{font-family:var(--fe);font-size:0.65rem;color:var(--dim);cursor:pointer;letter-spacing:0.12em;transition:color 0.2s;}
+#dclose:hover{color:var(--gold);}
+
+/* TOOLTIP */
+#tt{position:fixed;z-index:300;background:var(--panel);border:1px solid var(--border);padding:0.45rem 0.75rem;pointer-events:none;opacity:0;transition:opacity 0.15s;font-size:0.76rem;max-width:195px;}
+#tt.show{opacity:1;}
+.ttn{font-weight:600;color:var(--white);margin-bottom:0.18rem;}
+.ttd{font-family:var(--fe);font-size:0.68rem;color:var(--teal);}
+
+/* CROSSHAIR */
+#xhair{position:fixed;z-index:50;pointer-events:none;border-radius:50%;border:1px solid rgba(212,168,67,0.35);transform:translate(-50%,-50%);width:22px;height:22px;transition:width 0.2s,height 0.2s;}
+#xhair::before,#xhair::after{content:'';position:absolute;background:rgba(212,168,67,0.28);}
+#xhair::before{left:50%;top:50%;transform:translate(-50%,-50%);width:1px;height:100%;}
+#xhair::after{left:50%;top:50%;transform:translate(-50%,-50%);width:100%;height:1px;}
+
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-thumb{background:rgba(212,168,67,0.2);}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<!-- Back navigation: this tool was unlinked, now woven back into the lab -->
+<div id="backnav">
+  <a href="index.html">← MIU Laboratorio</a>
+  <a href="../../index.html">Inicio</a>
+</div>
+
+<!-- Loading -->
+<div id="loading">
+  <div class="ld-rho">ρ(x) &gt; 0</div>
+  <div class="ld-txt">INICIALIZANDO CAMPO PRIMORDIAL · MIU v13.0</div>
+</div>
+
+<!-- Logo -->
+<div id="logo">
+  <div class="logo-r">ρ(x) &gt; 0</div>
+  MIU v13.0 · La Colmena
+</div>
+
+<!-- Scale track -->
+<div id="stk"></div>
+
+<!-- Scale indicator -->
+<div id="sci">
+  <div class="sci-r">ESCALA &nbsp;·&nbsp; <span id="sci-exp">10⁻³⁵ m</span></div>
+  <div class="sci-n" id="sci-name">Campo Primordial (Planck)</div>
+</div>
+
+<!-- Main panel -->
+<div id="panel">
+  <button id="ptog" title="Panel">◀ PANEL</button>
+  <div class="ps">
+    <div class="ph">Escala Activa</div>
+    <div class="pn" id="p-sn">Campo Primordial</div>
+    <div class="pr" id="p-sr">~10⁻³⁵ m · Planck</div>
+    <div class="pd" id="p-sd"></div>
+  </div>
+  <div class="ps">
+    <div class="ph">Ecuaciones Maestras</div>
+    <div id="p-eqs"></div>
+  </div>
+  <div class="ps">
+    <div class="ph">Constantes MIU v13.0</div>
+    <div class="cg" id="p-consts"></div>
+  </div>
+  <div class="ps">
+    <div class="ph">Estado del Sistema</div>
+    <div id="pstat"></div>
+  </div>
+</div>
+
+<!-- K_i legend -->
+<div id="kil">
+  <div class="klt">Coherencia Fractal K_i</div>
+  <div class="klb"></div>
+  <div class="klm">
+    <span style="color:#2460cc">0.0</span>
+    <span style="color:#4caf50">0.5</span>
+    <span style="color:#d4a843">0.62</span>
+    <span style="color:#fff">1.0</span>
+  </div>
+  <div class="klt2">▲ Φ_c = 0.6829322</div>
+</div>
+
+<!-- Controls -->
+<div id="ctrl">
+  <span class="ch">SCROLL/↑↓</span>
+  <div class="csep"></div>
+  <button class="cb" id="b-up">▲ Macro</button>
+  <button class="cb" id="b-dn">▼ Micro</button>
+  <div class="csep"></div>
+  <button class="cb" id="b-dt">⬡ DATOS [D]</button>
+  <button class="cb" id="b-pr">✂ PODA [P]</button>
+  <div class="csep"></div>
+  <span class="ch">MOUSE · DEFORMA ρ(x)</span>
+</div>
+
+<!-- Pruning toggle -->
+<div id="ptg">
+  <div class="ptl">PROTOCOLO PPP-01</div>
+  <div class="pto on" id="pto-on">Con poda <span class="ptv">f_c=0.35</span></div>
+  <div class="pto" id="pto-off">Sin poda (colapso) <span class="ptv">f_c=0.25</span></div>
+</div>
+
+<!-- Data overlay -->
+<div id="dov">
+  <div id="dtit">NODOS COMPILADOS · D_f vs K_i · MIU v13.0 (22 / 350 sistemas, consistencia interna)</div>
+  <svg id="dchart"></svg>
+  <div id="dclose">[ CERRAR · TECLA D ]</div>
+</div>
+
+<!-- Tooltip -->
+<div id="tt"><div class="ttn" id="ttn"></div><div class="ttd" id="ttd"></div></div>
+
+<!-- Crosshair -->
+<div id="xhair"></div>
+
+<script>
+'use strict';
+// ═══════════════════════════════════════════════════════════════
+// MIU v13.0 — CONSTANTES VALIDADAS
+// ═══════════════════════════════════════════════════════════════
+const MIU={
+  phi:1.6180339887,phi_inv:0.6180339887,delta_COD:0.6829322,
+  xi:8.57,xi_err:0.28,m_phi_meV:66.3,l0_mm:0.5,
+  kappa_Perry:5.1e5,kappa_c:0.5,D_eff:7.24,beta:0.52,
+  Omega_F:0.65048305,H0_local:73.50,q_born:1.191,lambda:0.8,
+  f_crit_p:0.35,f_crit_b:0.25,l_corr:0.5
+};
+
+const EQS={
+  M1:{id:'M1',t:'g_μν = ∂_μ∂_ν ln ρ − λ(∂_μ ln ρ)(∂_ν ln ρ)',d:'Métrica Fisher-Lorentziana'},
+  M2:{id:'M2',t:'□_g u + Ξ² u = 0,  u = √ρ',d:'Campo escalar informacional'},
+  M3:{id:'M3',t:'Ξ = |∇ ln ρ|',d:'Escalar de gradiente'},
+  M4:{id:'M4',t:'m = ℏ Ξ / c',d:'Masa como gradiente de información'},
+  M5:{id:'M5',t:'ω_F = c Ξ',d:'Frecuencia de Fisher'},
+  M19:{id:'M19',t:'K_i = φ⁻¹ · (D_f/2.5) · (ℓ_corr/ℓ_0)',d:'Ley Fractal Universal'},
+  M26:{id:'M26',t:'K_i(L) = K_i^∞ [1 − β(ℓ_corr/L)^½]',d:'Corrección tamaño finito'},
+  M30:{id:'M30',t:'P(pat.) = 1 − [(K_i/K_i^∞)·(D_f/D_opt)·K_tr]',d:'Probabilidad patogénica'}
+};
+
+const NODES=[
+  {id:'MT',name:'Microtúbulos',         Df:2.50,Ki:0.618,cat:'neuro', v:true},
+  {id:'MG',name:'Manglares GMW',        Df:2.28,Ki:0.563,cat:'eco',   v:true},
+  {id:'CH',name:'Chernozem (Ucrania)',  Df:2.11,Ki:0.521,cat:'soil',  v:true},
+  {id:'VI',name:'Vertisol (India)',     Df:2.10,Ki:0.519,cat:'soil',  v:true},
+  {id:'RS',name:'Red Sea (corales)',    Df:2.16,Ki:0.534,cat:'marine',v:true},
+  {id:'GB',name:'Gran Barrera seagr.', Df:2.03,Ki:0.502,cat:'marine',v:true},
+  {id:'CA',name:'Caribe SE (Allen)',   Df:2.08,Ki:0.513,cat:'marine',v:true},
+  {id:'FL',name:'Florida Reef Tract',  Df:2.02,Ki:0.498,cat:'marine',v:true},
+  {id:'GC',name:'Turbera Glen Carron', Df:1.91,Ki:0.472,cat:'eco',   v:true},
+  {id:'SG',name:'Seagrass global',     Df:1.76,Ki:0.435,cat:'marine',v:true},
+  {id:'BF',name:'Biodiversidad flora', Df:2.31,Ki:0.570,cat:'bio',   v:true},
+  {id:'MH',name:'Microbioma humano',   Df:2.50,Ki:0.508,cat:'bio',   v:false},
+  {id:'IF',name:'Incendios globales',  Df:1.49,Ki:0.368,cat:'crisis',v:true},
+  {id:'CG',name:'Clima global',        Df:1.40,Ki:0.346,cat:'crisis',v:true},
+  {id:'NS',name:'Noosfera (GDELT)',    Df:1.48,Ki:0.366,cat:'crisis',v:true},
+  {id:'CM',name:'CMB',                 Df:2.305,Ki:0.570,cat:'cosmic',v:true},
+  {id:'HI',name:'Microbioma intestinal',Df:2.18,Ki:0.538,cat:'bio',  v:true},
+  {id:'NR',name:'Red neuronal cortex', Df:2.42,Ki:0.598,cat:'neuro', v:true},
+  {id:'MI',name:'Micelio fúngico',     Df:2.35,Ki:0.580,cat:'eco',   v:true},
+  {id:'OF',name:'Océano fitoplancton', Df:1.95,Ki:0.481,cat:'marine',v:true},
+  {id:'AT',name:'Atmósfera (aerosol)', Df:1.62,Ki:0.400,cat:'atm',   v:true},
+  {id:'GF',name:'Filamentos galácticos',Df:2.30,Ki:0.568,cat:'cosmic',v:true}
+];
+
+const SCALES=[
+  {id:0,nm:'Campo Primordial',sb:'Escala de Planck',ex:'10⁻³⁵ m',
+   eqs:['M1','M2','M3'],cs:['phi','delta_COD','xi','lambda'],
+   d:'El campo ρ(x)>0 antes de la emergencia del espacio-tiempo. Las partículas representan fluctuaciones cuánticas. Sus gradientes, descritos por M1, generan toda la geometría observable. Interactúa: el cursor deforma ρ(x).'},
+  {id:1,nm:'Cuántico',sb:'Partículas y superposiciones',ex:'10⁻¹⁵ m',
+   eqs:['M2','M3','M4'],cs:['q_born','xi','m_phi_meV'],
+   d:'Las partículas son patrones de coherencia localizados del campo ρ. La regla de Born se modifica: q_born=1.191≠1 en MIU. Las nubes representan superposiciones — estados del campo antes del colapso disipativo A5. Clic para colapsar.'},
+  {id:2,nm:'Atómico / Molecular',sb:'Nudos del campo',ex:'10⁻¹⁰ m',
+   eqs:['M4','M5','M19'],cs:['m_phi_meV','phi_inv','l0_mm'],
+   d:'La materia emerge como nudos estables de ρ. La masa (M4): m=ℏΞ/c. Los nodos se colorean por K_i (M19). Los enlaces vibran a ω_F∝m_φ=66.3 meV. Los 22 nodos validados del MIU están aquí representados.'},
+  {id:3,nm:'Biológico',sb:'Escala de la vida',ex:'10⁻⁶–10⁰ m',
+   eqs:['M19','M26','M30'],cs:['f_crit_p','f_crit_b','l_corr','phi_inv'],
+   d:'Las redes biológicas son fractales de información. K_i coloreado: azul<0.3, verde 0.3–0.55, dorado 0.55–0.62. PPP-01 (Protocolo de Poda): activa/desactiva con [P] para ver resiliencia vs colapso. f_crit_prune=0.35, f_crit_bare=0.25.'},
+  {id:4,nm:'Planetario',sb:'Geofísica e información',ex:'10⁷ m',
+   eqs:['M19','M26'],cs:['kappa_c','delta_COD','Omega_F'],
+   d:'La Tierra como nodo informacional. Noosfera GDELT: K_i=0.366. Incendios: 0.368. Clima: 0.346 — todos bajo κ_c=0.5 (umbral de colapso planetario). El pulso de 176 días del latido informacional se anima aquí.'},
+  {id:5,nm:'Cósmico',sb:'Escala universal',ex:'10²⁴ m',
+   eqs:['M1','M19'],cs:['D_eff','H0_local','beta'],
+   d:'Filamentos cósmicos: red fractal del campo ρ a escala universal. D_eff=7.24 sugiere 3.24 dimensiones ocultas (capas fantasma). CMB: D_f=2.305, K_i=0.570. H₀=73.5 km/s/Mpc determina la expansión de los filamentos.'}
+];
+
+// ═══════════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════════
+function lr(a,b,t){return a+(b-a)*t;}
+function cl(v,lo,hi){return v<lo?lo:v>hi?hi:v;}
+function rnd(lo,hi){return lo+Math.random()*(hi-lo);}
+
+// K_i → THREE.Color: cold blue < 0.3 | green 0.3–0.55 | gold 0.55–0.62 | white >0.62
+function kiCol(ki){
+  if(ki<0.3){const t=ki/0.3;return new THREE.Color(lr(0.08,0.14,t),lr(0.08,0.22,t),lr(0.75,0.88,t));}
+  if(ki<0.55){const t=(ki-0.3)/0.25;return new THREE.Color(lr(0.14,0.22,t),lr(0.22,0.68,t),lr(0.88,0.25,t));}
+  if(ki<0.62){const t=(ki-0.55)/0.07;return new THREE.Color(lr(0.22,0.83,t),lr(0.68,0.66,t),lr(0.25,0.26,t));}
+  const t=cl((ki-0.62)/0.1,0,1);
+  return new THREE.Color(lr(0.83,1.0,t),lr(0.66,1.0,t),lr(0.26,0.95,t));
+}
+
+// ═══════════════════════════════════════════════════════════════
+// GLSL — CAMPO PRIMORDIAL (Planck)
+// Vertex shader: simula flujo de partículas a lo largo de ∇(ln ρ)
+// La estadística de tipo Fisher emerge del FBM con exponente de Hurst H≈0.5
+// ═══════════════════════════════════════════════════════════════
+const VS_PLANCK=`
+precision highp float;
+uniform float uT;uniform vec2 uM;uniform float uMS;uniform float uA;
+attribute float aS;attribute float aP;
+varying vec3 vC;varying float vA;
+
+float h31(vec3 p){p=fract(p*vec3(.1031,.1030,.0973));p+=dot(p,p.yxz+33.33);return fract((p.x+p.y)*p.z);}
+
+float vn(vec3 p){
+  vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
+  return mix(
+    mix(mix(h31(i),h31(i+vec3(1,0,0)),f.x),mix(h31(i+vec3(0,1,0)),h31(i+vec3(1,1,0)),f.x),f.y),
+    mix(mix(h31(i+vec3(0,0,1)),h31(i+vec3(1,0,1)),f.x),mix(h31(i+vec3(0,1,1)),h31(i+vec3(1,1,1)),f.x),f.y),
+    f.z)*2.-1.;
+}
+
+// FBM con rotación entre octavas — estadística tipo Fisher para ln ρ
+float fbm(vec3 p){
+  float v=0.,a=.5;
+  mat3 R=mat3(0.,.8,.6,-.8,.36,-.48,-.6,-.48,.64);
+  for(int i=0;i<6;i++){v+=a*vn(p);p=R*p*2.;a*=.5;}
+  return v;
+}
+
+// ln ρ(x,t) — el campo de información primordial
+// ρ(x)=exp(lnRho) > 0 siempre
+float lnR(vec3 p,float t){
+  vec3 q=p+vec3(t*.038,t*.024,t*.046);
+  return fbm(q*.65)*.60+fbm(q*1.3+vec3(17.23,8.91,4.67))*.25+fbm(q*2.6+vec3(3.14,99.1,12.3))*.10;
+}
+
+// ∇(ln ρ) — tangente Fisher: determina el flujo de partículas
+vec3 gLnR(vec3 p,float t){
+  float e=.07;
+  return vec3(lnR(p+vec3(e,0,0),t)-lnR(p-vec3(e,0,0),t),
+              lnR(p+vec3(0,e,0),t)-lnR(p-vec3(0,e,0),t),
+              lnR(p+vec3(0,0,e),t)-lnR(p-vec3(0,0,e),t))/(2.*e);
+}
+
+void main(){
+  // Ciclo de vida por partícula
+  float life=fract(aP+uT*(0.052+aS*0.032));
+  float la=sin(life*3.14159265);
+
+  // Posición: arrastre a lo largo de ∇(ln ρ) — flujo de la métrica Fisher
+  vec3 p0=position;
+  vec3 g=gLnR(p0,uT);
+  float gm=length(g);
+  // Componente curl para movimiento espiral (rota el espacio tangente)
+  vec3 cv=vec3(g.y-g.z,g.z-g.x,g.x-g.y);
+  vec3 pos=p0+(g*.5+cv*.22)*life*.75;
+
+  // Perturbación del cursor: excitación local del campo ρ(x)
+  vec3 mw=vec3(uM*4.2,0.);
+  vec3 dm=pos-mw;
+  float md2=dot(dm,dm);
+  pos+=normalize(dm+vec3(1e-5))*uMS*exp(-md2*.3)*(.5-life)*.5;
+
+  // Color: mapa del espacio ρ → espectro visible
+  float n=clamp((lnR(pos,uT)+1.5)/3.,0.,1.);
+  vec3 c;
+  if(n<.3) c=mix(vec3(.05,.07,.28),vec3(.13,.38,.85),n/.3);
+  else if(n<.65){float t=(n-.3)/.35;c=mix(vec3(.13,.38,.85),vec3(0.,.91,.67),t);}
+  else{float t=clamp((n-.65)/.35,0.,1.);c=mix(vec3(0.,.91,.67),vec3(.96,.77,.28),t);}
+  // Flash dorado en zonas de alto gradiente: emergencia del espacio-tiempo
+  c=mix(c,vec3(.96,.77,.28),clamp(gm*1.3-.25,0.,.65));
+  vC=c;
+  vA=la*clamp(n*.8+gm*.6,0.,1.)*.92*uA;
+  gl_Position=projectionMatrix*modelViewMatrix*vec4(pos,1.);
+  gl_PointSize=max(.5,(1.8+gm*5.)*la+.3);
+}`;
+
+const FS_PT=`
+precision highp float;
+varying vec3 vC;varying float vA;
+void main(){
+  vec2 uv=gl_PointCoord-.5;float d=length(uv)*2.;
+  float a=(exp(-d*d*5.)+exp(-d*d*1.3)*.35)*vA;
+  if(a<.008)discard;
+  gl_FragColor=vec4(vC+vec3(.08,.08,.04)*exp(-d*d*6.),a);
+}`;
+
+// Glow point shader — nodos K_i coloreados
+const VS_GLOW=`
+precision highp float;
+uniform float uT;uniform float uA;
+attribute float aK;attribute float aS;
+varying vec3 vC;varying float vA;
+void main(){
+  float pulse=1.+sin(uT*1.5+aS*6.28)*.08;
+  float ki=aK;vec3 c;
+  if(ki<.3){c=mix(vec3(.08,.08,.75),vec3(.14,.22,.88),ki/.3);}
+  else if(ki<.55){float t=(ki-.3)/.25;c=mix(vec3(.14,.22,.88),vec3(.22,.68,.28),t);}
+  else if(ki<.62){float t=(ki-.55)/.07;c=mix(vec3(.22,.68,.28),vec3(.83,.66,.26),t);}
+  else{float t=clamp((ki-.62)/.1,0.,1.);c=mix(vec3(.83,.66,.26),vec3(1.,1.,.95),t);}
+  vC=c;vA=uA;
+  gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);
+  gl_PointSize=max(1.,(4.+ki*12.)*pulse);
+}`;
+const FS_GLOW=`
+precision highp float;
+varying vec3 vC;varying float vA;
+void main(){
+  vec2 uv=gl_PointCoord-.5;float d=length(uv)*2.;
+  float a=(exp(-d*d*6.)+exp(-d*d*1.5)*.45+smoothstep(.65,.7,d)*smoothstep(.88,.78,d)*.25)*vA;
+  if(a<.01)discard;
+  gl_FragColor=vec4(vC+vec3(.08)*exp(-d*d*8.),a);
+}`;
+
+// Shader cósmico — galaxias y CMB
+const VS_FIL=`
+precision highp float;
+uniform float uT;uniform float uA;
+attribute float aB;
+varying float vB;varying float vA;
+void main(){
+  vB=aB;vA=uA;
+  gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);
+  gl_PointSize=max(.8,aB*3.5);
+}`;
+const FS_FIL=`
+precision highp float;
+varying float vB;varying float vA;
+void main(){
+  vec2 uv=gl_PointCoord-.5;float d=length(uv)*2.;
+  float a=exp(-d*d*4.)*vB*vA;if(a<.004)discard;
+  vec3 c=mix(vec3(.18,.28,.68),vec3(.9,.88,.95),vB);
+  gl_FragColor=vec4(c,a);
+}`;
+
+// ═══════════════════════════════════════════════════════════════
+// THREE.JS
+// ═══════════════════════════════════════════════════════════════
+const canvas=document.getElementById('c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.setSize(window.innerWidth,window.innerHeight);
+renderer.setClearColor(0x06061a,1);
+
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.01,2000);
+camera.position.set(0,0,7.5);
+scene.add(new THREE.AmbientLight(0x303050,2));
+const dl=new THREE.DirectionalLight(0x8090ff,3);
+dl.position.set(5,8,5);scene.add(dl);
+
+const G=Array.from({length:6},()=>{const g=new THREE.Group();scene.add(g);return g;});
+
+const ST={scl:0,tgt:0,t:0,mx:0,my:0,ms:0,data:false,prune:true,th:0,ph:Math.PI/3.5};
+
+// ═══════════════════════════════════════════════════════════════
+// ESCALA 0: PLANCK — Sistema de partículas GPU
+// 80K partículas fluyen a lo largo de ∇(ln ρ)
+// ═══════════════════════════════════════════════════════════════
+function mkPlanck(){
+  const N=80000,pos=new Float32Array(N*3),s=new Float32Array(N),p=new Float32Array(N);
+  for(let i=0;i<N;i++){
+    const r=rnd(.1,5.),th=rnd(0,Math.PI),ph=rnd(0,Math.PI*2);
+    pos[i*3]=r*Math.sin(th)*Math.cos(ph);
+    pos[i*3+1]=r*Math.sin(th)*Math.sin(ph);
+    pos[i*3+2]=r*Math.cos(th);
+    s[i]=Math.random();p[i]=Math.random();
+  }
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  geo.setAttribute('aS',new THREE.BufferAttribute(s,1));
+  geo.setAttribute('aP',new THREE.BufferAttribute(p,1));
+  const mat=new THREE.ShaderMaterial({
+    vertexShader:VS_PLANCK,fragmentShader:FS_PT,
+    uniforms:{uT:{value:0},uM:{value:new THREE.Vector2()},uMS:{value:0},uA:{value:1}},
+    transparent:true,depthWrite:false,blending:THREE.AdditiveBlending
+  });
+  G[0].add(new THREE.Points(geo,mat));
+  G[0].userData.mat=mat;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ESCALA 1: CUÁNTICO — Nubes de probabilidad
+// q_born=1.191: desviación de la regla de Born estándar
+// ═══════════════════════════════════════════════════════════════
+function mkQuantum(){
+  const g=G[1],N=12;
+  g.userData.cms=[];
+  for(let i=0;i<N;i++){
+    const r=rnd(1.2,3.5),th=rnd(.1,Math.PI-.1),ph=(i/N)*Math.PI*2;
+    const x=r*Math.sin(th)*Math.cos(ph),y=r*Math.sin(th)*Math.sin(ph),z=r*Math.cos(th);
+    const ki=0.3+Math.random()*0.32;
+    const col=kiCol(ki);
+    // Esfera exterior: superposición
+    const og=new THREE.SphereGeometry(.18+ki*.1,14,10);
+    const om=new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.1,side:THREE.FrontSide,depthWrite:false});
+    const os=new THREE.Mesh(og,om);os.position.set(x,y,z);os.userData={type:'q',id:i};g.add(os);
+    // Núcleo
+    const ig=new THREE.SphereGeometry(.04+ki*.03,10,8);
+    const im=new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.75});
+    const is=new THREE.Mesh(ig,im);is.position.set(x,y,z);g.add(is);
+    // Nube de partículas (coherencia cuántica)
+    const nc=280,cp=new Float32Array(nc*3),cs=new Float32Array(nc),cph=new Float32Array(nc),ck=new Float32Array(nc);
+    for(let j=0;j<nc;j++){
+      const sr=rnd(.04,.38),st=rnd(0,Math.PI),sp=rnd(0,Math.PI*2);
+      // Distribución modificada por q_born: P∝|ψ|^(2*q_born)
+      const qr=sr*Math.pow(Math.random(),1/MIU.q_born);
+      cp[j*3]=x+qr*Math.sin(st)*Math.cos(sp);
+      cp[j*3+1]=y+qr*Math.sin(st)*Math.sin(sp);
+      cp[j*3+2]=z+qr*Math.cos(st);
+      cs[j]=Math.random();cph[j]=Math.random();ck[j]=ki;
+    }
+    const cg2=new THREE.BufferGeometry();
+    cg2.setAttribute('position',new THREE.BufferAttribute(cp,3));
+    cg2.setAttribute('aS',new THREE.BufferAttribute(cs,1));
+    cg2.setAttribute('aK',new THREE.BufferAttribute(ck,1));
+    cg2.setAttribute('aP',new THREE.BufferAttribute(cph,1));
+    const cm=new THREE.ShaderMaterial({
+      vertexShader:VS_GLOW,fragmentShader:FS_GLOW,
+      uniforms:{uT:{value:0},uA:{value:1}},
+      transparent:true,depthWrite:false,blending:THREE.AdditiveBlending
+    });
+    g.add(new THREE.Points(cg2,cm));
+    g.userData.cms.push(cm);
+  }
+  // Líneas de campo (conexión entre estados)
+  const lp=[];
+  const meshes=g.children.filter(c=>c.isMesh&&c.userData.type==='q');
+  for(let i=0;i<meshes.length;i++){
+    const a=meshes[i].position,b=meshes[(i+1)%meshes.length].position;
+    lp.push(a.x,a.y,a.z,b.x,b.y,b.z);
+  }
+  const lg=new THREE.BufferGeometry();
+  lg.setAttribute('position',new THREE.Float32BufferAttribute(lp,3));
+  g.add(new THREE.LineSegments(lg,new THREE.LineBasicMaterial({color:0x2460cc,transparent:true,opacity:.18})));
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ESCALA 2: ATÓMICO — Red de nodos K_i
+// Los 22 nodos validados del MIU v13.0
+// ═══════════════════════════════════════════════════════════════
+function mkAtomic(){
+  const g=G[2],N=NODES.length;
+  const np=NODES.map((nd,i)=>{
+    const phi2=Math.acos(1-2*(i+.5)/N),th2=Math.PI*(1+Math.sqrt(5))*i;
+    const r=3.+nd.Ki*.9;
+    return new THREE.Vector3(r*Math.sin(phi2)*Math.cos(th2),r*Math.cos(phi2),r*Math.sin(phi2)*Math.sin(th2));
+  });
+  const pa=new Float32Array(N*3),ka=new Float32Array(N),sa=new Float32Array(N);
+  np.forEach((p,i)=>{pa[i*3]=p.x;pa[i*3+1]=p.y;pa[i*3+2]=p.z;ka[i]=NODES[i].Ki;sa[i]=Math.random();});
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.BufferAttribute(pa,3));
+  geo.setAttribute('aK',new THREE.BufferAttribute(ka,1));
+  geo.setAttribute('aS',new THREE.BufferAttribute(sa,1));
+  const mat=new THREE.ShaderMaterial({
+    vertexShader:VS_GLOW,fragmentShader:FS_GLOW,
+    uniforms:{uT:{value:0},uA:{value:1}},
+    transparent:true,depthWrite:false,blending:THREE.AdditiveBlending
+  });
+  g.add(new THREE.Points(geo,mat));
+  g.userData.atMat=mat;
+  g.userData.atPos=np;
+  // Aristas: K_i determina si existe enlace (m=ℏΞ/c → umbral de enlace)
+  const ep=[];
+  for(let i=0;i<N;i++){
+    for(let j=i+1;j<N;j++){
+      if(np[i].distanceTo(np[j])<2.85){
+        ep.push(np[i].x,np[i].y,np[i].z,np[j].x,np[j].y,np[j].z);
+      }
+    }
+  }
+  const eg=new THREE.BufferGeometry();
+  eg.setAttribute('position',new THREE.Float32BufferAttribute(ep,3));
+  g.add(new THREE.LineSegments(eg,new THREE.LineBasicMaterial({color:0x2460cc,transparent:true,opacity:.22})));
+  // Esfera de referencia (longitud de correlación ℓ_0)
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(4.,28,20),new THREE.MeshBasicMaterial({color:0x2460cc,wireframe:true,transparent:true,opacity:.04})));
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ESCALA 3: BIOLÓGICO — Red fractal (PPP-01)
+// Ley de ramificación: longitud × Φ_c^depth
+// K_i colorea cada rama según M19
+// ═══════════════════════════════════════════════════════════════
+function mkBiological(){
+  const g=G[3];
+  g.userData.build=(prune)=>{
+    // Limpiar
+    while(g.children.length){
+      const c=g.children[0];
+      if(c.geometry)c.geometry.dispose();
+      if(c.material)c.material.dispose();
+      g.remove(c);
+    }
+    const FC=prune?MIU.f_crit_p:MIU.f_crit_b;
+    const bls=[];
+    function grow(sx,sy,sz,dx,dy,dz,ki,dep,maxD){
+      if(dep>maxD)return;
+      if(ki<FC&&dep>2)return;
+      const len=2.0*Math.pow(MIU.delta_COD,dep);
+      const ex=sx+dx*len,ey=sy+dy*len,ez=sz+dz*len;
+      bls.push({x1:sx,y1:sy,z1:sz,x2:ex,y2:ey,z2:ez,ki,dep,ok:ki>=FC});
+      // Perpendicular para ramificación
+      const mag=Math.sqrt(dx*dx+dy*dy+dz*dz);
+      const px=Math.abs(dx)<.9?1:0,py=Math.abs(dx)<.9?0:1,pz=0;
+      const cx2=dy*pz-dz*py,cy2=dz*px-dx*pz,cz2=dx*py-dy*px;
+      const cm=Math.sqrt(cx2*cx2+cy2*cy2+cz2*cz2)+1e-9;
+      const rx=cx2/cm,ry=cy2/cm,rz=cz2/cm;
+      // Ángulo de ramificación usando Φ_c (geometría dorada del MIU)
+      const ba=MIU.delta_COD*.62+dep*.015;
+      const cosA=Math.cos(ba),sinA=Math.sin(ba);
+      // Rotar dirección ±ba alrededor del vector perpendicular
+      function rotV(ax,ay,az,ux,uy,uz,c,s){
+        return[ax*c+(uy*az-uz*ay)*s+ux*(ux*ax+uy*ay+uz*az)*(1-c),
+               ay*c+(uz*ax-ux*az)*s+uy*(ux*ax+uy*ay+uz*az)*(1-c),
+               az*c+(ux*ay-uy*ax)*s+uz*(ux*ax+uy*ay+uz*az)*(1-c)];
+      }
+      const [d1x,d1y,d1z]=rotV(dx,dy,dz,rx,ry,rz,cosA,sinA);
+      const [d2x,d2y,d2z]=rotV(dx,dy,dz,rx,ry,rz,cosA,-sinA);
+      const nm=Math.sqrt(d1x*d1x+d1y*d1y+d1z*d1z)+1e-9;
+      grow(ex,ey,ez,d1x/nm,d1y/nm,d1z/nm,ki*MIU.delta_COD,dep+1,maxD);
+      grow(ex,ey,ez,d2x/nm,d2y/nm,d2z/nm,ki*MIU.delta_COD,dep+1,maxD);
+      if(dep<3&&Math.random()<.28){
+        // Anastomosis micélica: rama terciaria aleatoria
+        const [d3x,d3y,d3z]=rotV(dx,dy,dz,rx,ry,rz,Math.cos(MIU.delta_COD*.3),(Math.random()-.5)*Math.sin(MIU.delta_COD*.3));
+        const n3=Math.sqrt(d3x*d3x+d3y*d3y+d3z*d3z)+1e-9;
+        grow(ex,ey,ez,d3x/n3,d3y/n3,d3z/n3,ki*MIU.delta_COD*MIU.delta_COD,dep+2,maxD);
+      }
+    }
+    const ROOTS=[
+      {x:0,y:-3.5,z:0,dx:0,dy:1,dz:0},
+      {x:-1.8,y:-2.5,z:.5,dx:.35,dy:.9,dz:0},
+      {x:1.8,y:-2.5,z:-.5,dx:-.35,dy:.9,dz:0}
+    ];
+    ROOTS.forEach(r=>grow(r.x,r.y,r.z,r.dx,r.dy,r.dz,MIU.phi_inv,0,9));
+    // Geometría de líneas con colores K_i
+    const lpos=[],lcol=[];
+    const npos=[],nki=[],nsd=[];
+    bls.forEach(b=>{
+      const c=kiCol(b.ki);
+      const al=b.ok?1.:.15;
+      lpos.push(b.x1,b.y1,b.z1,b.x2,b.y2,b.z2);
+      lcol.push(c.r*al,c.g*al,c.b*al,c.r*al,c.g*al,c.b*al);
+      npos.push(b.x2,b.y2,b.z2);nki.push(b.ki);nsd.push(Math.random());
+    });
+    const lGeo=new THREE.BufferGeometry();
+    lGeo.setAttribute('position',new THREE.Float32BufferAttribute(lpos,3));
+    lGeo.setAttribute('color',new THREE.Float32BufferAttribute(lcol,3));
+    g.add(new THREE.LineSegments(lGeo,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:1})));
+    const nGeo=new THREE.BufferGeometry();
+    nGeo.setAttribute('position',new THREE.Float32BufferAttribute(npos,3));
+    nGeo.setAttribute('aK',new THREE.Float32BufferAttribute(nki,1));
+    nGeo.setAttribute('aS',new THREE.Float32BufferAttribute(nsd,1));
+    const nm2=new THREE.ShaderMaterial({
+      vertexShader:VS_GLOW,fragmentShader:FS_GLOW,
+      uniforms:{uT:{value:0},uA:{value:1}},
+      transparent:true,depthWrite:false,blending:THREE.AdditiveBlending
+    });
+    g.add(new THREE.Points(nGeo,nm2));
+    g.userData.bgm=nm2;
+  };
+  g.userData.build(true);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ESCALA 4: PLANETARIO — Tierra + Noosfera (GDELT)
+// Pulso de 176 días mapeado a 30s de animación
+// κ_c = 0.5: umbral de colapso planetario
+// ═══════════════════════════════════════════════════════════════
+function mkPlanetary(){
+  const g=G[4];
+  // Tierra
+  const em=new THREE.MeshPhongMaterial({color:0x1a3a5c,emissive:0x0a1825,shininess:28,transparent:true,opacity:.9});
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(2.,48,36),em));
+  // Atmósfera
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(2.13,28,22),new THREE.MeshBasicMaterial({color:0x4488ff,transparent:true,opacity:.055,side:THREE.BackSide})));
+  // Grilla geofísica
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(2.01,22,16),new THREE.MeshBasicMaterial({color:0x2460cc,wireframe:true,transparent:true,opacity:.07})));
+  g.userData.em=em;
+  // Eventos GDELT / noosfera: distribución por K_i de nodos planetarios
+  const pn=NODES.filter(n=>['eco','crisis','atm','marine','bio','info'].includes(n.cat));
+  const NE=700,ep=new Float32Array(NE*3),ek=new Float32Array(NE),es=new Float32Array(NE);
+  for(let i=0;i<NE;i++){
+    const r=2.06+Math.random()*.55,th=Math.acos(2*Math.random()-1),ph=Math.random()*Math.PI*2;
+    ep[i*3]=r*Math.sin(th)*Math.cos(ph);ep[i*3+1]=r*Math.cos(th);ep[i*3+2]=r*Math.sin(th)*Math.sin(ph);
+    ek[i]=pn[i%pn.length].Ki*(0.75+Math.random()*.5);es[i]=Math.random();
+  }
+  const eGeo=new THREE.BufferGeometry();
+  eGeo.setAttribute('position',new THREE.BufferAttribute(ep,3));
+  eGeo.setAttribute('aK',new THREE.BufferAttribute(ek,1));
+  eGeo.setAttribute('aS',new THREE.BufferAttribute(es,1));
+  const evM=new THREE.ShaderMaterial({
+    vertexShader:VS_GLOW,fragmentShader:FS_GLOW,
+    uniforms:{uT:{value:0},uA:{value:1}},
+    transparent:true,depthWrite:false,blending:THREE.AdditiveBlending
+  });
+  g.add(new THREE.Points(eGeo,evM));
+  g.userData.evm=evM;
+  // Anillos orbitales de la noosfera
+  [[2.32,.002,.18],[2.75,.002,.12],[3.25,.0015,.07]].forEach(([r,t,op],i)=>{
+    const rg=new THREE.TorusGeometry(r,t,4,120);
+    rg.rotateX(Math.PI/2*(.3+i*.18));
+    g.add(new THREE.Mesh(rg,new THREE.MeshBasicMaterial({color:i===0?0x00e8aa:0x2460cc,transparent:true,opacity:op})));
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ESCALA 5: CÓSMICO — Filamentos galácticos + CMB
+// D_eff=7.24: 3 capas fantasma representan las 3.24 dimensiones ocultas
+// H₀=73.5 km/s/Mpc: tasa de expansión de los filamentos
+// ═══════════════════════════════════════════════════════════════
+function mkCosmic(){
+  const g=G[5];
+  g.userData.cms2=[];
+  // CMB: esfera de fondo con D_f=2.305
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(52,32,22),new THREE.MeshBasicMaterial({color:0x100820,side:THREE.BackSide,transparent:true,opacity:.85})));
+  // Fluctuaciones del CMB (D_f=2.305 → distribución no gaussiana)
+  const NC=3500,cp=new Float32Array(NC*3),cb=new Float32Array(NC);
+  for(let i=0;i<NC;i++){
+    const r=50+Math.random()*2.5,th=Math.acos(2*Math.random()-1),ph=Math.random()*Math.PI*2;
+    cp[i*3]=r*Math.sin(th)*Math.cos(ph);cp[i*3+1]=r*Math.cos(th);cp[i*3+2]=r*Math.sin(th)*Math.sin(ph);
+    cb[i]=.08+Math.random()*.38;
+  }
+  const cGeo=new THREE.BufferGeometry();
+  cGeo.setAttribute('position',new THREE.BufferAttribute(cp,3));
+  cGeo.setAttribute('aB',new THREE.BufferAttribute(cb,1));
+  const cMat=new THREE.ShaderMaterial({
+    vertexShader:VS_FIL,fragmentShader:FS_FIL,
+    uniforms:{uT:{value:0},uA:{value:1}},
+    transparent:true,depthWrite:false,blending:THREE.AdditiveBlending
+  });
+  g.add(new THREE.Points(cGeo,cMat));g.userData.cms2.push(cMat);
+  // Nodos filamentarios (estructura cósmica)
+  const NFN=90;
+  const fn=Array.from({length:NFN},()=>new THREE.Vector3(rnd(-32,32),rnd(-22,22),rnd(-28,28)));
+  // Voids cósmicos (repulsores)
+  const NV=18,vs=Array.from({length:NV},()=>new THREE.Vector3(rnd(-22,22),rnd(-16,16),rnd(-20,20)));
+  const NG=65000,gp=new Float32Array(NG*3),gb=new Float32Array(NG);
+  for(let i=0;i<NG;i++){
+    const bn=fn[Math.floor(Math.random()*NFN)];
+    const pos=new THREE.Vector3(bn.x+rnd(-5.5,5.5),bn.y+rnd(-3.5,3.5),bn.z+rnd(-4.5,4.5));
+    vs.forEach(v=>{const d=pos.distanceTo(v);if(d<9){const psh=1-d/9;pos.addScaledVector(pos.clone().sub(v).normalize(),psh*4.5);}});
+    gp[i*3]=pos.x;gp[i*3+1]=pos.y;gp[i*3+2]=pos.z;
+    gb[i]=cl(.18+Math.random()*.62,0,1);
+  }
+  const gGeo=new THREE.BufferGeometry();
+  gGeo.setAttribute('position',new THREE.BufferAttribute(gp,3));
+  gGeo.setAttribute('aB',new THREE.BufferAttribute(gb,1));
+  const gMat=new THREE.ShaderMaterial({
+    vertexShader:VS_FIL,fragmentShader:FS_FIL,
+    uniforms:{uT:{value:0},uA:{value:1}},
+    transparent:true,depthWrite:false,blending:THREE.AdditiveBlending
+  });
+  g.add(new THREE.Points(gGeo,gMat));g.userData.cms2.push(gMat);
+  // Líneas de filamentos
+  const flp=[];
+  fn.forEach((a,i)=>fn.forEach((b,j)=>{if(j>i&&a.distanceTo(b)<20&&Math.random()<.28)flp.push(a.x,a.y,a.z,b.x,b.y,b.z);}));
+  const flGeo=new THREE.BufferGeometry();
+  flGeo.setAttribute('position',new THREE.Float32BufferAttribute(flp,3));
+  g.add(new THREE.LineSegments(flGeo,new THREE.LineBasicMaterial({color:0x2860aa,transparent:true,opacity:.1})));
+  // D_eff=7.24: 3 capas fantasma (dimensiones ocultas)
+  // Cada capa es una versión rotada y escalada de la estructura, con opacidad decreciente
+  [.28,.14,.06].forEach((op,i)=>{
+    const ghost=new THREE.Points(gGeo,new THREE.PointsMaterial({
+      color:new THREE.Color(.6,.4,.9),size:.8,transparent:true,opacity:op,
+      blending:THREE.AdditiveBlending,depthWrite:false
+    }));
+    ghost.rotation.x=MIU.delta_COD*(i+1);
+    ghost.rotation.y=MIU.phi*(i+1)*.5;
+    ghost.scale.setScalar(.88+(i*.06));
+    g.add(ghost);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// VISIBILIDAD POR ESCALA — transición suave vía uA uniform
+// ═══════════════════════════════════════════════════════════════
+function updVis(){
+  const s=ST.scl;
+  G.forEach((g,i)=>{
+    const al=Math.max(0,1-Math.abs(s-i));
+    g.visible=al>.005;
+    if(!g.visible)return;
+    g.traverse(obj=>{
+      if(!obj.material)return;
+      const ms=Array.isArray(obj.material)?obj.material:[obj.material];
+      ms.forEach(m=>{
+        if(m.uniforms&&m.uniforms.uA)m.uniforms.uA.value=al;
+        else if(m.opacity!==undefined){m.transparent=true;m.opacity=al;}
+      });
+    });
+  });
+}
+
+// Configuración de cámara por escala
+const CAM=[
+  {d:7.5,ph:Math.PI/3.5,sp:.12},{d:6.5,ph:Math.PI/3.8,sp:.10},
+  {d:6.0,ph:Math.PI/4.0,sp:.08},{d:8.5,ph:Math.PI/3.2,sp:.07},
+  {d:6.0,ph:Math.PI/3.5,sp:.06},{d:55, ph:Math.PI/4.5,sp:.04}
+];
+function updCam(){
+  const s=ST.scl,si=cl(Math.floor(s),0,4),sf=s-si;
+  const c0=CAM[si],c1=CAM[Math.min(si+1,5)];
+  const d=lr(c0.d,c1.d,sf),ph=lr(c0.ph,c1.ph,sf),sp=lr(c0.sp,c1.sp,sf);
+  ST.th+=sp*.008;
+  camera.position.set(d*Math.sin(ph)*Math.cos(ST.th),d*Math.cos(ph),d*Math.sin(ph)*Math.sin(ST.th));
+  camera.lookAt(0,0,0);
+  camera.fov=si===5?68:60;
+  camera.updateProjectionMatrix();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UI
+// ═══════════════════════════════════════════════════════════════
+function mkTrack(){
+  const tk=document.getElementById('stk');
+  SCALES.forEach((sc,i)=>{
+    if(i>0){const d=document.createElement('div');d.className='sc';tk.appendChild(d);}
+    const el=document.createElement('div');el.className='si';el.dataset.i=i;
+    el.innerHTML=`<div class="sd"></div><div class="sl">${sc.ex}<br>${sc.nm}</div>`;
+    el.addEventListener('click',()=>{ST.tgt=i;});
+    tk.appendChild(el);
+  });
+}
+
+function updTrack(){
+  const si=cl(Math.round(ST.scl),0,5);
+  document.querySelectorAll('.si').forEach((el,i)=>el.classList.toggle('on',i===si));
+}
+
+let lastPanelScale=-1;
+function updPanel(){
+  const si=cl(Math.round(ST.scl),0,5);
+  if(si===lastPanelScale)return;lastPanelScale=si;
+  const sc=SCALES[si];
+  document.getElementById('p-sn').textContent=sc.nm;
+  document.getElementById('p-sr').textContent=`~${sc.ex} · ${sc.sb}`;
+  document.getElementById('p-sd').textContent=sc.d;
+  document.getElementById('sci-exp').textContent=sc.ex;
+  document.getElementById('sci-name').textContent=`${sc.nm} (${sc.sb})`;
+  document.getElementById('p-eqs').innerHTML=sc.eqs.map(id=>{const e=EQS[id];
+    return`<div class="eq"><div class="eid">${e.id} · ${e.d}</div><div class="etx">${e.t}</div></div>`;
+  }).join('');
+  document.getElementById('p-consts').innerHTML=sc.cs.map(k=>{
+    const v=MIU[k],fmt=typeof v==='number'?(Math.abs(v)>1e3||Math.abs(v)<.001?v.toExponential(3):v.toFixed(4)):String(v);
+    return`<div class="ci"><div class="cn">${k}</div><div class="cv">${fmt}</div></div>`;
+  }).join('');
+  document.getElementById('pstat').innerHTML=[
+    `Escala: ${si}/5`,`scaleVal: ${ST.scl.toFixed(3)}`,
+    `Φ_c = ${MIU.delta_COD}`,`D_eff = ${MIU.D_eff}`,
+    `K_i(noosfera) = 0.366`,`κ_c = ${MIU.kappa_c}`,
+    `H₀ = ${MIU.H0_local} km/s/Mpc`
+  ].map(l=>`<div>${l}</div>`).join('');
+  document.getElementById('ptg').classList.toggle('vis',si===3);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// D3 CHART — D_f vs K_i (22 nodos validados)
+// Línea teórica: K_i = φ⁻¹·(D_f/2.5) — ecuación M19
+// ═══════════════════════════════════════════════════════════════
+function mkChart(){
+  const margin={t:45,r:45,b:65,l:65};
+  const W=Math.min(680,window.innerWidth*.86)-margin.l-margin.r;
+  const H=Math.min(440,window.innerHeight*.74)-margin.t-margin.b;
+  const svg=d3.select('#dchart').attr('width',W+margin.l+margin.r).attr('height',H+margin.t+margin.b);
+  svg.selectAll('*').remove();
+  const g2=svg.append('g').attr('transform',`translate(${margin.l},${margin.t})`);
+  const xS=d3.scaleLinear().domain([1.2,2.65]).range([0,W]);
+  const yS=d3.scaleLinear().domain([.25,.72]).range([H,0]);
+  // Grid
+  g2.append('g').call(d3.axisLeft(yS).tickSize(-W).tickFormat('')).selectAll('line').style('stroke','rgba(212,168,67,.06)');
+  g2.append('g').attr('transform',`translate(0,${H})`).call(d3.axisBottom(xS).tickSize(-H).tickFormat('')).selectAll('line').style('stroke','rgba(212,168,67,.06)');
+  // Línea teórica M19: K_i = φ⁻¹·(D_f/2.5) [ℓ_corr/ℓ_0=1]
+  const xs=d3.range(1.2,2.7,.05);
+  g2.append('path').datum(xs.map(x=>({x,y:MIU.phi_inv*(x/2.5)})))
+    .attr('fill','none').attr('stroke','rgba(212,168,67,.3)').attr('stroke-width',1.5)
+    .attr('stroke-dasharray','6,4')
+    .attr('d',d3.line().x(d=>xS(d.x)).y(d=>yS(d.y)));
+  // Umbral Φ_c
+  g2.append('line').attr('x1',0).attr('x2',W).attr('y1',yS(MIU.delta_COD)).attr('y2',yS(MIU.delta_COD)).attr('stroke','rgba(212,168,67,.35)').attr('stroke-width',1).attr('stroke-dasharray','3,5');
+  g2.append('text').attr('x',W-4).attr('y',yS(MIU.delta_COD)-5).attr('text-anchor','end').attr('fill','#d4a843').attr('font-size',9).attr('font-family','Fira Code').text('Φ_c=0.6829322');
+  // κ_c
+  g2.append('line').attr('x1',0).attr('x2',W).attr('y1',yS(MIU.kappa_c)).attr('y2',yS(MIU.kappa_c)).attr('stroke','rgba(232,88,64,.28)').attr('stroke-width',1).attr('stroke-dasharray','3,5');
+  g2.append('text').attr('x',W-4).attr('y',yS(MIU.kappa_c)-5).attr('text-anchor','end').attr('fill','#e85840').attr('font-size',9).attr('font-family','Fira Code').text('κ_c=0.5 [colapso]');
+  // Categoría → color
+  const cc={neuro:'#a0d0ff',eco:'#4caf50',soil:'#c08040',marine:'#00e8aa',crisis:'#e85840',bio:'#d4a843',cosmic:'#c0a0ff',atm:'#8088cc',info:'#ffa040'};
+  const tt2=d3.select('#tt');
+  // Nodos
+  g2.selectAll('.n').data(NODES).enter().append('circle').attr('class','n')
+    .attr('cx',d=>xS(d.Df)).attr('cy',d=>yS(d.Ki))
+    .attr('r',d=>d.v?6.5:4.5).attr('fill',d=>cc[d.cat]||'#fff').attr('fill-opacity',d=>d.v?.82:.4)
+    .attr('stroke',d=>d.Ki>=MIU.delta_COD?'#d4a843':'none').attr('stroke-width',1.8).style('cursor','pointer')
+    .on('mouseover',function(ev,d){
+      d3.select(this).attr('r',9);
+      document.getElementById('ttn').textContent=d.name;
+      document.getElementById('ttd').textContent=`D_f=${d.Df}  K_i=${d.Ki}${d.v?'':' *est.'}`;
+      tt2.style('left',(ev.clientX+12)+'px').style('top',(ev.clientY-12)+'px').classed('show',true);
+    }).on('mousemove',ev=>{tt2.style('left',(ev.clientX+12)+'px').style('top',(ev.clientY-12)+'px');})
+    .on('mouseout',function(ev,d){d3.select(this).attr('r',d.v?6.5:4.5);tt2.classed('show',false);});
+  // Labels
+  g2.selectAll('.lbl').data(NODES).enter().append('text').attr('class','lbl')
+    .attr('x',d=>xS(d.Df)+8).attr('y',d=>yS(d.Ki)+4)
+    .attr('font-family','Fira Code').attr('font-size',8.5).attr('fill',d=>cc[d.cat]||'#aaa').attr('fill-opacity',.72)
+    .text(d=>d.id);
+  // Ejes
+  const axStyle=sel=>sel.selectAll('text,path,line').style('stroke','#4a6080').style('fill','#4a6080').style('font-family','Fira Code').style('font-size','9px');
+  axStyle(g2.append('g').attr('transform',`translate(0,${H})`).call(d3.axisBottom(xS).tickFormat(d=>`Df=${d}`)));
+  axStyle(g2.append('g').call(d3.axisLeft(yS).tickFormat(d=>`Ki=${d}`)));
+  // Leyenda categorías
+  const cats=[...new Set(NODES.map(n=>n.cat))];
+  const leg=g2.append('g').attr('transform',`translate(${W-115},0)`);
+  cats.forEach((cat,i)=>{
+    leg.append('rect').attr('x',0).attr('y',i*15).attr('width',8).attr('height',8).attr('fill',cc[cat]||'#fff');
+    leg.append('text').attr('x',12).attr('y',i*15+8).attr('font-family','Fira Code').attr('font-size',8.5).attr('fill','#4a6080').text(cat);
+  });
+  // Título
+  svg.append('text').attr('x',(W+margin.l+margin.r)/2).attr('y',20)
+    .attr('text-anchor','middle').attr('font-family','Fira Code').attr('font-size',10.5).attr('fill','#d4a843')
+    .text('M19: K_i = φ⁻¹·(D_f/2.5)  —  Línea teórica vs 22 nodos validados');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ANIMACIÓN
+// ═══════════════════════════════════════════════════════════════
+let lastTS=0;
+function animate(ts){
+  requestAnimationFrame(animate);
+  const dt=Math.min((ts-lastTS)/1000,.05);lastTS=ts;
+  ST.t+=dt;const t=ST.t;
+  // Transición suave de escala
+  ST.scl+=cl((ST.tgt-ST.scl)*Math.min(dt*4.5,1),-0.15,0.15);
+  ST.scl=cl(ST.scl,0,5);
+  ST.ms*=.977;
+  // Planck
+  if(G[0].visible&&G[0].userData.mat){
+    const u=G[0].userData.mat.uniforms;
+    u.uT.value=t;u.uM.value.set(ST.mx,ST.my);u.uMS.value=ST.ms*1.9;
+  }
+  // Quantum
+  if(G[1].visible&&G[1].userData.cms){
+    G[1].userData.cms.forEach(m=>{if(m.uniforms)m.uniforms.uT.value=t;});
+    G[1].children.forEach(c=>{if(c.isMesh&&c.userData.type==='q')c.position.y+=Math.sin(t*.8+c.userData.id*.88)*.0008;});
+  }
+  // Atomic — rotación orbital
+  if(G[2].visible&&G[2].userData.atMat){
+    G[2].userData.atMat.uniforms.uT.value=t;
+    G[2].rotation.y+=.0025;G[2].rotation.x=Math.sin(t*.08)*.04;
+  }
+  // Biological
+  if(G[3].visible){
+    if(G[3].userData.bgm)G[3].userData.bgm.uniforms.uT.value=t;
+    G[3].rotation.z=Math.sin(t*.12)*.018;
+  }
+  // Planetary — rotación + pulso 176 días
+  if(G[4].visible){
+    if(G[4].userData.evm)G[4].userData.evm.uniforms.uT.value=t;
+    G[4].rotation.y+=.0018;
+    const pulse=(Math.sin(t*(2*Math.PI/30))*.5+.5);// 30s = 176 días
+    if(G[4].userData.em)G[4].userData.em.emissive.setRGB(pulse*.08,pulse*.1,pulse*.18);
+  }
+  // Cosmic — rotación lenta + expansión de Hubble
+  if(G[5].visible){
+    if(G[5].userData.cms2)G[5].userData.cms2.forEach(m=>{if(m.uniforms)m.uniforms.uT.value=t;});
+    G[5].rotation.y+=.00025;G[5].rotation.x=Math.sin(t*.04)*.008;
+    // H₀=73.5 → expansión muy lenta en la visualización
+    const hubble=1+t*.00002;G[5].scale.setScalar(Math.min(hubble,1.05));
+  }
+  updVis();updCam();
+  // UI a 5Hz
+  if(Math.floor(t*5)!==Math.floor((t-dt)*5)){updTrack();updPanel();}
+  renderer.render(scene,camera);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INTERACCIÓN
+// ═══════════════════════════════════════════════════════════════
+window.addEventListener('wheel',e=>{
+  e.preventDefault();
+  ST.tgt=cl(ST.tgt+Math.sign(e.deltaY)*.18,0,5);
+},{passive:false});
+
+let ty0=0;
+window.addEventListener('touchstart',e=>{ty0=e.touches[0].clientY;});
+window.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  ST.tgt=cl(ST.tgt-(e.touches[0].clientY-ty0)*.006,0,5);
+  ty0=e.touches[0].clientY;
+},{passive:false});
+
+canvas.addEventListener('mousemove',e=>{
+  ST.mx=(e.clientX/window.innerWidth)*2-1;
+  ST.my=-(e.clientY/window.innerHeight)*2+1;
+  ST.ms=Math.min(ST.ms+.06,1.);
+  const xh=document.getElementById('xhair');
+  xh.style.left=e.clientX+'px';xh.style.top=e.clientY+'px';
+});
+canvas.addEventListener('mouseleave',()=>{ST.ms=0;});
+
+// Clic: colapso cuántico (Escala 1)
+canvas.addEventListener('click',()=>{
+  if(Math.round(ST.scl)!==1)return;
+  G[1].children.forEach(c=>{
+    if(c.isMesh&&c.material&&c.material.opacity>.05){
+      const orig=c.material.opacity;
+      c.material.opacity=orig*.12;
+      setTimeout(()=>{if(c.material)c.material.opacity=Math.min(orig,c.material.opacity*4);},900);
+    }
+  });
+});
+
+window.addEventListener('keydown',e=>{
+  switch(e.key.toLowerCase()){
+    case 'd':toggleData();break;
+    case 'p':if(Math.round(ST.scl)===3)togglePrune();break;
+    case 'escape':if(ST.data)toggleData();break;
+    case 'arrowdown':ST.tgt=Math.min(5,ST.tgt+1);break;
+    case 'arrowup':ST.tgt=Math.max(0,ST.tgt-1);break;
+  }
+});
+
+function toggleData(){
+  ST.data=!ST.data;
+  if(ST.data)mkChart();
+  document.getElementById('dov').classList.toggle('vis',ST.data);
+  document.getElementById('b-dt').classList.toggle('on',ST.data);
+}
+function togglePrune(){
+  ST.prune=!ST.prune;
+  G[3].userData.build(ST.prune);
+  document.getElementById('pto-on').classList.toggle('on',ST.prune);
+  document.getElementById('pto-off').classList.toggle('on',!ST.prune);
+  document.getElementById('b-pr').classList.toggle('on',!ST.prune);
+}
+
+document.getElementById('ptog').addEventListener('click',()=>document.getElementById('panel').classList.toggle('col'));
+document.getElementById('b-up').addEventListener('click',()=>ST.tgt=Math.max(0,ST.tgt-1));
+document.getElementById('b-dn').addEventListener('click',()=>ST.tgt=Math.min(5,ST.tgt+1));
+document.getElementById('b-dt').addEventListener('click',toggleData);
+document.getElementById('b-pr').addEventListener('click',()=>{if(Math.round(ST.scl)===3)togglePrune();});
+document.getElementById('dclose').addEventListener('click',toggleData);
+document.getElementById('pto-on').addEventListener('click',()=>{if(!ST.prune)togglePrune();});
+document.getElementById('pto-off').addEventListener('click',()=>{if(ST.prune)togglePrune();});
+
+window.addEventListener('resize',()=>{
+  camera.aspect=window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth,window.innerHeight);
+});
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+function init(){
+  mkTrack();
+  mkPlanck();mkQuantum();mkAtomic();mkBiological();mkPlanetary();mkCosmic();
+  G.forEach((g,i)=>{g.visible=i===0;});
+  updPanel();updTrack();
+  // Ocultar loading
+  setTimeout(()=>document.getElementById('loading').classList.add('hidden'),600);
+  // Hint de scroll
+  setTimeout(()=>{
+    const h=document.createElement('div');
+    h.style.cssText='position:fixed;bottom:5rem;left:50%;transform:translateX(-50%);font-family:Fira Code,monospace;font-size:.62rem;letter-spacing:.22em;color:rgba(74,96,128,.85);z-index:100;pointer-events:none;text-align:center;animation:fh 5s ease-out forwards;';
+    h.textContent='SCROLL · NAVEGA LAS ESCALAS DEL CAMPO ρ(x)';
+    document.body.appendChild(h);
+    const s=document.createElement('style');s.textContent='@keyframes fh{0%{opacity:0}20%{opacity:1}80%{opacity:1}100%{opacity:0}}';
+    document.head.appendChild(s);setTimeout(()=>h.remove(),5500);
+  },1400);
+  requestAnimationFrame(animate);
+}
+init();
+</script>
+</body>
+</html>

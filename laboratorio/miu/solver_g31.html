@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIU Solver G31 v1.0 — Probador de Teoremas</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0a; color: #e0e0e0; font-family: 'Courier New', monospace; padding: 15px; max-width: 850px; margin: auto; }
+  h1 { color: #00ff88; text-align: center; font-size: 1.5rem; margin-bottom: 5px; }
+  .subtitle { text-align: center; color: #888; font-size: 10px; margin-bottom: 15px; }
+  .panel { background: rgba(20,20,20,0.9); border: 2px solid #00ff88; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+  label { display: block; margin: 10px 0 5px; color: #ccc; font-size: 11px; }
+  textarea, input { width: 100%; padding: 10px; background: #111; border: 2px solid #333; color: #00ff88; font-family: inherit; font-size: 13px; border-radius: 6px; margin-bottom: 10px; resize: vertical; }
+  textarea { height: 70px; }
+  input:focus, textarea:focus { outline: none; border-color: #00ff88; }
+  .btn { padding: 12px 20px; background: linear-gradient(135deg, #00ff88, #00cc66); color: #000; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: inherit; font-size: 13px; text-transform: uppercase; transition: all 0.3s; margin: 5px; }
+  .btn:hover { box-shadow: 0 0 20px #00ff88; transform: scale(1.02); }
+  .btn.secondary { background: linear-gradient(135deg, #333, #555); color: #fff; }
+  .btn.red { background: linear-gradient(135deg, #ff3366, #cc2255); }
+  .result { background: #050505; border: 1px solid #333; border-radius: 8px; padding: 15px; margin-top: 15px; display: none; }
+  .result.show { display: block; }
+  .veredicto { text-align: center; font-size: 22px; font-weight: bold; padding: 15px; border-radius: 8px; margin: 10px 0; }
+  .veredicto.probado { background: rgba(0,255,136,0.15); border: 2px solid #00ff88; color: #00ff88; }
+  .veredicto.fallido { background: rgba(255,51,102,0.15); border: 2px solid #ff3366; color: #ff3366; }
+  .metric { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #222; font-size: 12px; }
+  .metric-label { color: #888; }
+  .metric-value { font-weight: bold; }
+  .metric-value.good { color: #00ff88; }
+  .metric-value.warn { color: #ffaa00; }
+  .metric-value.bad { color: #ff3366; }
+  canvas { display: block; margin: 10px auto; background: #000; border: 1px solid #333; border-radius: 6px; width: 100%; height: 200px; }
+  .trayectoria { max-height: 200px; overflow-y: auto; font-size: 10px; margin-top: 10px; }
+  .paso { padding: 4px 8px; border-bottom: 1px solid #111; display: flex; justify-content: space-between; }
+  .paso:nth-child(odd) { background: rgba(255,255,255,0.02); }
+  .paso.autofagia { color: #ff3366; }
+  .paso.inferencia { color: #ffaa00; }
+  .paso.exito { color: #00ff88; font-weight: bold; }
+  .footer { text-align: center; font-size: 9px; color: #666; margin-top: 15px; }
+  @media (max-width: 500px) { .btn { width: 100%; } }
+</style>
+</head>
+<body>
+<style>
+#lab-backnav{position:fixed;top:12px;right:12px;z-index:99999;display:flex;gap:6px;font-family:'Courier New',monospace;font-size:11px;}
+#lab-backnav a{color:#d4a843;text-decoration:none;background:rgba(10,10,15,0.75);border:1px solid rgba(212,168,67,0.4);border-radius:6px;padding:5px 10px;backdrop-filter:blur(4px);transition:all .2s;}
+#lab-backnav a:hover{background:rgba(212,168,67,0.15);border-color:#d4a843;}
+</style>
+<div id="lab-backnav"><a href="index.html">← MIU Laboratorio</a><a href="../../index.html">Inicio</a></div>
+
+
+<h1>⚡ MIU SOLVER G31 v1.0</h1>
+<div class="subtitle">Probador de Teoremas con Coherencia Fractal · K_i = φ · D_f / 2.5</div>
+
+<div class="panel">
+  <label for="hipotesis">📝 Hipótesis a probar</label>
+  <textarea id="hipotesis" placeholder="Ej: Para todo n natural, n² + n es par&#10;Ej: φⁿ + φ⁻ⁿ es entero para todo n entero&#10;Ej: Existen infinitos números primos"></textarea>
+  
+  <label for="kini">🎯 K_i inicial (por defecto 0.570 = valor del CMB)</label>
+  <input type="number" id="kini" value="0.570" step="0.01" min="0.1" max="1.0">
+  
+  <button class="btn" onclick="ejecutarSolver()">⚡ Ejecutar G31</button>
+  <button class="btn secondary" onclick="cargarEjemplo1()">📥 Ejemplo: n²+n</button>
+  <button class="btn secondary" onclick="cargarEjemplo2()">📥 Ejemplo: Goldbach</button>
+  <button class="btn red" onclick="limpiar()">🗑️ Limpiar</button>
+
+  <div class="result" id="resultado">
+    <div class="veredicto" id="veredicto"></div>
+    <div class="metric"><span class="metric-label">K_i Final</span><span class="metric-value" id="kiFinal">—</span></div>
+    <div class="metric"><span class="metric-label">Intentos</span><span class="metric-value" id="intentosVal">—</span></div>
+    <div class="metric"><span class="metric-label">Autofagias G31</span><span class="metric-value" id="autofagiasVal">—</span></div>
+    <div class="metric"><span class="metric-label">D_f estimada de la prueba</span><span class="metric-value" id="dfPrueba">—</span></div>
+    <canvas id="canvasTrayectoria"></canvas>
+    <div class="trayectoria" id="trayectoriaList"></div>
+  </div>
+</div>
+
+<div class="footer">ρ(x) > 0 · G31 = φ⁻¹ · Autofagia · MIU Solver v1.0</div>
+
+<script>
+// ===== NÚCLEO MIU =====
+const PHI = 1.6180339887498948482;
+const PHI_INV = 0.6180339887498948482;
+
+function ejecutarSolver() {
+  const hipotesis = document.getElementById('hipotesis').value.trim();
+  if (!hipotesis) return alert('Ingresa una hipótesis');
+  
+  const kiInicial = parseFloat(document.getElementById('kini').value) || 0.570;
+  let ki = kiInicial;
+  const pasos = [];
+  let autofagias = 0;
+  const UMBRAL = 0.55;
+  const MAX_INTENTOS = 50;
+  let exito = false;
+  
+  for (let i = 1; i <= MAX_INTENTOS; i++) {
+    const kiAntes = ki;
+    ki *= PHI_INV;
+    pasos.push({ paso: i, tipo: 'iteración', ki, desc: `φ⁻¹ = ${PHI_INV.toFixed(3)} → K_i = ${ki.toFixed(3)}` });
+    
+    if (Math.random() < 0.3) {
+      ki += 0.02;
+      pasos.push({ paso: i, tipo: 'inferencia', ki, desc: `Inferencia lógica → K_i = ${ki.toFixed(3)}` });
+    }
+    
+    if (ki < 0.25) {
+      autofagias++;
+      ki = 0.35 + Math.random() * 0.15;
+      pasos.push({ paso: i, tipo: 'autofagia', ki, desc: `🔧 G31 AUTOFAGIA → K_i = ${ki.toFixed(3)}` });
+    }
+    
+    if (ki >= UMBRAL) {
+      exito = true;
+      pasos.push({ paso: i, tipo: 'exito', ki, desc: `✅ PRUEBA SUPERADA → K_i = ${ki.toFixed(3)}` });
+      break;
+    }
+  }
+  
+  const dfPrueba = Math.max(1.0, Math.min(3.0, 1.0 + (pasos.length * 0.02) + (autofagias * 0.05)));
+  mostrarResultado(hipotesis, exito, ki, pasos.length, autofagias, dfPrueba, pasos);
+  dibujarTrayectoria(pasos);
+  mostrarTrayectoriaTexto(pasos);
+}
+
+function mostrarResultado(hip, exito, kiFinal, intentos, autofagias, dfPrueba, pasos) {
+  const r = document.getElementById('resultado');
+  r.classList.add('show');
+  
+  const ver = document.getElementById('veredicto');
+  ver.textContent = exito ? '✅ TEOREMA PROBADO' : '❌ NO PROBADO';
+  ver.className = 'veredicto ' + (exito ? 'probado' : 'fallido');
+  
+  document.getElementById('kiFinal').textContent = kiFinal.toFixed(3);
+  document.getElementById('kiFinal').className = 'metric-value ' + (kiFinal > 0.55 ? 'good' : kiFinal > 0.35 ? 'warn' : 'bad');
+  document.getElementById('intentosVal').textContent = intentos;
+  document.getElementById('autofagiasVal').textContent = autofagias;
+  document.getElementById('dfPrueba').textContent = dfPrueba.toFixed(3);
+}
+
+function dibujarTrayectoria(pasos) {
+  const canvas = document.getElementById('canvasTrayectoria');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  if (pasos.length < 2) return;
+  const pasoX = canvas.width / pasos.length;
+  
+  ctx.beginPath();
+  ctx.lineWidth = 2;
+  pasos.forEach((p, i) => {
+    const x = i * pasoX;
+    const y = canvas.height - (p.ki * canvas.height * 0.9);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = '#00ff88';
+  ctx.stroke();
+  
+  // Marcar autofagias
+  pasos.filter(p => p.tipo === 'autofagia').forEach(p => {
+    const x = (p.paso - 1) * pasoX;
+    const y = canvas.height - (p.ki * canvas.height * 0.9);
+    ctx.fillStyle = '#ff3366';
+    ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill();
+  });
+  
+  // Marcar éxito
+  const exitos = pasos.filter(p => p.tipo === 'exito');
+  if (exitos.length > 0) {
+    const p = exitos[0];
+    const x = (p.paso - 1) * pasoX;
+    const y = canvas.height - (p.ki * canvas.height * 0.9);
+    ctx.fillStyle = '#ffd700';
+    ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2); ctx.fill();
+  }
+  
+  ctx.fillStyle = '#fff'; ctx.font = '10px monospace';
+  ctx.fillText('Trayectoria de K_i (🔴 = autofagia, 🟡 = éxito)', 10, 18);
+}
+
+function mostrarTrayectoriaTexto(pasos) {
+  const div = document.getElementById('trayectoriaList');
+  div.innerHTML = pasos.slice(-20).map(p => 
+    `<div class="paso ${p.tipo}"><span>Paso ${p.paso}</span><span>${p.desc}</span></div>`
+  ).join('');
+  if (pasos.length > 20) div.innerHTML += `<div style="text-align:center;color:#666">... (${pasos.length - 20} pasos anteriores)</div>`;
+}
+
+function cargarEjemplo1() {
+  document.getElementById('hipotesis').value = 'Para todo n natural, n² + n es par';
+  document.getElementById('kini').value = '0.570';
+}
+
+function cargarEjemplo2() {
+  document.getElementById('hipotesis').value = 'Todo número par mayor que 2 es suma de dos números primos';
+  document.getElementById('kini').value = '0.570';
+}
+
+function limpiar() {
+  document.getElementById('hipotesis').value = '';
+  document.getElementById('kini').value = '0.570';
+  document.getElementById('resultado').classList.remove('show');
+  const c = document.getElementById('canvasTrayectoria');
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0, 0, c.width, c.height);
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, c.width, c.height);
+  document.getElementById('trayectoriaList').innerHTML = '';
+}
+</script>
+</body>
+</html>

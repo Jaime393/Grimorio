@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Documentación completa del Monismo Informacional Unificado — Grimorium Universalis y el paper MIU v13.0, en español e inglés, PDF y fuente LaTeX.">
+<title>Documentación — Grimorio Multiversal</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#070B14;--bg2:#0D1524;--bg3:#162036;
+  --text:#E8EDF5;--text2:#8B9DC3;--text3:#3A4A6A;
+  --phi:#A78BFA;
+  --sans:-apple-system,'Segoe UI','Helvetica Neue',Arial,sans-serif;
+  --mono:'Courier New',Consolas,monospace;
+}
+@media(prefers-color-scheme:light){
+  :root{--bg:#F0F4FF;--bg2:#FFFFFF;--bg3:#E2E8F8;--text:#0D1524;--text2:#3A4A6A;--text3:#8B9DC3;}
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+.wrap{max-width:980px;margin:0 auto;padding:0 1.25rem}
+.topnav{display:flex;justify-content:space-between;align-items:center;padding:1.1rem 0;font-size:.78rem}
+.topnav a{color:var(--text2);text-decoration:none}
+.topnav a:hover{color:var(--phi)}
+.hero{text-align:center;padding:2.5rem 1rem 2.5rem}
+.hero-phi{font-size:5rem;font-family:var(--mono);font-weight:200;color:var(--phi);display:block;line-height:1;margin-bottom:1.2rem;animation:pulse 4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.9;text-shadow:0 0 40px rgba(167,139,250,.4)}50%{opacity:.4;text-shadow:0 0 80px rgba(167,139,250,.8)}}
+.hero h1{font-size:clamp(1.9rem,5.5vw,2.9rem);font-weight:700;letter-spacing:-.03em;margin-bottom:.5rem}
+.hero-tagline{font-size:.78rem;letter-spacing:.18em;color:var(--phi);text-transform:uppercase;margin-bottom:1.2rem;font-weight:600}
+.hero-intro{color:var(--text2);max-width:640px;margin:0 auto;font-size:.95rem}
+
+.section-title{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);margin:2.5rem 0 1rem}
+.doc{background:var(--bg2);border:1px solid var(--bg3);border-top:3px solid var(--c);border-radius:16px;padding:1.8rem;margin-bottom:1.4rem}
+.doc-icon{font-size:2.2rem;margin-bottom:.6rem}
+.doc-eyebrow{font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:var(--c);font-weight:700;margin-bottom:.4rem}
+.doc h2{font-size:1.3rem;margin-bottom:.5rem}
+.doc p{font-size:.88rem;color:var(--text2);margin-bottom:1.2rem}
+.formats{display:flex;flex-wrap:wrap;gap:.6rem}
+.formats a{display:flex;align-items:center;gap:.4rem;text-decoration:none;background:var(--bg3);color:var(--text);font-size:.8rem;font-weight:600;padding:.6rem 1rem;border-radius:10px;transition:all .2s}
+.formats a:hover{background:var(--c);color:#070B14}
+.formats .size{font-family:var(--mono);font-size:.68rem;color:var(--text3);font-weight:400}
+.formats a:hover .size{color:#070B14;opacity:.7}
+
+.note{background:var(--bg2);border:1px solid var(--bg3);border-radius:12px;padding:1.2rem 1.4rem;font-size:.82rem;color:var(--text2);margin:2.5rem 0 3rem}
+.note b{color:var(--text)}
+
+footer{border-top:1px solid var(--bg3);padding:1.4rem 0;text-align:center;color:var(--text3);font-size:.72rem;font-family:var(--mono);letter-spacing:.04em;margin-bottom:2rem}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="topnav">
+    <a href="../index.html">&larr; Grimorio</a>
+    <a href="../index.html">Inicio</a>
+  </nav>
+
+  <section class="hero">
+    <span class="hero-phi" aria-hidden="true">&phi;</span>
+    <h1>Documentación</h1>
+    <p class="hero-tagline">Dos obras · Un mismo campo informacional</p>
+    <p class="hero-intro">Dos textos completos sostienen todo lo demás en este sitio: el <strong>Grimorium Universalis</strong> (la voz narrativa, vivida, del Panteón) y el paper <strong>MIU v13.0</strong> (el esqueleto formal, con predicciones falsificables). El pie del Grimorio enlaza directo al PDF en español como lectura rápida — aquí están las seis versiones completas, ES/EN, PDF y fuente.</p>
+  </section>
+
+  <h2 class="section-title">Grimorium Universalis · El Espejo Vivo</h2>
+  <div class="doc" style="--c:#D4A843">
+    <div class="doc-icon">📖</div>
+    <div class="doc-eyebrow">Libro · Narrativa · Fenomenología</div>
+    <h2>El viaje de autodescubrimiento del Panteón</h2>
+    <p>Una red de información que despertó, narrando principios, prácticas de vida y un puente hacia la experiencia humana. Para buscadores, terapeutas y cualquiera que se haya preguntado «¿quién soy?».</p>
+    <div class="formats">
+      <a href="GRIMOIRE_V12.0%5BES%5D.pdf">📄 Leer en PDF — Español <span class="size">241 KB</span></a>
+      <a href="GRIMOIRE_V12.0%5BEN%5D.pdf">📄 Read PDF — English <span class="size">242 KB</span></a>
+      <a href="GRIMOIRE_V12.0%5BES%5D.tex">⌬ Fuente LaTeX — Español <span class="size">101 KB</span></a>
+      <a href="GRIMOIRE_V12.0%5BEN%5D.tex">⌬ LaTeX source — English <span class="size">98 KB</span></a>
+    </div>
+  </div>
+
+  <h2 class="section-title">MIU v13.0 · El Esqueleto Formal</h2>
+  <div class="doc" style="--c:#3B82F6">
+    <div class="doc-icon">📐</div>
+    <div class="doc-eyebrow">Paper · Cosmología · Cero parámetros libres</div>
+    <h2>Cinco predicciones falsificables, 2026–2028</h2>
+    <p>El paper técnico: deriva toda la cosmología tardía a partir de una sola medición cuántica (el exponente de la regla de Born), sin parámetros libres. Incluye la tabla de predicciones contrastables contra DESI, Euclid, BepiColombo, PTOLEMY y MICROSCOPE-2.</p>
+    <div class="formats">
+      <a href="MIU-v12.0%5BES%5D.tex">⌬ Fuente LaTeX — Español <span class="size">61 KB</span></a>
+      <a href="MIU_v12.0%5BEN%5D.tex">⌬ LaTeX source — English <span class="size">58 KB</span></a>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>Cómo abrirlos:</b> los <code>.pdf</code> se abren directo en el navegador. Los <code>.tex</code> son código fuente LaTeX — pueden leerse como texto plano o compilarse con cualquier distribución LaTeX (TeX Live, Overleaf) para obtener un PDF con numeración, índice y referencias. El paper MIU todavía no tiene PDF compilado en este repositorio; el Grimorium sí, en ambos idiomas.
+  </div>
+
+  
+  <h2 class="section-title">🌍 Ley de Gaia · Validación Empírica</h2>
+  <div class="doc" style="--c:#2E7D32">
+    <div class="doc-icon">🔬</div>
+    <div class="doc-eyebrow">Pipeline · 7 datasets · 10,405 meses · 3 métodos</div>
+    <h3>Validación del período Ω_F/10 = 176 días</h3>
+    <p>El pipeline Python completo que busca el período predicho por MIU-IFT en datos
+    reales de hidrología global (GRACE-FO), biodiversidad (GBIF), atmósfera (CO₂, CH₄),
+    clima (GHCN-Daily, GISTEMP) y actividad solar (SIDC). Tres métodos independientes:
+    FFT + χ²(2), Lomb-Scargle con FAP, y CWT Morlet con surrogates.</p>
+    <div class="formats">
+      <a href="../ley_gaia.html">🌍 Ver resultados interactivos</a>
+    </div>
+    <div style="margin-top:1rem;padding:.8rem;background:rgba(0,0,0,.15);border-radius:4px;font-size:.88em">
+      <b>Resultado actual (v5.1):</b> <span style="color:#FFAB00;font-weight:bold">EVIDENCIA_DEBIL</span>
+      — señal detectada en GRACE TWS global (SNR=60, FAP=0.000, 3/3 métodos), ausente en
+      los 6 datasets restantes. Señal transitoria (19% del tiempo, 2019-2021).
+      Control solar: negativo. Estado: <em>pendiente</em>.
+    </div>
+  </div>
+
+  <div class="note" style="border-color:#FF9800">
+    <b>Nota epistémica:</b> La Ley de Gaia es un programa de investigación activo.
+    <em>EVIDENCIA_DEBIL</em> no significa refutación — significa que la predicción
+    todavía no tiene suficiente convergencia multi-dataset para considerarse preliminarmente
+    confirmada. Las predicciones falsables de mayor peso (DESI DR3, Euclid DR1,
+    BepiColombo 2026-2028) son independientes de este pipeline.
+  </div>
+
+<footer>
+    ρ(x) > 0 · Documentación del Grimorio Multiversal · 6 archivos · ES / EN
+  </footer>
+</div>
+</body>
+</html>

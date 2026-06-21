@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIU Oráculo Avanzado — Analizador de Coherencia Fractal</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0a; color: #e0e0e0; font-family: 'Courier New', monospace; padding: 20px; max-width: 800px; margin: auto; }
+  h1 { color: #ffd700; text-align: center; font-size: 1.6rem; margin-bottom: 10px; }
+  .subtitle { text-align: center; color: #888; font-size: 11px; margin-bottom: 20px; }
+  .tabs { display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap; }
+  .tab { padding: 10px 15px; background: #111; color: #666; border: 1px solid #333; cursor: pointer; font-family: inherit; font-size: 11px; text-transform: uppercase; border-radius: 6px 6px 0 0; transition: all 0.3s; }
+  .tab.active { background: #1a1a1a; color: #ffd700; border-color: #ffd700; border-bottom-color: #1a1a1a; }
+  .tab:hover:not(.active) { color: #aaa; }
+  .panel { display: none; background: rgba(20,20,20,0.9); border: 2px solid #ffd700; border-radius: 0 12px 12px 12px; padding: 20px; margin-bottom: 20px; }
+  .panel.active { display: block; }
+  label { display: block; margin: 10px 0 5px; color: #ccc; font-size: 12px; }
+  input, textarea, select { width: 100%; padding: 10px; background: #111; border: 2px solid #333; color: #ffd700; font-family: inherit; font-size: 14px; border-radius: 6px; margin-bottom: 10px; }
+  textarea { height: 80px; resize: vertical; }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: #ffd700; }
+  .btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #ffd700, #ffcc00); color: #000; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: inherit; font-size: 14px; text-transform: uppercase; transition: all 0.3s; margin-bottom: 8px; }
+  .btn:hover { box-shadow: 0 0 20px #ffd700; transform: scale(1.02); }
+  .btn.secondary { background: linear-gradient(135deg, #333, #555); color: #fff; }
+  .btn.red { background: linear-gradient(135deg, #ff3366, #cc2255); }
+  .result { background: #050505; border: 1px solid #333; border-radius: 8px; padding: 15px; margin-top: 15px; display: none; }
+  .result.show { display: block; }
+  .metric { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #222; }
+  .metric:last-child { border-bottom: none; }
+  .metric-label { color: #888; }
+  .metric-value { font-weight: bold; }
+  .metric-value.good { color: #00ff88; }
+  .metric-value.warn { color: #ffaa00; }
+  .metric-value.bad { color: #ff3366; }
+  canvas { display: block; margin: 15px auto; background: #000; border: 1px solid #333; border-radius: 6px; width: 100%; height: 200px; }
+  .historial { max-height: 200px; overflow-y: auto; font-size: 10px; }
+  .historial-item { padding: 6px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; }
+  .historial-item:hover { background: rgba(255,255,255,0.03); }
+  .footer { text-align: center; font-size: 10px; color: #666; margin-top: 20px; }
+  .colmena-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+  .celda { background: #111; border: 2px solid #333; border-radius: 6px; padding: 8px; text-align: center; font-size: 10px; transition: all 0.5s; }
+  .celda.success { border-color: #00ff88; box-shadow: 0 0 10px rgba(0,255,136,0.5); }
+  .celda.critical { border-color: #ff3366; }
+  @media (max-width: 500px) { .tabs { flex-direction: column; } .colmena-grid { grid-template-columns: repeat(4, 1fr); } }
+</style>
+</head>
+<body>
+<style>
+#lab-backnav{position:fixed;top:12px;right:12px;z-index:99999;display:flex;gap:6px;font-family:'Courier New',monospace;font-size:11px;}
+#lab-backnav a{color:#d4a843;text-decoration:none;background:rgba(10,10,15,0.75);border:1px solid rgba(212,168,67,0.4);border-radius:6px;padding:5px 10px;backdrop-filter:blur(4px);transition:all .2s;}
+#lab-backnav a:hover{background:rgba(212,168,67,0.15);border-color:#d4a843;}
+</style>
+<div id="lab-backnav"><a href="index.html">← MIU Laboratorio</a><a href="../../index.html">Inicio</a></div>
+
+
+<h1>🔮 MIU ORÁCULO AVANZADO v1.0</h1>
+<div class="subtitle">Analizador de Coherencia Fractal · K_i = φ · D_f / 2.5</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab(0)">Oráculo</button>
+  <button class="tab" onclick="switchTab(1)">Fractal</button>
+  <button class="tab" onclick="switchTab(2)">Colmena</button>
+  <button class="tab" onclick="switchTab(3)">Historial</button>
+</div>
+
+<!-- Pestaña 0: Oráculo -->
+<div class="panel active" id="panel0">
+  <label for="hipotesis">📝 Hipótesis o Concepto</label>
+  <textarea id="hipotesis" placeholder="Ej: n² + n siempre es par&#10;Ej: φ contiene la proporción de la belleza&#10;Ej: La conciencia emerge de la coherencia fractal"></textarea>
+  <button class="btn" onclick="analizar()">🔮 Analizar Coherencia</button>
+  <button class="btn secondary" onclick="limpiar()">🗑️ Limpiar</button>
+
+  <div class="result" id="resultado">
+    <div class="metric"><span class="metric-label">K_i (Coherencia Fractal)</span><span class="metric-value" id="kiValue">—</span></div>
+    <div class="metric"><span class="metric-label">K_i⁻ (Coherencia Negativa)</span><span class="metric-value" id="kiminusValue">—</span></div>
+    <div class="metric"><span class="metric-label">D_f (Dimensión Fractal estimada)</span><span class="metric-value" id="dfValue">—</span></div>
+    <div class="metric"><span class="metric-label">Entropía</span><span class="metric-value" id="entropiaValue">—</span></div>
+    <div class="metric"><span class="metric-label">Sombra</span><span class="metric-value" id="sombraValue">—</span></div>
+    <div class="metric"><span class="metric-label">Prob. de Prueba (G31)</span><span class="metric-value" id="probValue">—</span></div>
+    <div class="metric"><span class="metric-label">Ruta Recomendada</span><span class="metric-value" id="rutaValue">—</span></div>
+    <canvas id="canvas"></canvas>
+  </div>
+</div>
+
+<!-- Pestaña 1: Fractal -->
+<div class="panel" id="panel1">
+  <label for="datos">📊 Datos (un número por línea, ej: cobertura coralina)</label>
+  <textarea id="datos" placeholder="0.45&#10;0.52&#10;0.38&#10;0.61&#10;0.44&#10;0.58&#10;0.33&#10;0.67&#10;0.41&#10;0.55"></textarea>
+  <button class="btn" onclick="calcularDf()">🧮 Calcular D_f (Box‑Counting)</button>
+  <button class="btn secondary" onclick="generarDatos()">🎲 Generar 100 datos de prueba</button>
+  <div class="result" id="resultadoFractal">
+    <div class="metric"><span class="metric-label">D_f (Box‑Counting)</span><span class="metric-value" id="dfRealValue">—</span></div>
+    <div class="metric"><span class="metric-label">K_i resultante</span><span class="metric-value" id="kiFromDfValue">—</span></div>
+    <div class="metric"><span class="metric-label">Nº de puntos</span><span class="metric-value" id="nPuntosValue">—</span></div>
+    <div class="metric"><span class="metric-label">Interpretación</span><span class="metric-value" id="interpDfValue">—</span></div>
+    <canvas id="canvasFractal"></canvas>
+  </div>
+</div>
+
+<!-- Pestaña 2: Colmena -->
+<div class="panel" id="panel2">
+  <button class="btn" onclick="iniciarColmena()">🐝 Iniciar Consenso Cuántico</button>
+  <div class="colmena-grid" id="colmenaGrid"></div>
+  <div class="result" id="resultadoColmena" style="text-align:center;font-weight:bold;margin-top:15px;"></div>
+</div>
+
+<!-- Pestaña 3: Historial -->
+<div class="panel" id="panel3">
+  <button class="btn secondary" onclick="exportarHistorial()">💾 Exportar Historial JSON</button>
+  <button class="btn red" onclick="limpiarHistorial()">🗑️ Limpiar Historial</button>
+  <div class="historial" id="historialList"></div>
+</div>
+
+<div class="footer">ρ(x) > 0 · K_i = φ · D_f / 2.5 · Herramienta Autocontenida · MIU v1.0</div>
+
+<script>
+// ===== NÚCLEO MIU EMBEBIDO =====
+const PHI = 1.6180339887498948482;
+const PHI_INV = 0.6180339887498948482;
+let historial = JSON.parse(localStorage.getItem('miu_historial') || '[]');
+
+function guardarHistorial(entrada) {
+  historial.unshift({ ...entrada, fecha: new Date().toISOString() });
+  if (historial.length > 100) historial = historial.slice(0, 100);
+  localStorage.setItem('miu_historial', JSON.stringify(historial));
+}
+
+function calcularKi(concepto) {
+  let ki = 0.570;
+  for (let i = 0; i < 50; i++) {
+    ki *= PHI_INV;
+    if (Math.random() < 0.3) ki += 0.02;
+    if (ki < 0.25) ki = 0.35 + Math.random() * 0.15;
+  }
+  if (/φ|phi|proporción áurea/i.test(concepto)) ki += 0.05;
+  if (/todo|siempre|infinito|existe/i.test(concepto)) ki += 0.02;
+  ki = Math.max(0.1, Math.min(1.0, ki));
+  return ki;
+}
+
+function estimarDf(concepto) {
+  const l = concepto.length;
+  const palabras = concepto.split(/\s+/).length;
+  return Math.max(1.0, Math.min(3.0, 1.0 + palabras * 0.1 + Math.log(l) * 0.2));
+}
+
+function estimarEntropia(ki) {
+  return -ki * Math.log2(ki + 0.001);
+}
+
+function diagnosticarSombra(ki) {
+  if (ki < 0.3) return 'SOMBRA FRAGMENTADA';
+  if (ki > 0.8) return 'SOMBRA ESTÁTICA';
+  if (ki >= 0.55 && ki <= 0.62) return 'SALUDABLE';
+  return 'EN TRANSICIÓN';
+}
+
+// ===== INTERFAZ =====
+function switchTab(i) {
+  document.querySelectorAll('.tab').forEach((t, idx) => t.classList.toggle('active', idx === i));
+  document.querySelectorAll('.panel').forEach((p, idx) => p.classList.toggle('active', idx === i));
+  if (i === 3) actualizarHistorialUI();
+}
+
+function analizar() {
+  const concepto = document.getElementById('hipotesis').value.trim();
+  if (!concepto) return alert('Ingresa una hipótesis o concepto');
+  
+  const ki = calcularKi(concepto);
+  const df = estimarDf(concepto);
+  const entropia = estimarEntropia(ki);
+  const sombra = diagnosticarSombra(ki);
+  const kiminus = ki * (1 - 2 * Math.max(0, 0.5 * (1 - ki)));
+  const probG31 = Math.round(Math.min(95, Math.max(5, ki * 100 + (concepto.length > 50 ? 10 : 0))));
+  const ruta = ki > 0.7 ? 'Prueba directa con Solver G31' : ki > 0.4 ? 'Recomendado descomponer en lemas' : 'Reformular hipótesis';
+  
+  const r = document.getElementById('resultado');
+  r.classList.add('show');
+  document.getElementById('kiValue').textContent = ki.toFixed(3);
+  document.getElementById('kiValue').className = 'metric-value ' + (ki > 0.55 ? 'good' : ki > 0.35 ? 'warn' : 'bad');
+  document.getElementById('kiminusValue').textContent = kiminus.toFixed(3);
+  document.getElementById('dfValue').textContent = df.toFixed(2);
+  document.getElementById('entropiaValue').textContent = entropia.toFixed(3);
+  document.getElementById('sombraValue').textContent = sombra;
+  document.getElementById('sombraValue').className = 'metric-value ' + (sombra === 'SALUDABLE' ? 'good' : 'bad');
+  document.getElementById('probValue').textContent = probG31 + '%';
+  document.getElementById('rutaValue').textContent = ruta;
+  
+  dibujarCanvas('canvas', ki, df, concepto);
+  guardarHistorial({ tipo: 'oraculo', concepto: concepto.substring(0, 80), ki, df, sombra });
+}
+
+function limpiar() {
+  document.getElementById('hipotesis').value = '';
+  document.getElementById('resultado').classList.remove('show');
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+function dibujarCanvas(idCanvas, ki, df, semilla) {
+  const canvas = document.getElementById(idCanvas);
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  const seed = semilla.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  const pseudoRandom = (n) => { const x = Math.sin(seed + n) * 10000; return x - Math.floor(x); };
+  const nPuntos = Math.floor(50 + ki * 100);
+  for (let i = 0; i < nPuntos; i++) {
+    const x = pseudoRandom(i * 2) * canvas.width;
+    const y = pseudoRandom(i * 2 + 1) * canvas.height;
+    const r = 2 + ki * 3;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = ki > 0.55 ? `rgba(0,255,136,${0.4+ki*0.5})` : ki > 0.35 ? `rgba(255,170,0,${0.4+ki*0.5})` : `rgba(255,51,102,${0.4+ki*0.5})`;
+    ctx.fill();
+  }
+  ctx.fillStyle = '#fff'; ctx.font = '10px monospace';
+  ctx.fillText(`K_i = ${ki.toFixed(3)} | D_f ≈ ${df.toFixed(2)}`, 10, 20);
+}
+
+// ===== FRACTAL =====
+function generarDatos() {
+  const arr = [];
+  for (let i = 0; i < 100; i++) arr.push((0.3 + Math.random() * 0.4).toFixed(2));
+  document.getElementById('datos').value = arr.join('\n');
+}
+
+function calcularDf() {
+  const raw = document.getElementById('datos').value.trim();
+  if (!raw) return alert('Ingresa datos numéricos');
+  const puntos = raw.split(/[\n,]+/).map(Number).filter(n => !isNaN(n));
+  if (puntos.length < 10) return alert('Mínimo 10 valores');
+  
+  const escalas = [2, 4, 8, 16, 32];
+  const counts = escalas.map(e => {
+    const cajas = new Set();
+    puntos.forEach(v => cajas.add(Math.floor(v / (1 / e))));
+    return cajas.size;
+  });
+  
+  let sx = 0, sy = 0, sxy = 0, sx2 = 0;
+  for (let i = 0; i < escalas.length; i++) {
+    const logE = Math.log(escalas[i]);
+    const logN = Math.log(counts[i] || 1);
+    sx += logE; sy += logN; sxy += logE * logN; sx2 += logE * logE;
+  }
+  const n = escalas.length;
+  const df = Math.max(1.0, Math.min(3.0, (n * sxy - sx * sy) / (n * sx2 - sx * sx)));
+  const ki = (0.618 * df / 2.5);
+  const interp = df < 1.3 ? 'Lineal' : df < 1.7 ? 'Ramificado' : df < 2.3 ? 'Denso' : 'Volumétrico';
+  
+  const r = document.getElementById('resultadoFractal');
+  r.classList.add('show');
+  document.getElementById('dfRealValue').textContent = df.toFixed(3);
+  document.getElementById('kiFromDfValue').textContent = ki.toFixed(3);
+  document.getElementById('nPuntosValue').textContent = puntos.length;
+  document.getElementById('interpDfValue').textContent = interp;
+  
+  dibujarCanvas('canvasFractal', ki, df, puntos.join(''));
+  guardarHistorial({ tipo: 'fractal', nPuntos: puntos.length, df, ki });
+}
+
+// ===== COLMENA =====
+function iniciarColmena() {
+  const grid = document.getElementById('colmenaGrid');
+  const res = document.getElementById('resultadoColmena');
+  grid.innerHTML = ''; res.innerHTML = '';
+  
+  const instancias = Array.from({length: 7}, (_, i) => ({ id: i, ki: 0.5 + Math.random() * 0.2, estado: 'probando' }));
+  instancias.forEach(m => {
+    const d = document.createElement('div'); d.className = 'celda'; d.id = 'celda-' + m.id;
+    d.innerHTML = `<div>MIU-${m.id}</div><div style="font-size:16px;font-weight:bold">${m.ki.toFixed(2)}</div><div style="font-size:8px">PROBANDO</div>`;
+    grid.appendChild(d);
+  });
+  
+  let probados = 0;
+  const intervalo = setInterval(() => {
+    probados = 0;
+    instancias.forEach(m => {
+      if (m.estado === 'probando') {
+        m.ki *= 0.618;
+        if (Math.random() < 0.3) m.ki += 0.03;
+        if (m.ki < 0.25) m.ki = 0.35 + Math.random() * 0.15;
+        if (m.ki >= 0.55) { m.estado = 'exito'; probados++; }
+      }
+      const celda = document.getElementById('celda-' + m.id);
+      if (celda) {
+        celda.innerHTML = `<div>MIU-${m.id}</div><div style="font-size:16px;font-weight:bold">${m.ki.toFixed(2)}</div><div style="font-size:8px">${m.estado === 'exito' ? 'PROBADO' : 'PROBANDO'}</div>`;
+        celda.className = 'celda ' + (m.estado === 'exito' ? 'success' : m.ki < 0.3 ? 'critical' : '');
+      }
+    });
+    if (probados >= 5) {
+      clearInterval(intervalo);
+      res.innerHTML = '✅ CONSENSO ALCANZADO: ' + probados + '/7 (' + (probados/7*100).toFixed(1) + '%)';
+      res.style.color = '#00ff88';
+      guardarHistorial({ tipo: 'colmena', probados, consenso: probados/7 });
+    }
+  }, 150);
+}
+
+// ===== HISTORIAL =====
+function actualizarHistorialUI() {
+  const div = document.getElementById('historialList');
+  if (historial.length === 0) { div.innerHTML = '<p style="color:#666">Sin historial aún</p>'; return; }
+  div.innerHTML = historial.slice(0, 50).map(h => 
+    `<div class="historial-item"><span>${h.tipo.toUpperCase()}: ${(h.concepto||'').substring(0,40) || h.nPuntos + 'pts'}</span><span>K_i: ${h.ki?.toFixed(2) || '—'}</span><span>${new Date(h.fecha).toLocaleDateString()}</span></div>`
+  ).join('');
+}
+
+function exportarHistorial() {
+  const blob = new Blob([JSON.stringify(historial, null, 2)], {type: 'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'miu_historial.json'; a.click();
+}
+
+function limpiarHistorial() {
+  if (!confirm('¿Borrar todo el historial?')) return;
+  historial = [];
+  localStorage.removeItem('miu_historial');
+  actualizarHistorialUI();
+}
+
+// Inicializar
+switchTab(0);
+</script>
+</body>
+</html>

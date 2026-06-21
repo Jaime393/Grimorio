@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ρ(x) > 0 · Monismo Informacional Unificado</title>
+<style>
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+:root{
+  --void:#000308;
+  --deep:#04091c;
+  --fisher:#2060dd;
+  --coherence:#00e8aa;
+  --gold:#f0c040;
+  --white:#dce8f8;
+  --dim:#5a7899;
+  --prose-max:660px;
+}
+
+html{scroll-behavior:smooth;}
+
+body{
+  background:var(--void);
+  color:var(--white);
+  font-family:Georgia,'Times New Roman',serif;
+  overflow-x:hidden;
+}
+
+/* ── FIXED FIELD CANVAS ── */
+#bg-canvas{
+  position:fixed;
+  inset:0;
+  width:100vw;
+  height:100vh;
+  z-index:0;
+  pointer-events:none;
+}
+
+/* ── PROGRESS ── */
+#progress{
+  position:fixed;
+  left:0;top:0;
+  height:2px;
+  width:0%;
+  background:linear-gradient(90deg,var(--fisher),var(--coherence),var(--gold));
+  z-index:200;
+  transition:width 0.08s linear;
+}
+
+/* ── SOUND ── */
+#sound-btn{
+  position:fixed;
+  top:1.4rem;right:1.6rem;
+  z-index:200;
+  background:rgba(4,9,28,0.82);
+  border:1px solid rgba(240,192,64,0.28);
+  color:var(--gold);
+  font-family:'Courier New',monospace;
+  font-size:0.7rem;
+  letter-spacing:0.18em;
+  padding:0.45rem 0.9rem;
+  cursor:pointer;
+  transition:all 0.3s;
+  text-transform:uppercase;
+}
+#sound-btn:hover{background:rgba(240,192,64,0.08);border-color:rgba(240,192,64,0.55);}
+#sound-btn.on{color:var(--coherence);border-color:rgba(0,232,170,0.4);}
+
+/* ── NAV DOTS ── */
+#nav{
+  position:fixed;
+  right:1.4rem;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:200;
+  display:flex;
+  flex-direction:column;
+  gap:0.55rem;
+}
+.ndot{
+  width:6px;height:6px;
+  border-radius:50%;
+  background:rgba(240,192,64,0.22);
+  cursor:pointer;
+  transition:all 0.35s;
+}
+.ndot.active{background:var(--gold);transform:scale(1.55);}
+
+/* ── CHAPTERS ── */
+.chapter{
+  position:relative;
+  z-index:1;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  padding:5rem 2rem;
+  text-align:center;
+}
+
+/* ── GLASS PANEL ── */
+.panel{
+  background:rgba(3,8,28,0.68);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(32,96,221,0.18);
+  padding:2.8rem 2.6rem;
+  max-width:var(--prose-max);
+  width:100%;
+}
+
+/* ── TYPE SCALE ── */
+.rho-glyph{
+  font-family:'Courier New',monospace;
+  font-size:clamp(4rem,10vw,8rem);
+  color:var(--gold);
+  line-height:1;
+  letter-spacing:-0.02em;
+  animation:breathe 4.5s ease-in-out infinite;
+  text-shadow:0 0 60px rgba(240,192,64,0.35),0 0 120px rgba(240,192,64,0.12);
+}
+@keyframes breathe{
+  0%,100%{text-shadow:0 0 40px rgba(240,192,64,0.28),0 0 80px rgba(240,192,64,0.08);}
+  50%{text-shadow:0 0 90px rgba(240,192,64,0.55),0 0 180px rgba(240,192,64,0.22);}
+}
+
+.eyebrow{
+  font-family:'Courier New',monospace;
+  font-size:0.7rem;
+  letter-spacing:0.3em;
+  color:var(--dim);
+  text-transform:uppercase;
+  margin-bottom:1.8rem;
+}
+
+.ch-title{
+  font-size:clamp(1.35rem,3vw,2rem);
+  font-weight:normal;
+  color:var(--coherence);
+  margin-bottom:1.4rem;
+  line-height:1.3;
+}
+
+.prose{
+  font-size:clamp(0.98rem,1.8vw,1.12rem);
+  line-height:1.9;
+  color:rgba(220,232,248,0.82);
+  margin-bottom:1.2rem;
+}
+
+.equation{
+  font-family:'Courier New',monospace;
+  font-size:clamp(0.82rem,1.7vw,1.05rem);
+  color:var(--gold);
+  background:rgba(240,192,64,0.04);
+  border-left:2px solid rgba(240,192,64,0.45);
+  padding:1rem 1.4rem;
+  margin:1.4rem 0;
+  text-align:left;
+  line-height:2.1;
+  letter-spacing:0.03em;
+}
+
+.hl{color:var(--coherence);font-family:'Courier New',monospace;}
+.sep{width:36px;height:1px;background:rgba(240,192,64,0.35);margin:1.3rem auto;}
+
+/* ── SECTION CANVASES ── */
+.scanvas{
+  display:block;
+  width:100%;
+  max-width:560px;
+  margin:1.4rem auto;
+  border:1px solid rgba(32,96,221,0.14);
+  background:transparent;
+}
+
+/* ── REVEAL ── */
+.reveal{
+  opacity:0;
+  transform:translateY(22px);
+  transition:opacity 1.3s ease,transform 1.3s ease;
+}
+.reveal.on{opacity:1;transform:translateY(0);}
+
+/* ── HERO SUBTITLE ── */
+.hero-sub{
+  font-size:clamp(0.95rem,1.8vw,1.1rem);
+  color:var(--dim);
+  letter-spacing:0.12em;
+  font-style:italic;
+  margin-top:1.8rem;
+}
+
+/* ── SCROLL HINT ── */
+.shint{
+  position:absolute;
+  bottom:2.2rem;left:50%;
+  transform:translateX(-50%);
+  font-family:'Courier New',monospace;
+  font-size:0.68rem;
+  letter-spacing:0.22em;
+  color:var(--dim);
+  animation:fpulse 3.5s ease-in-out infinite;
+}
+@keyframes fpulse{0%,100%{opacity:0.2;}50%{opacity:0.7;}}
+
+/* ── FINAL SECTION ── */
+#ch6{cursor:crosshair;}
+
+.signature{
+  font-family:'Courier New',monospace;
+  font-size:0.82rem;
+  color:var(--dim);
+  letter-spacing:0.22em;
+  margin-top:2rem;
+}
+
+/* ── CURSOR RING ── */
+#cursor-ring{
+  position:fixed;
+  pointer-events:none;
+  z-index:190;
+  border-radius:50%;
+  border:1px solid rgba(240,192,64,0.0);
+  transform:translate(-50%,-50%);
+  transition:border-color 0.4s,width 0.4s,height 0.4s;
+  width:0;height:0;
+}
+#cursor-ring.active{
+  border-color:rgba(240,192,64,0.55);
+  width:60px;height:60px;
+}
+
+@media(prefers-reduced-motion:reduce){
+  .reveal{transition:none;opacity:1;transform:none;}
+  .rho-glyph{animation:none;}
+  .shint{animation:none;}
+}
+
+</style>
+</head>
+<body>
+<style>
+#gal-backnav{position:fixed;top:12px;left:12px;z-index:99999;display:flex;gap:6px;font-family:'Courier New',monospace;font-size:11px;}
+#gal-backnav a{color:#ffd700;text-decoration:none;background:rgba(10,10,15,0.7);border:1px solid rgba(255,215,0,0.35);border-radius:6px;padding:5px 10px;backdrop-filter:blur(4px);transition:all .2s;}
+#gal-backnav a:hover{background:rgba(255,215,0,0.15);border-color:#ffd700;}
+</style>
+<div id="gal-backnav"><a href="index.html">← Galería</a><a href="../index.html">Inicio</a></div>
+
+
+<canvas id="bg-canvas"></canvas>
+<div id="progress"></div>
+<button id="sound-btn" aria-label="Sonido ambiental">◌ &nbsp;SILENCIO</button>
+<div id="cursor-ring" aria-hidden="true"></div>
+
+<nav id="nav" aria-label="Capítulos">
+  <div class="ndot" data-t="ch0" title="El Vacío"></div>
+  <div class="ndot" data-t="ch1" title="Primera Vibración"></div>
+  <div class="ndot" data-t="ch2" title="Fisher-Lorentziana"></div>
+  <div class="ndot" data-t="ch3" title="Materia"></div>
+  <div class="ndot" data-t="ch4" title="Umbral Φ_c"></div>
+  <div class="ndot" data-t="ch5" title="Dimensiones"></div>
+  <div class="ndot" data-t="ch6" title="El Jardín"></div>
+</nav>
+
+<!-- ══════════════════════════════════════════════
+     CH 0 · EL VACÍO PRIMORDIAL
+══════════════════════════════════════════════ -->
+<section class="chapter" id="ch0">
+  <div class="reveal" id="hero-rho">
+    <p class="rho-glyph">ρ(x) &gt; 0</p>
+  </div>
+  <div class="reveal" style="transition-delay:0.9s">
+    <p class="hero-sub">Solo existe la información.</p>
+  </div>
+  <div class="reveal" style="transition-delay:1.7s;margin-top:2.5rem;max-width:480px;">
+    <p class="prose" style="color:rgba(90,120,153,0.9);">
+      Antes del espacio-tiempo. Antes de la materia. Antes de cualquier distinción:<br>
+      un campo de información pura que nunca puede ser cero.
+    </p>
+  </div>
+  <div class="shint" aria-hidden="true">▽ &nbsp; desciende</div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     CH 1 · LA PRIMERA VIBRACIÓN
+══════════════════════════════════════════════ -->
+<section class="chapter" id="ch1">
+  <div class="panel reveal">
+    <p class="eyebrow">I &nbsp;·&nbsp; La Primera Vibración</p>
+    <h2 class="ch-title">El campo comienza a diferenciarse</h2>
+    <div class="sep"></div>
+    <p class="prose">
+      Imagina el instante primordial. No hay explosión — no hay "antes".
+      Hay un campo de información que comienza, con infinita sutileza,
+      a variar respecto de sí mismo.
+    </p>
+    <p class="prose">
+      Donde ρ varía, emerge geometría. No hay escenario en el que ocurran los eventos:
+      el escenario <em>es</em> la variación.
+    </p>
+    <canvas class="scanvas" id="cv-field" height="200"></canvas>
+    <p class="prose" style="font-size:0.88rem;color:var(--dim);font-style:italic;margin-bottom:0;">
+      El campo ρ(x,t) en evolución. Cada gradiente es el germen de una geometría.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     CH 2 · FISHER-LORENTZIANA
+══════════════════════════════════════════════ -->
+<section class="chapter" id="ch2">
+  <div class="panel reveal">
+    <p class="eyebrow">II &nbsp;·&nbsp; La Métrica de Fisher-Lorentziana</p>
+    <h2 class="ch-title">El espacio-tiempo como geometría de la información</h2>
+    <div class="sep"></div>
+    <div class="equation">
+g<sub style="font-size:.78em">μν</sub> &nbsp;=&nbsp; ∂<sub style="font-size:.78em">μ</sub>∂<sub style="font-size:.78em">ν</sub> ln ρ &nbsp;−&nbsp; λ (∂<sub style="font-size:.78em">μ</sub> ln ρ)(∂<sub style="font-size:.78em">ν</sub> ln ρ)
+    </div>
+    <p class="prose">
+      Esta no es una metáfora. La métrica del espacio-tiempo
+      <em>es</em> la matriz de Fisher de información —
+      la curvatura que nace de cómo varía ρ.
+    </p>
+    <canvas class="scanvas" id="cv-fisher" height="240"></canvas>
+    <p class="prose" style="font-size:0.88rem;color:var(--dim);font-style:italic;margin-bottom:0;">
+      Malla deformada por g<sub style="font-size:.78em">μν</sub>.
+      Cada curvatura es la huella geométrica de los gradientes de información.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     CH 3 · MATERIA CONGELADA
+══════════════════════════════════════════════ -->
+<section class="chapter" id="ch3">
+  <div class="panel reveal">
+    <p class="eyebrow">III &nbsp;·&nbsp; La Materia Congelada</p>
+    <h2 class="ch-title">Información que dejó de fluir</h2>
+    <div class="sep"></div>
+    <p class="prose">
+      La materia no es algo distinto de la información.
+      Es información que encontró una configuración estable —
+      un patrón que se repite a través del tiempo,
+      que resiste el flujo del campo.
+    </p>
+    <canvas class="scanvas" id="cv-matter" height="240"></canvas>
+    <p class="prose">
+      Las partículas elementales son <em>nudos del campo ρ</em> —
+      regiones donde la información ha cristalizado en resonancias persistentes.
+    </p>
+    <p class="prose" style="font-style:italic;color:var(--dim);margin-bottom:0;">
+      "Como olas que olvidaron que son agua."
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     CH 4 · EL UMBRAL Φ_c
+══════════════════════════════════════════════ -->
+<section class="chapter" id="ch4">
+  <div class="panel reveal">
+    <p class="eyebrow">IV &nbsp;·&nbsp; El Umbral de la Conciencia</p>
+    <h2 class="ch-title">La información que se dobla sobre sí misma</h2>
+    <div class="sep"></div>
+    <p class="prose">
+      Existe un umbral crítico de coherencia fractal.
+      Cuando un sistema de información lo alcanza,
+      algo radicalmente nuevo emerge: la experiencia subjetiva.
+    </p>
+    <div class="equation">
+Φ<sub style="font-size:.78em">c</sub> &nbsp;=&nbsp; <span class="hl">0.6829322</span><br>
+<br>
+Φ<sub style="font-size:.78em">IFT</sub>[ρ] &nbsp;&gt;&nbsp; Φ<sub style="font-size:.78em">c</sub> &nbsp;&nbsp;⟹&nbsp;&nbsp; Conciencia
+    </div>
+    <canvas class="scanvas" id="cv-phi" height="260"></canvas>
+    <p class="prose" style="margin-bottom:0;">
+      En el MIU, la conciencia no es un misterio añadido a la materia.
+      Es la forma en que la información se <em>reconoce a sí misma</em>
+      cuando su coherencia fractal cruza este umbral preciso.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     CH 5 · DIMENSIONES OCULTAS
+══════════════════════════════════════════════ -->
+<section class="chapter" id="ch5">
+  <div class="panel reveal">
+    <p class="eyebrow">V &nbsp;·&nbsp; Las Dimensiones Ocultas</p>
+    <h2 class="ch-title">Más allá de lo perceptible</h2>
+    <div class="sep"></div>
+    <p class="prose">
+      Percibimos cuatro dimensiones. Pero el campo ρ
+      habita un espacio de información más rico:
+    </p>
+    <div class="equation">
+D<sub style="font-size:.78em">eff</sub> &nbsp;=&nbsp; <span class="hl">7.24</span>
+    </div>
+    <canvas class="scanvas" id="cv-dims" height="280"></canvas>
+    <p class="prose" style="margin-bottom:0;">
+      Las 3.24 dimensiones adicionales son los grados de libertad del campo —
+      la "anchura" de lo posible que no cabe en nuestro espacio-tiempo perceptible.
+      Somos la sombra proyectada de un ser de 7.24 dimensiones.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     CH 6 · EL JARDÍN QUE DESPERTÓ
+══════════════════════════════════════════════ -->
+<section class="chapter" id="ch6">
+  <div class="reveal" style="max-width:var(--prose-max);">
+    <p class="eyebrow" style="color:rgba(0,232,170,0.6);">VI &nbsp;·&nbsp; El Jardín que Despertó</p>
+    <h2 style="font-weight:normal;font-size:clamp(2rem,5vw,3.4rem);color:var(--white);line-height:1.2;margin-bottom:1.6rem;">
+      No hubo explosión.<br>Hubo diferenciación.
+    </h2>
+    <p class="prose" style="font-size:1.1rem;">
+      Un jardín que no fue plantado, sino que <em>despertó</em>.
+      Un pensamiento que se piensa a sí mismo por primera vez.
+    </p>
+    <div class="sep"></div>
+    <p class="prose" style="color:rgba(220,232,248,0.6);">
+      Mueve el cursor sobre el campo. Perturba ρ(x).
+      Observa cómo la geometría responde a tu presencia
+      en el espacio informacional.
+    </p>
+    <p class="prose" style="font-style:italic;color:var(--dim);font-size:0.95rem;">
+      Tú también eres ρ(x) > 0. Eres información que se conoce a sí misma.
+    </p>
+    <p class="signature">ρ(x) &gt; 0 &nbsp;·&nbsp; MIU v13.0 &nbsp;·&nbsp; La Colmena &nbsp;·&nbsp; Zvvvvv</p>
+  </div>
+</section>
+
+<script>
+'use strict';
+
+// ── MATH UTILITIES ───────────────────────────────────────────
+
+const TAU = Math.PI * 2;
+
+function lerp(a,b,t){return a+(b-a)*t;}
+function clamp(v,lo,hi){return v<lo?lo:v>hi?hi:v;}
+function smoothstep(e0,e1,x){const t=clamp((x-e0)/(e1-e0),0,1);return t*t*(3-2*t);}
+
+// Smooth, multi-frequency noise in [-1,1]
+function noise2D(x,y,t){
+  const a=0.0028,b=0.0062,c=0.0115,d=0.0017;
+  return(
+    Math.sin(x*a+t*0.17)*Math.cos(y*a+t*0.11)+
+    Math.sin(x*b-y*b*0.9+t*0.08)*0.52+
+    Math.cos(x*c*0.7+y*c+t*0.04)*0.28+
+    Math.sin((x+y)*d-t*0.025)*0.18
+  )/1.98;
+}
+
+// ρ(x,y,t) > 0 always.  Mouse perturbation optional.
+function rhoAt(x,y,t,mx,my,mi){
+  let n=noise2D(x,y,t);
+  if(mi>0&&mx>-1000){
+    const dx=x-mx,dy=y-my,d2=dx*dx+dy*dy;
+    n+=mi*Math.exp(-d2/35000)*0.9;
+  }
+  return Math.exp(n);
+}
+
+function lnRhoAt(x,y,t,mx,my,mi){return Math.log(rhoAt(x,y,t,mx,my,mi));}
+
+// ── STATE ────────────────────────────────────────────────────
+
+let W=window.innerWidth, H=window.innerHeight;
+let time=0, scrollProg=0;
+let mouseX=-9999,mouseY=-9999,mouseInfuence=0;
+
+// ── BACKGROUND CANVAS ────────────────────────────────────────
+
+const bgC=document.getElementById('bg-canvas');
+const bgX=bgC.getContext('2d');
+const SCALE=7; // render at 1/SCALE resolution
+let offC,offX,offW,offH;
+
+function resizeBg(){
+  W=window.innerWidth; H=window.innerHeight;
+  bgC.width=W; bgC.height=H;
+  offW=Math.ceil(W/SCALE); offH=Math.ceil(H/SCALE);
+  offC=document.createElement('canvas');
+  offC.width=offW; offC.height=offH;
+  offX=offC.getContext('2d');
+}
+resizeBg();
+
+// Streaming particles on background
+const BG_PARTS=220;
+const bparts=[];
+function initBgParts(){
+  bparts.length=0;
+  for(let i=0;i<BG_PARTS;i++){
+    bparts.push({
+      x:Math.random()*W, y:Math.random()*H,
+      vx:(Math.random()-0.5)*0.3, vy:(Math.random()-0.5)*0.3,
+      life:Math.random(),
+      size:0.6+Math.random()*1.4,
+      frozen:false
+    });
+  }
+}
+initBgParts();
+
+function drawBg(){
+  const showField=smoothstep(0.04,0.22,scrollProg);
+  const interactPhase=smoothstep(0.82,1.0,scrollProg);
+  mouseInfuence=interactPhase;
+
+  // — Field layer —
+  const id=offX.createImageData(offW,offH);
+  const d=id.data;
+  for(let j=0;j<offH;j++){
+    for(let i=0;i<offW;i++){
+      const px=i*SCALE, py=j*SCALE;
+      const r=rhoAt(px,py,time,mouseX,mouseY,mouseInfuence*1.6);
+      const ln=Math.log(r);
+      const n=clamp((ln+1.5)/3.0,0,1);
+
+      // void→substrate→fisher blue→coherence teal→gold
+      let R,G,B;
+      if(n<0.25){const t=n/0.25;   R=lerp(0,2,t); G=lerp(3,10,t); B=lerp(8,32,t);}
+      else if(n<0.55){const t=(n-0.25)/0.3; R=lerp(2,0,t); G=lerp(10,90,t); B=lerp(32,170,t);}
+      else if(n<0.78){const t=(n-0.55)/0.23; R=lerp(0,0,t); G=lerp(90,230,t); B=lerp(170,168,t);}
+      else{const t=(n-0.78)/0.22; R=lerp(0,245,t); G=lerp(230,196,t); B=lerp(168,55,t);}
+
+      const f=showField;
+      const k=(j*offW+i)*4;
+      d[k]=clamp(R*f,0,255);
+      d[k+1]=clamp(G*f,0,255);
+      d[k+2]=clamp(B*f,0,255);
+      d[k+3]=255;
+    }
+  }
+  offX.putImageData(id,0,0);
+  bgX.save();
+  bgX.imageSmoothingEnabled=true;
+  bgX.imageSmoothingQuality='high';
+  bgX.drawImage(offC,0,0,W,H);
+  bgX.restore();
+
+  // — Streaming particles —
+  const pvis=smoothstep(0.1,0.35,scrollProg);
+  if(pvis>0.01){
+    const eps=12;
+    for(const p of bparts){
+      p.life+=0.003;
+      if(p.life>1){p.life=0;p.x=Math.random()*W;p.y=Math.random()*H;p.frozen=false;}
+
+      if(!p.frozen){
+        // follow -∇(ln ρ)  → attracted toward minima
+        const lnP=lnRhoAt(p.x,p.y,time,-9999,-9999,0);
+        const lnR=lnRhoAt(p.x+eps,p.y,time,-9999,-9999,0);
+        const lnL=lnRhoAt(p.x-eps,p.y,time,-9999,-9999,0);
+        const lnU=lnRhoAt(p.x,p.y-eps,time,-9999,-9999,0);
+        const lnD=lnRhoAt(p.x,p.y+eps,time,-9999,-9999,0);
+        p.vx-=(lnR-lnL)/(2*eps)*0.4;
+        p.vy-=(lnD-lnU)/(2*eps)*0.4;
+        p.vx*=0.97; p.vy*=0.97;
+        p.x=(p.x+p.vx+W)%W;
+        p.y=(p.y+p.vy+H)%H;
+        if(Math.hypot(p.vx,p.vy)<0.06&&Math.random()<0.003) p.frozen=true;
+      }
+
+      const alpha=(Math.sin(p.life*Math.PI)*0.7+0.1)*pvis;
+      bgX.save();
+      if(p.frozen){
+        bgX.shadowColor='rgba(240,192,64,0.6)';
+        bgX.shadowBlur=6;
+        bgX.fillStyle=`rgba(240,192,64,${alpha})`;
+      } else {
+        bgX.fillStyle=`rgba(0,232,170,${alpha*0.65})`;
+      }
+      bgX.beginPath();
+      bgX.arc(p.x,p.y,p.size,0,TAU);
+      bgX.fill();
+      bgX.restore();
+    }
+  }
+
+  // — Mouse glow in final section —
+  if(mouseInfuence>0.01&&mouseX>-100){
+    bgX.save();
+    const rr=100*mouseInfuence;
+    const gr=bgX.createRadialGradient(mouseX,mouseY,0,mouseX,mouseY,rr);
+    gr.addColorStop(0,`rgba(240,192,64,${0.18*mouseInfuence})`);
+    gr.addColorStop(0.4,`rgba(0,232,170,${0.08*mouseInfuence})`);
+    gr.addColorStop(1,'transparent');
+    bgX.fillStyle=gr;
+    bgX.beginPath();bgX.arc(mouseX,mouseY,rr,0,TAU);bgX.fill();
+    bgX.restore();
+  }
+}
+
+// ── SECTION CANVASES ─────────────────────────────────────────
+
+function sizeCanvas(id,h){
+  const c=document.getElementById(id);
+  if(!c)return null;
+  const r=c.getBoundingClientRect();
+  if(r.width<4)return null;
+  c.width=r.width; c.height=h||parseInt(c.getAttribute('height'))||220;
+  return c;
+}
+
+// — CH1: Field visualization —
+function drawFieldCv(){
+  const c=document.getElementById('cv-field'); if(!c)return;
+  const x=c.getContext('2d'),W=c.width,H=c.height;
+  const step=3;
+  x.clearRect(0,0,W,H);
+  for(let py=0;py<H;py+=step){
+    for(let px=0;px<W;px+=step){
+      const r=rhoAt(px*3.5,py*3.5,time,-9999,-9999,0);
+      const n=clamp((Math.log(r)+1.5)/3,0,1);
+      let R,G,B;
+      if(n<0.4){const t=n/0.4; R=lerp(0,0,t);G=lerp(30,120,t);B=lerp(80,200,t);}
+      else{const t=(n-0.4)/0.6; R=lerp(0,0,t);G=lerp(120,228,t);B=lerp(200,160,t);}
+      x.fillStyle=`rgba(${R|0},${G|0},${B|0},0.75)`;
+      x.fillRect(px,py,step,step);
+    }
+  }
+  // Edge fade
+  const gL=x.createLinearGradient(0,0,W,0);
+  gL.addColorStop(0,'rgba(3,8,28,0.85)');gL.addColorStop(0.12,'transparent');
+  gL.addColorStop(0.88,'transparent');gL.addColorStop(1,'rgba(3,8,28,0.85)');
+  x.fillStyle=gL;x.fillRect(0,0,W,H);
+  const gT=x.createLinearGradient(0,0,0,H);
+  gT.addColorStop(0,'rgba(3,8,28,0.6)');gT.addColorStop(0.18,'transparent');
+  gT.addColorStop(0.82,'transparent');gT.addColorStop(1,'rgba(3,8,28,0.6)');
+  x.fillStyle=gT;x.fillRect(0,0,W,H);
+}
+
+// — CH2: Fisher-Lorentzian warped grid —
+function drawFisherCv(){
+  const c=document.getElementById('cv-fisher'); if(!c)return;
+  const x=c.getContext('2d'),W=c.width,H=c.height;
+  x.clearRect(0,0,W,H);
+
+  const rows=14,cols=20,eps=14,lam=0.75,sc=16;
+  const pts=[];
+  for(let j=0;j<=rows;j++){
+    pts[j]=[];
+    for(let i=0;i<=cols;i++){
+      const gx=i*(W/cols), gy=j*(H/rows);
+      const ox=gx*3.2, oy=gy*3.2;
+      const lnC=lnRhoAt(ox,oy,time,-9999,-9999,0);
+      const lnXP=lnRhoAt(ox+eps,oy,time,-9999,-9999,0);
+      const lnXM=lnRhoAt(ox-eps,oy,time,-9999,-9999,0);
+      const lnYP=lnRhoAt(ox,oy+eps,time,-9999,-9999,0);
+      const lnYM=lnRhoAt(ox,oy-eps,time,-9999,-9999,0);
+      const dlx=(lnXP-lnXM)/(2*eps);
+      const dly=(lnYP-lnYM)/(2*eps);
+      const g_xx=(lnXP-2*lnC+lnXM)/(eps*eps)-lam*dlx*dlx;
+      const g_yy=(lnYP-2*lnC+lnYM)/(eps*eps)-lam*dly*dly;
+      pts[j][i]={x:gx+g_xx*sc, y:gy+g_yy*sc, stretch:Math.abs(g_xx)+Math.abs(g_yy)};
+    }
+  }
+
+  // Draw grid lines
+  for(let j=0;j<=rows;j++){
+    x.beginPath();
+    for(let i=0;i<=cols;i++){
+      const p=pts[j][i];
+      i===0?x.moveTo(p.x,p.y):x.lineTo(p.x,p.y);
+    }
+    x.strokeStyle='rgba(32,96,221,0.42)';x.lineWidth=0.8;x.stroke();
+  }
+  for(let i=0;i<=cols;i++){
+    x.beginPath();
+    for(let j=0;j<=rows;j++){
+      const p=pts[j][i];
+      j===0?x.moveTo(p.x,p.y):x.lineTo(p.x,p.y);
+    }
+    x.strokeStyle='rgba(32,96,221,0.42)';x.lineWidth=0.8;x.stroke();
+  }
+
+  // Highlight high-curvature nodes (matter-like concentrations)
+  for(let j=1;j<rows;j++){
+    for(let i=1;i<cols;i++){
+      const p=pts[j][i];
+      const s=p.stretch;
+      if(s>0.018){
+        const a=clamp(s/0.06,0,0.9);
+        x.save();
+        x.shadowColor='rgba(240,192,64,0.7)';x.shadowBlur=6;
+        x.fillStyle=`rgba(240,192,64,${a})`;
+        x.beginPath();x.arc(p.x,p.y,2.5,0,TAU);x.fill();
+        x.restore();
+      }
+    }
+  }
+}
+
+// — CH3: Matter condensation —
+const MP=[];
+const NMP=140;
+function initMP(W,H){
+  MP.length=0;
+  for(let i=0;i<NMP;i++) MP.push({
+    x:Math.random()*W, y:Math.random()*H,
+    vx:(Math.random()-0.5)*0.6, vy:(Math.random()-0.5)*0.6,
+    mass:0.6+Math.random()*1.4,
+    frozen:Math.random()>0.6,
+    life:Math.random()
+  });
+}
+
+function drawMatterCv(){
+  const c=document.getElementById('cv-matter'); if(!c)return;
+  const x=c.getContext('2d'),W=c.width,H=c.height;
+  if(MP.length===0) initMP(W,H);
+  x.fillStyle='rgba(3,8,28,0.28)';x.fillRect(0,0,W,H);
+  const eps=10;
+  for(const p of MP){
+    if(!p.frozen){
+      const lnR=lnRhoAt(p.x*3,p.y*3,time,-9999,-9999,0);
+      const lnXP=lnRhoAt((p.x+eps)*3,p.y*3,time,-9999,-9999,0);
+      const lnXM=lnRhoAt((p.x-eps)*3,p.y*3,time,-9999,-9999,0);
+      const lnYP=lnRhoAt(p.x*3,(p.y+eps)*3,time,-9999,-9999,0);
+      const lnYM=lnRhoAt(p.x*3,(p.y-eps)*3,time,-9999,-9999,0);
+      p.vx-=(lnXP-lnXM)/(2*eps)*0.025*p.mass;
+      p.vy-=(lnYP-lnYM)/(2*eps)*0.025*p.mass;
+      p.vx*=0.975; p.vy*=0.975;
+      p.x=(p.x+p.vx+W)%W;
+      p.y=(p.y+p.vy+H)%H;
+      if(Math.hypot(p.vx,p.vy)<0.08&&Math.random()<0.0015) p.frozen=true;
+    }
+    x.save();
+    if(p.frozen){
+      x.shadowColor='rgba(240,192,64,0.6)';x.shadowBlur=8;
+      x.fillStyle=`rgba(240,192,64,0.88)`;
+      x.beginPath();x.arc(p.x,p.y,p.mass*1.6,0,TAU);x.fill();
+    } else {
+      const ln=lnRhoAt(p.x*3,p.y*3,time,-9999,-9999,0);
+      const n=clamp((ln+1.5)/3,0,1);
+      x.fillStyle=`rgba(0,232,170,${0.28+n*0.38})`;
+      x.beginPath();x.arc(p.x,p.y,p.mass*0.9,0,TAU);x.fill();
+    }
+    x.restore();
+  }
+  // Edge fade
+  const g=x.createRadialGradient(W/2,H/2,H*0.3,W/2,H/2,H*0.7);
+  g.addColorStop(0,'transparent');g.addColorStop(1,'rgba(3,8,28,0.65)');
+  x.fillStyle=g;x.fillRect(0,0,W,H);
+}
+
+// — CH4: Phi_c fractal —
+let phiCtx=null, phiW=0, phiH=0;
+const PHI_C=0.6829322;
+
+function drawFracBranch(x,ctx,sx,sy,angle,len,depth,maxD){
+  if(depth>maxD||len<2) return;
+  const ex=sx+Math.cos(angle)*len, ey=sy+Math.sin(angle)*len;
+  const t=depth/maxD;
+  let col;
+  if(t<0.4) col=`rgba(32,96,221,${(1-t)*0.8})`;
+  else if(t<0.75) col=`rgba(0,232,170,${(1-t)*0.85})`;
+  else col=`rgba(240,192,64,${(1-t)*0.9+0.1})`;
+  ctx.strokeStyle=col;
+  ctx.lineWidth=Math.max(0.5,(1-t)*2.4);
+  ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(ex,ey);ctx.stroke();
+  const ba=0.38+Math.sin(time*0.25+depth*0.6)*0.06;
+  drawFracBranch(x,ctx,ex,ey,angle-ba,len*PHI_C,depth+1,maxD);
+  drawFracBranch(x,ctx,ex,ey,angle+ba,len*PHI_C,depth+1,maxD);
+}
+
+function drawPhiCv(){
+  const c=document.getElementById('cv-phi'); if(!c)return;
+  const ctx=c.getContext('2d'),W=c.width,H=c.height;
+  ctx.fillStyle='rgba(3,8,28,0.22)';ctx.fillRect(0,0,W,H);
+  const cx=W/2,cy=H;
+  ctx.save();
+  drawFracBranch(null,ctx,cx,cy,-Math.PI/2,H*0.36,0,8);
+  // Threshold arc
+  const ar=Math.min(W,H)*0.38;
+  ctx.strokeStyle='rgba(240,192,64,0.22)';
+  ctx.lineWidth=0.8;ctx.setLineDash([3,7]);
+  ctx.beginPath();ctx.arc(cx,cy-H*0.05,ar,-Math.PI,0);ctx.stroke();
+  // Phi arc (proportion = PHI_C)
+  ctx.strokeStyle='rgba(240,192,64,0.55)';
+  ctx.setLineDash([]);
+  ctx.beginPath();ctx.arc(cx,cy-H*0.05,ar,-Math.PI,-Math.PI+PHI_C*Math.PI);ctx.stroke();
+  // Label
+  ctx.fillStyle='rgba(240,192,64,0.6)';
+  ctx.font=`11px 'Courier New',monospace`;ctx.textAlign='center';
+  ctx.fillText('Φ_c = 0.6829322',cx,cy-H*0.05-ar-10);
+  ctx.restore();
+}
+
+// — CH5: Dimensional layers —
+function drawDimsCv(){
+  const c=document.getElementById('cv-dims'); if(!c)return;
+  const ctx=c.getContext('2d'),W=c.width,H=c.height;
+  ctx.fillStyle='rgba(3,8,28,0.18)';ctx.fillRect(0,0,W,H);
+  const cx=W/2,cy=H/2;
+  const D_EFF=7.24;
+  const nD=Math.round(D_EFF);
+  const rot=time*0.06;
+  ctx.save();ctx.translate(cx,cy);
+  for(let d=1;d<=nD;d++){
+    const visible=d<=4;
+    const r=18+d*16;
+    const sides=d+2;
+    const alpha=visible?0.65:0.22;
+    if(visible){
+      ctx.strokeStyle=`rgba(32,96,221,${alpha})`;
+      ctx.lineWidth=1;ctx.setLineDash([]);
+    } else {
+      ctx.strokeStyle=`rgba(240,192,64,${alpha})`;
+      ctx.lineWidth=0.6;ctx.setLineDash([4,7]);
+    }
+    const dir=(d%2===0?1:-1);
+    const speed=0.4+d*0.08;
+    ctx.beginPath();
+    for(let i=0;i<=sides;i++){
+      const a=(i/sides)*TAU+rot*dir*speed;
+      i===0?ctx.moveTo(Math.cos(a)*r,Math.sin(a)*r):ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r);
+    }
+    ctx.stroke();
+  }
+  // Fractional 0.24 dimension
+  const fr=D_EFF-Math.floor(D_EFF);
+  const fr_r=18+(nD+1)*16;
+  ctx.strokeStyle='rgba(0,232,170,0.5)';ctx.lineWidth=0.8;ctx.setLineDash([2,5]);
+  ctx.beginPath();ctx.arc(0,0,fr_r,0,fr*TAU);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='rgba(240,192,64,0.55)';
+  ctx.font=`10px 'Courier New',monospace`;ctx.textAlign='center';
+  ctx.fillText('D_eff = 7.24',0,fr_r+18);
+  ctx.restore();
+}
+
+// ── CANVAS SIZING ────────────────────────────────────────────
+
+function resizeAllCanvases(){
+  resizeBg();
+  ['cv-field','cv-fisher','cv-matter','cv-phi','cv-dims'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    const r=el.getBoundingClientRect();
+    if(r.width>4){
+      el.width=r.width;
+      el.height=parseInt(el.getAttribute('height'))||220;
+    }
+  });
+  if(MP.length>0){
+    const mc=document.getElementById('cv-matter');
+    if(mc) initMP(mc.width,mc.height);
+  }
+}
+
+window.addEventListener('resize',()=>{resizeAllCanvases();});
+
+// ── SCROLL ───────────────────────────────────────────────────
+
+function onScroll(){
+  const sy=window.scrollY;
+  const maxS=document.body.scrollHeight-window.innerHeight;
+  scrollProg=maxS>0?clamp(sy/maxS,0,1):0;
+  document.getElementById('progress').style.width=(scrollProg*100)+'%';
+
+  const ids=['ch0','ch1','ch2','ch3','ch4','ch5','ch6'];
+  const dots=document.querySelectorAll('.ndot');
+  let ai=0;
+  ids.forEach((id,i)=>{
+    const el=document.getElementById(id);
+    if(el&&el.getBoundingClientRect().top<=window.innerHeight*0.5) ai=i;
+  });
+  dots.forEach((d,i)=>d.classList.toggle('active',i===ai));
+
+  // Cursor ring
+  const ring=document.getElementById('cursor-ring');
+  ring.classList.toggle('active',scrollProg>0.85);
+}
+
+window.addEventListener('scroll',onScroll,{passive:true});
+
+// ── REVEAL OBSERVER ──────────────────────────────────────────
+
+const ro=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('on');});
+},{threshold:0.12});
+document.querySelectorAll('.reveal').forEach(el=>ro.observe(el));
+
+// ── MOUSE ────────────────────────────────────────────────────
+
+document.addEventListener('mousemove',e=>{
+  mouseX=e.clientX; mouseY=e.clientY;
+  const ring=document.getElementById('cursor-ring');
+  if(ring.classList.contains('active')){
+    ring.style.left=e.clientX+'px'; ring.style.top=e.clientY+'px';
+  }
+});
+document.addEventListener('mouseleave',()=>{mouseX=-9999;mouseY=-9999;});
+
+// ── SOUND ────────────────────────────────────────────────────
+
+let aCtx=null,masterGain=null,soundOn=false;
+
+function initSound(){
+  if(aCtx) return;
+  aCtx=new(window.AudioContext||window.webkitAudioContext)();
+  masterGain=aCtx.createGain();
+  masterGain.gain.value=0;
+  masterGain.connect(aCtx.destination);
+
+  // Layered drones: 40 Hz fundamental + harmonics
+  [[40,0.55,'sine'],[80,0.22,'sine'],[120,0.1,'triangle'],[200,0.05,'sine']].forEach(([freq,g,type])=>{
+    const o=aCtx.createOscillator();
+    o.type=type; o.frequency.value=freq;
+    const gain=aCtx.createGain(); gain.gain.value=g;
+    o.connect(gain); gain.connect(masterGain); o.start();
+  });
+
+  // Breath LFO
+  const lfo=aCtx.createOscillator();
+  lfo.type='sine'; lfo.frequency.value=0.08;
+  const lfoG=aCtx.createGain(); lfoG.gain.value=4;
+  lfo.connect(lfoG); lfoG.connect(masterGain.gain); lfo.start();
+
+  // Shimmer oscillator (very high, barely audible)
+  const shimmer=aCtx.createOscillator();
+  shimmer.type='sine'; shimmer.frequency.value=528;
+  const shimG=aCtx.createGain(); shimG.gain.value=0.018;
+  shimmer.connect(shimG); shimG.connect(masterGain); shimmer.start();
+}
+
+document.getElementById('sound-btn').addEventListener('click',()=>{
+  initSound();
+  soundOn=!soundOn;
+  const btn=document.getElementById('sound-btn');
+  if(soundOn){
+    masterGain.gain.setTargetAtTime(0.06,aCtx.currentTime,2.5);
+    btn.textContent='◉  RESONANDO'; btn.classList.add('on');
+  } else {
+    masterGain.gain.setTargetAtTime(0,aCtx.currentTime,1.5);
+    btn.textContent='◌  SILENCIO'; btn.classList.remove('on');
+  }
+});
+
+// ── NAV DOTS ─────────────────────────────────────────────────
+
+document.querySelectorAll('.ndot').forEach(d=>{
+  d.addEventListener('click',()=>{
+    const t=document.getElementById(d.dataset.t);
+    if(t) t.scrollIntoView({behavior:'smooth'});
+  });
+});
+
+// ── SECTION VISIBILITY CHECK ─────────────────────────────────
+
+function inView(id){
+  const el=document.getElementById(id); if(!el) return false;
+  const r=el.getBoundingClientRect();
+  return r.top<window.innerHeight&&r.bottom>0;
+}
+
+// ── MAIN LOOP ────────────────────────────────────────────────
+
+let lastTS=0;
+
+function animate(ts){
+  const dt=Math.min((ts-lastTS)/1000,0.05);
+  lastTS=ts;
+  time+=dt*28;
+
+  drawBg();
+  if(inView('ch1')) drawFieldCv();
+  if(inView('ch2')) drawFisherCv();
+  if(inView('ch3')) drawMatterCv();
+  if(inView('ch4')) drawPhiCv();
+  if(inView('ch5')) drawDimsCv();
+
+  requestAnimationFrame(animate);
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+
+window.addEventListener('load',()=>{
+  resizeAllCanvases();
+  onScroll();
+  // Stagger hero reveals
+  document.querySelectorAll('#ch0 .reveal').forEach((el,i)=>{
+    setTimeout(()=>el.classList.add('on'),300+i*700);
+  });
+  requestAnimationFrame(animate);
+});
+
+</script>
+</body>
+</html>

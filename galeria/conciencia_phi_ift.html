@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conciencia Φ_IFT - MIU</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #0a0a0a;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+        
+        .container {
+            position: relative;
+            width: 1000px;
+            height: 1000px;
+            background: radial-gradient(ellipse at center, #0D1B2A 0%, #0B0C10 100%);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 100px rgba(255, 215, 0, 0.1), 0 0 200px rgba(26, 35, 126, 0.05);
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .labels {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            color: rgba(255, 215, 0, 0.7);
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .bottom-label {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 215, 0, 0.6);
+            font-size: 11px;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            width: 80%;
+        }
+    </style>
+</head>
+<body>
+<style>
+#gal-backnav{position:fixed;top:12px;left:12px;z-index:99999;display:flex;gap:6px;font-family:'Courier New',monospace;font-size:11px;}
+#gal-backnav a{color:#ffd700;text-decoration:none;background:rgba(10,10,15,0.7);border:1px solid rgba(255,215,0,0.35);border-radius:6px;padding:5px 10px;backdrop-filter:blur(4px);transition:all .2s;}
+#gal-backnav a:hover{background:rgba(255,215,0,0.15);border-color:#ffd700;}
+</style>
+<div id="gal-backnav"><a href="index.html">← Galería</a><a href="../index.html">Inicio</a></div>
+
+    <div class="container">
+        <canvas id="consciousnessCanvas"></canvas>
+        <div class="labels">
+            <div>Umbral de Conciencia</div>
+            <div style="font-size: 10px; margin-top: 3px; color: rgba(255, 215, 0, 0.5)">
+                Φ_IFT > Φ_c (0.6829322)
+            </div>
+        </div>
+        <div class="bottom-label">
+            MIU-IFT v13.0 — La conciencia emerge de la información integrada — ρ(x) > 0
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('consciousnessCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        
+        let time = 0;
+        const phi = 1.618033988749;
+        
+        // Crear red neuronal
+        class NeuralNetwork {
+            constructor() {
+                this.neurons = [];
+                this.connections = [];
+                this.initNeurons();
+                this.createConnections();
+            }
+            
+            initNeurons() {
+                // Corteza frontal (menos brillante)
+                for (let i = 0; i < 40; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const radius = 80 + Math.random() * 40;
+                    const x = centerX - 60 + radius * Math.cos(angle);
+                    const y = centerY - 100 + radius * Math.sin(angle);
+                    
+                    this.neurons.push({
+                        x, y,
+                        brightness: 0.3 + Math.random() * 0.3,
+                        region: 'frontal',
+                        pulse: Math.random() * Math.PI * 2
+                    });
+                }
+                
+                // Corteza posterior (más brillante - Cogitate 2025)
+                for (let i = 0; i < 70; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const radius = 80 + Math.random() * 50;
+                    const x = centerX + 60 + radius * Math.cos(angle);
+                    const y = centerY + 100 + radius * Math.sin(angle);
+                    
+                    this.neurons.push({
+                        x, y,
+                        brightness: 0.6 + Math.random() * 0.4,
+                        region: 'posterior',
+                        pulse: Math.random() * Math.PI * 2
+                    });
+                }
+            }
+            
+            createConnections() {
+                for (let i = 0; i < this.neurons.length; i++) {
+                    for (let j = i + 1; j < this.neurons.length; j++) {
+                        const dx = this.neurons[j].x - this.neurons[i].x;
+                        const dy = this.neurons[j].y - this.neurons[i].y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < 150 && Math.random() > 0.85) {
+                            this.connections.push({ from: i, to: j, distance });
+                        }
+                    }
+                }
+            }
+            
+            update() {
+                this.neurons.forEach((neuron, idx) => {
+                    neuron.pulse += 0.05;
+                    if (neuron.region === 'posterior') {
+                        neuron.currentBrightness = neuron.brightness * (0.6 + 0.4 * Math.sin(neuron.pulse + time * 0.02));
+                    } else {
+                        neuron.currentBrightness = (neuron.brightness * 0.5) * (0.4 + 0.3 * Math.sin(neuron.pulse + time * 0.01));
+                    }
+                });
+            }
+            
+            draw(ctx) {
+                // Dibujar conexiones
+                this.connections.forEach(conn => {
+                    const from = this.neurons[conn.from];
+                    const to = this.neurons[conn.to];
+                    
+                    ctx.strokeStyle = `rgba(255, 215, 0, ${(from.currentBrightness + to.currentBrightness) * 0.15})`;
+                    ctx.lineWidth = 0.5;
+                    ctx.beginPath();
+                    ctx.moveTo(from.x, from.y);
+                    ctx.lineTo(to.x, to.y);
+                    ctx.stroke();
+                });
+                
+                // Dibujar neuronas
+                this.neurons.forEach((neuron, idx) => {
+                    const grad = ctx.createRadialGradient(neuron.x - 1, neuron.y - 1, 0, neuron.x, neuron.y, 4);
+                    grad.addColorStop(0, `rgba(255, 255, 255, ${neuron.currentBrightness})`);
+                    grad.addColorStop(1, `rgba(255, 215, 0, 0)`);
+                    
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.arc(neuron.x, neuron.y, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            }
+        }
+        
+        const brain = new NeuralNetwork();
+        
+        // Dibujar cerebro semitransparente
+        function drawBrainOutline() {
+            ctx.strokeStyle = 'rgba(255, 215, 0, 0.3)';
+            ctx.lineWidth = 2;
+            
+            // Contorno izquierdo (frontal)
+            ctx.beginPath();
+            ctx.ellipse(centerX - 60, centerY - 80, 90, 120, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Contorno derecho (posterior)
+            ctx.beginPath();
+            ctx.ellipse(centerX + 60, centerY + 80, 100, 140, 0, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+        
+        // Esfera de conciencia
+        function drawConsciousnessAura() {
+            const pulseScale = 1 + 0.2 * Math.sin(time * 0.01);
+            const auraRadius = 250 * pulseScale;
+            
+            // Halo dorado intenso
+            const auraGrad = ctx.createRadialGradient(centerX, centerY, 100, centerX, centerY, auraRadius);
+            auraGrad.addColorStop(0, 'rgba(255, 215, 0, 0.6)');
+            auraGrad.addColorStop(0.3, 'rgba(255, 140, 0, 0.3)');
+            auraGrad.addColorStop(0.7, 'rgba(255, 215, 0, 0.1)');
+            auraGrad.addColorStop(1, 'rgba(255, 215, 0, 0)');
+            
+            ctx.fillStyle = auraGrad;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, auraRadius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Zonas más brillantes en corteza posterior
+            const posteriorGrad = ctx.createRadialGradient(centerX + 80, centerY + 120, 0, centerX + 80, centerY + 120, 150);
+            posteriorGrad.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+            posteriorGrad.addColorStop(1, 'rgba(255, 215, 0, 0)');
+            
+            ctx.fillStyle = posteriorGrad;
+            ctx.beginPath();
+            ctx.arc(centerX + 80, centerY + 120, 150, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Filamentos conectando cerebro y cosmos
+        function drawCosmicFilaments() {
+            // Filamentos hacia galaxia
+            ctx.strokeStyle = 'rgba(255, 215, 0, 0.4)';
+            ctx.lineWidth = 2;
+            
+            const galaxyX = centerX - 250;
+            const galaxyY = centerY - 300;
+            
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            
+            // Curva suave
+            const cpx = (centerX + galaxyX) / 2;
+            const cpy = (centerY + galaxyY) / 2 - 50;
+            ctx.quadraticCurveTo(cpx, cpy, galaxyX, galaxyY);
+            ctx.stroke();
+            
+            // Valor ξ en el filamento
+            const midX = (centerX + galaxyX) / 2;
+            const midY = (centerY + galaxyY) / 2 - 30;
+            
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.7)';
+            ctx.font = 'bold 12px "Courier New"';
+            ctx.textAlign = 'center';
+            ctx.fillText('ξ = 8.57', midX, midY);
+        }
+        
+        // Dibujar galaxia en el cosmos
+        function drawCosmicGalaxy() {
+            const galaxyX = centerX - 250;
+            const galaxyY = centerY - 300;
+            
+            // Galaxia espiral
+            ctx.strokeStyle = 'rgba(100, 150, 255, 0.6)';
+            ctx.lineWidth = 1.5;
+            
+            for (let arm = 0; arm < 2; arm++) {
+                ctx.beginPath();
+                const armAngle = arm * Math.PI + time * 0.002;
+                
+                for (let r = 0; r < 30; r += 2) {
+                    const spiralAngle = armAngle + (r / 30) * Math.PI * 2;
+                    const x = galaxyX + r * Math.cos(spiralAngle);
+                    const y = galaxyY + r * Math.sin(spiralAngle);
+                    
+                    if (r === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+            
+            // Núcleo galáctico
+            const coreGrad = ctx.createRadialGradient(galaxyX - 3, galaxyY - 3, 0, galaxyX, galaxyY, 20);
+            coreGrad.addColorStop(0, 'rgba(255, 215, 0, 0.7)');
+            coreGrad.addColorStop(1, 'rgba(100, 150, 255, 0.2)');
+            
+            ctx.fillStyle = coreGrad;
+            ctx.beginPath();
+            ctx.arc(galaxyX, galaxyY, 20, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Etiqueta
+            ctx.fillStyle = 'rgba(100, 150, 255, 0.6)';
+            ctx.font = '10px "Courier New"';
+            ctx.textAlign = 'center';
+            ctx.fillText('ρ_cósmico = 7×10⁻²⁷', galaxyX, galaxyY + 45);
+        }
+        
+        // Estrellas en el fondo
+        function drawBackgroundStars() {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            
+            for (let i = 0; i < 50; i++) {
+                const x = Math.sin(i * 123.456) * canvas.width;
+                const y = Math.cos(i * 234.567) * canvas.height;
+                
+                if (Math.abs(x) < canvas.width && Math.abs(y) < canvas.height) {
+                    const size = 1 + Math.sin(time * 0.01 + i) * 0.5;
+                    ctx.beginPath();
+                    ctx.arc(centerX + x * 0.3, centerY + y * 0.3, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
+        
+        // Espirales áureas de fondo
+        function drawGoldenSpirals() {
+            ctx.strokeStyle = 'rgba(184, 134, 11, 0.05)';
+            ctx.lineWidth = 1;
+            
+            for (let spiral = 0; spiral < 2; spiral++) {
+                ctx.beginPath();
+                const rotation = spiral * Math.PI;
+                
+                for (let i = 0; i < 150; i++) {
+                    const theta = (i / 10) + rotation;
+                    const radius = 15 * Math.pow(phi, theta / (Math.PI * 2));
+                    
+                    const x = centerX + radius * Math.cos(theta);
+                    const y = centerY + radius * Math.sin(theta);
+                    
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                    
+                    if (radius > 300) break;
+                }
+                ctx.stroke();
+            }
+        }
+        
+        // Anotaciones científicas
+        function drawAnnotations() {
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.6)';
+            ctx.font = '11px "Courier New"';
+            
+            // Superior izquierda
+            ctx.textAlign = 'left';
+            ctx.fillText('Umbral: Φ_c = 0.6829322', 30, 80);
+            ctx.font = '10px "Courier New"';
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.4)';
+            ctx.fillText('(gap cuántico IBM)', 30, 95);
+            
+            // Superior derecha
+            ctx.font = '11px "Courier New"';
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.6)';
+            ctx.textAlign = 'right';
+            ctx.fillText('K_i = φ · D_f/2.5', canvas.width - 30, 80);
+            ctx.font = '10px "Courier New"';
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.4)';
+            ctx.fillText('(coherencia)', canvas.width - 30, 95);
+            
+            // Inferior izquierda
+            ctx.font = '11px "Courier New"';
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.6)';
+            ctx.textAlign = 'left';
+            ctx.fillText('m_φ = 66.3 meV', 30, canvas.height - 60);
+            
+            // Inferior derecha
+            ctx.textAlign = 'right';
+            ctx.fillText('λ_φ = 3.0 mm', canvas.width - 30, canvas.height - 60);
+            
+            // Etiquetas en el cerebro
+            ctx.font = 'bold 10px "Courier New"';
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.6)';
+            ctx.textAlign = 'center';
+            
+            // Corteza posterior
+            ctx.fillText('Mayor Φ_IFT', centerX + 60, centerY - 220);
+            ctx.font = '9px "Courier New"';
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+            ctx.fillText('(Cogitate 2025)', centerX + 60, centerY - 208);
+            
+            // Corteza frontal
+            ctx.font = '10px "Courier New"';
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+            ctx.fillText('Menor Φ_IFT', centerX - 60, centerY + 180);
+            
+            // Valor central de conciencia
+            ctx.font = 'bold 16px "Courier New"';
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.8)';
+            ctx.textAlign = 'center';
+            ctx.fillText('Φ_IFT', centerX - 20, centerY - 40);
+            
+            ctx.font = '12px "Courier New"';
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.6)';
+            ctx.fillText('> Φ_c', centerX - 20, centerY - 20);
+            
+            ctx.font = '11px "Courier New"';
+            ctx.fillText('τ · Ξ > K_i', centerX - 20, centerY + 10);
+        }
+        
+        // Animación principal
+        function animate() {
+            // Fondo
+            const bgGrad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            bgGrad.addColorStop(0, '#0D1B2A');
+            bgGrad.addColorStop(1, '#0B0C10');
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Elementos
+            drawBackgroundStars();
+            drawGoldenSpirals();
+            drawCosmicGalaxy();
+            drawCosmicFilaments();
+            drawConsciousnessAura();
+            drawBrainOutline();
+            
+            brain.update();
+            brain.draw(ctx);
+            
+            drawAnnotations();
+            
+            time++;
+            requestAnimationFrame(animate);
+        }
+        
+        animate();
+    </script>
+</body>
+</html>

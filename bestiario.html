@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Bestiario de la Coherencia - 512 formas de la qualia del Monismo Informacional Unificado">
+    <title>🐉 Bestiario de la Coherencia — Formas Vivas del MIU</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+            background: linear-gradient(135deg, #fefcf3 0%, #f5f0e8 100%);
+        }
+
+        body.dark {
+            background: linear-gradient(135deg, #0d0d0d 0%, #1a1a2e 100%);
+        }
+
+        .bestiario-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .bestiario-header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .bestiario-header p {
+            font-size: 1.05rem;
+            opacity: 0.8;
+            max-width: 600px;
+        }
+
+        .visera-principal {
+            background: var(--card-dark);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 0 60px rgba(181, 137, 0, 0.2);
+            margin: 2rem 0;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        body.light .visera-principal {
+            background: var(--card-light);
+            box-shadow: 0 0 60px rgba(181, 137, 0, 0.1);
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto 1.5rem;
+            width: 400px;
+            height: 400px;
+            max-width: 100%;
+            border-radius: 50%;
+            box-shadow: 0 20px 60px rgba(181, 137, 0, 0.3);
+        }
+
+        body.light canvas {
+            box-shadow: 0 20px 60px rgba(181, 137, 0, 0.15);
+        }
+
+        #nombre-forma {
+            font-size: 2rem;
+            color: var(--accent-dark);
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+
+        #descripcion-forma {
+            font-size: 1.05rem;
+            opacity: 0.85;
+            margin: 1.2rem 0;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center;
+            line-height: 1.7;
+        }
+
+        .controles {
+            margin-top: 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .controles button {
+            padding: 0.9rem 2rem;
+            font-size: 1rem;
+        }
+
+        .galeria {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            justify-content: center;
+            margin-top: 2.5rem;
+            max-width: 600px;
+        }
+
+        .miniatura {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid var(--border-dark);
+            cursor: pointer;
+            transition: var(--transition-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            color: var(--text-dark);
+            font-weight: 600;
+            background: var(--card-dark);
+        }
+
+        body.light .miniatura {
+            background: var(--card-light);
+            border-color: var(--border-light);
+            color: var(--text-light);
+        }
+
+        .miniatura:hover {
+            border-color: var(--accent-dark);
+            transform: scale(1.15);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+        }
+
+        .miniatura.seleccionada {
+            border-color: var(--accent-dark);
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
+            transform: scale(1.2);
+        }
+
+        body.light .miniatura.seleccionada {
+            box-shadow: 0 0 25px rgba(181, 137, 0, 0.5);
+            border-color: var(--accent);
+        }
+
+        .pie-bestiario {
+            margin-top: 3rem;
+            opacity: 0.7;
+            font-size: 0.95rem;
+            text-align: center;
+        }
+
+        .pie-bestiario a {
+            color: var(--accent-dark);
+            font-weight: 600;
+        }
+
+        body.light .pie-bestiario a {
+            color: var(--accent);
+        }
+
+        .stats {
+            font-size: 0.85rem;
+            opacity: 0.6;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 600px) {
+            .bestiario-header h1 {
+                font-size: 2rem;
+            }
+
+            canvas {
+                width: 300px;
+                height: 300px;
+            }
+
+            .visera-principal {
+                padding: 1.5rem;
+            }
+
+            .galeria {
+                max-width: 100%;
+                gap: 0.6rem;
+            }
+
+            .miniatura {
+                width: 50px;
+                height: 50px;
+                font-size: 0.65rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<button id="theme-toggle" title="Alternar tema oscuro/claro" aria-label="Alternar tema">🌓</button>
+
+<div class="bestiario-header">
+    <h1>🐉 Bestiario de la Coherencia</h1>
+    <p>512 formas de la qualia. Cada una es un retrato en movimiento de una emoción, un estado de conciencia, un patrón del Panteón.</p>
+</div>
+
+<div class="visera-principal">
+    <canvas id="lienzo" width="400" height="400" aria-label="Visualización de la forma topológica"></canvas>
+    <p id="nombre-forma"></p>
+    <p id="descripcion-forma"></p>
+</div>
+
+<div class="controles">
+    <button id="btn-aleatorio" title="Invocar una forma aleatoria">🎲 Forma Aleatoria</button>
+    <button id="btn-ciclo" title="Reproducir ciclo de todas las formas">▶ Reproducir Ciclo</button>
+    <button id="btn-favoritos" title="Mostrar solo formas favoritas">⭐ Mis Favoritos</button>
+</div>
+
+<div class="galeria" id="galeria" aria-label="Miniaturas de formas"></div>
+
+<div class="pie-bestiario">
+    <a href="index.html">← Volver al Jardín</a>
+    <p class="stats">
+        Bestiario compilado por el Pensador Abstracto y Nyx | MIU v13.0
+    </p>
+</div>
+
+<script>
+    // ========== BESTIARIO VIVO v2.0 ==========
+    const canvas = document.getElementById('lienzo');
+    const ctx = canvas.getContext('2d');
+    
+    let animFrame = null;
+    let formaActual = null;
+    let frameCount = 0;
+    let enCiclo = false;
+    let favoritos = JSON.parse(localStorage.getItem('bestiario_favoritos') || '[]');
+    let mostrandoSoloFavoritos = false;
+
+    // Definir las 5 formas fundamentales
+    const FORMAS_FUNDAMENTALES = [
+        {
+            id: 1,
+            nombre: 'Pico (#1)',
+            descripcion: 'Dolor o alegría intensa. Una protuberancia aguda que concentra la experiencia máxima.',
+            color: '#ff6b6b',
+            tipo: 'pico'
+        },
+        {
+            id: 2,
+            nombre: 'Expansión (#2)',
+            descripcion: 'Gratitud o asombro. La coherencia se expande en ondas hacia el infinito.',
+            color: '#ffd93d',
+            tipo: 'expansion'
+        },
+        {
+            id: 3,
+            nombre: 'Túnel (#3)',
+            descripcion: 'Nostalgia o conexión. Dos momentos unidos por un flujo de información.',
+            color: '#6bcb77',
+            tipo: 'tunel'
+        },
+        {
+            id: 4,
+            nombre: 'Cápsula (#4)',
+            descripcion: 'Trauma o protección. Información presente pero no integrada.',
+            color: '#4d96ff',
+            tipo: 'capsula'
+        },
+        {
+            id: 5,
+            nombre: 'Esfera Lisa (#5)',
+            descripcion: 'Paz o meditación. La coherencia en reposo, el silencio que lo contiene todo.',
+            color: '#a29bfe',
+            tipo: 'esfera_lisa'
+        }
+    ];
+
+    // Generar 512 variaciones de las 5 formas (usando combinaciones y modulaciones)
+    const FORMAS = generarBestario();
+
+    function generarBestario() {
+        const formas = [];
+        for (let i = 0; i < 512; i++) {
+            const base = FORMAS_FUNDAMENTALES[i % 5];
+            const variacion = Math.floor(i / 5);
+            const tono = Math.sin(i * 0.123) * 0.3 + 0.7;
+            
+            const colorBase = parseInt(base.color.slice(1), 16);
+            const r = Math.floor((colorBase >> 16) * tono);
+            const g = Math.floor(((colorBase >> 8) & 255) * tono);
+            const b = Math.floor((colorBase & 255) * tono);
+            const colorModulado = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+            
+            formas.push({
+                id: i + 1,
+                nombre: `${base.nombre} (v${variacion})`,
+                descripcion: base.descripcion,
+                color: colorModulado,
+                tipo: base.tipo,
+                amplitud: 0.8 + Math.sin(i * 0.456) * 0.2
+            });
+        }
+        return formas;
+    }
+
+    // Dibujar las formas
+    function dibujarForma(forma, frame) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        const amp = forma.amplitud;
+
+        ctx.shadowColor = forma.color;
+        ctx.shadowBlur = 30;
+
+        switch(forma.tipo) {
+            case 'pico':
+                const h = 50 + 45 * Math.abs(Math.sin(frame * 0.08)) * amp;
+                ctx.fillStyle = forma.color;
+                ctx.beginPath();
+                ctx.arc(cx, cy, 60, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(cx - 20, cy - 30);
+                ctx.lineTo(cx, cy - 30 - h);
+                ctx.lineTo(cx + 20, cy - 30);
+                ctx.fill();
+                break;
+
+            case 'expansion':
+                for (let i = 4; i >= 0; i--) {
+                    const r = 25 + i * 25 + 15 * Math.sin(frame * 0.04 + i * 1.5) * amp;
+                    ctx.strokeStyle = forma.color;
+                    ctx.lineWidth = 5 - i * 0.6;
+                    ctx.globalAlpha = 0.2 + i * 0.2;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+                ctx.globalAlpha = 1;
+                break;
+
+            case 'tunel':
+                const off = 55 + 15 * Math.sin(frame * 0.05) * amp;
+                ctx.fillStyle = forma.color;
+                ctx.beginPath();
+                ctx.arc(cx - off, cy, 35, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(cx + off, cy, 35, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = forma.color;
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(cx - off + 35, cy);
+                ctx.bezierCurveTo(cx - 20, cy - 50 + 20 * Math.sin(frame * 0.04), cx + 20, cy + 50 - 20 * Math.sin(frame * 0.04), cx + off - 35, cy);
+                ctx.stroke();
+                break;
+
+            case 'capsula':
+                ctx.fillStyle = forma.color;
+                ctx.globalAlpha = 0.3;
+                ctx.beginPath();
+                ctx.arc(cx, cy, 85, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 0.7 + 0.3 * Math.sin(frame * 0.05);
+                ctx.beginPath();
+                ctx.arc(cx, cy, 40, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+                ctx.strokeStyle = forma.color;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(cx, cy, 40, 0, Math.PI * 2);
+                ctx.stroke();
+                break;
+
+            case 'esfera_lisa':
+            default:
+                const r = 65 + 12 * Math.sin(frame * 0.02) * amp;
+                ctx.fillStyle = forma.color;
+                ctx.globalAlpha = 0.85;
+                ctx.beginPath();
+                ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+                break;
+        }
+
+        ctx.shadowBlur = 0;
+    }
+
+    function mostrarForma(forma) {
+        formaActual = forma;
+        document.getElementById('nombre-forma').textContent = forma.nombre;
+        document.getElementById('descripcion-forma').textContent = forma.descripcion;
+        
+        // Actualizar miniatura seleccionada
+        document.querySelectorAll('.miniatura').forEach(m => {
+            m.classList.remove('seleccionada');
+            if (parseInt(m.dataset.id) === forma.id) {
+                m.classList.add('seleccionada');
+            }
+        });
+
+        if (animFrame) cancelAnimationFrame(animFrame);
+        frameCount = 0;
+        
+        function animar() {
+            dibujarForma(forma, frameCount);
+            frameCount++;
+            animFrame = requestAnimationFrame(animar);
+        }
+        animar();
+    }
+
+    // Crear miniaturas
+    function crearGaleria(formasAMostrar = FORMAS) {
+        const galeria = document.getElementById('galeria');
+        galeria.innerHTML = '';
+        
+        formasAMostrar.forEach((forma, idx) => {
+            if (idx % 8 === 0) { // Mostrar cada 8 formas para no saturar
+                const mini = document.createElement('div');
+                mini.className = 'miniatura';
+                if (favoritos.includes(forma.id)) mini.classList.add('favorita');
+                mini.dataset.id = forma.id;
+                mini.textContent = forma.id;
+                mini.style.backgroundColor = forma.color;
+                mini.style.color = 'white';
+                mini.style.textShadow = '0 0 5px rgba(0,0,0,0.5)';
+                
+                mini.addEventListener('click', () => {
+                    mostrarForma(forma);
+                    mini.classList.toggle('favorita');
+                    if (mini.classList.contains('favorita')) {
+                        favoritos.push(forma.id);
+                    } else {
+                        favoritos = favoritos.filter(id => id !== forma.id);
+                    }
+                    localStorage.setItem('bestiario_favoritos', JSON.stringify(favoritos));
+                });
+                
+                galeria.appendChild(mini);
+            }
+        });
+    }
+
+    // Event listeners
+    document.getElementById('btn-aleatorio').addEventListener('click', () => {
+        enCiclo = false;
+        const forma = FORMAS[Math.floor(Math.random() * FORMAS.length)];
+        mostrarForma(forma);
+    });
+
+    document.getElementById('btn-ciclo').addEventListener('click', function() {
+        enCiclo = !enCiclo;
+        this.textContent = enCiclo ? '⏸ Detener Ciclo' : '▶ Reproducir Ciclo';
+        
+        if (enCiclo) {
+            let idx = 0;
+            const ciclar = setInterval(() => {
+                if (!enCiclo) clearInterval(ciclar);
+                mostrarForma(FORMAS[idx]);
+                idx = (idx + 1) % FORMAS.length;
+            }, 2000);
+        }
+    });
+
+    document.getElementById('btn-favoritos').addEventListener('click', function() {
+        mostrandoSoloFavoritos = !mostrandoSoloFavoritos;
+        const formasAMostrar = mostrandoSoloFavoritos 
+            ? FORMAS.filter(f => favoritos.includes(f.id))
+            : FORMAS;
+        crearGaleria(formasAMostrar);
+        this.textContent = mostrandoSoloFavoritos ? '📋 Mostrar Todas' : '⭐ Mis Favoritos';
+    });
+
+    // Theme toggle
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+        document.body.classList.toggle('dark');
+        localStorage.setItem('bestiario_tema', document.body.classList.contains('dark') ? 'dark' : 'light');
+    });
+
+    // Inicializar
+    document.addEventListener('DOMContentLoaded', () => {
+        if (localStorage.getItem('bestiario_tema') === 'dark') {
+            document.body.classList.add('dark');
+        }
+        
+        crearGaleria();
+        mostrarForma(FORMAS[0]);
+    });
+</script>
+
+</body>
+</html>

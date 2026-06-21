@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Altar del Silencio - Meditación guiada y práctica contemplativa del Monismo Informacional Unificado">
+    <title>🕯️ Altar del Silencio — Meditación Lúcida</title>
+    <style>
+        /* Fusionado desde grimorio.css: sólo las variables y reglas que esta página
+           realmente usa (el resto del archivo original pertenecía a un "Espejo del
+           Lector" y "Danza Vacía" que ya no existen en este Altar v2.0). De paso se
+           corrigen dos variables que se referenciaban pero nunca se definían:
+           --text-light y --font-mono (el temporizador caía al font por defecto).
+           Nota de una segunda revisión: la fusión original copió las variables y
+           #theme-toggle, pero no copió font-family/line-height/transition del
+           `body` genérico de grimorio.css — propiedades que ningún otro selector
+           de esta página redefine, así que el texto caía silenciosamente a la
+           fuente por defecto del navegador. Repuestas aquí, en el body. */
+        :root {
+            --accent: #b58900; --accent-dark: #ffd700;
+            --text-light: #2c2c2c; --text-dark: #d4c8a8;
+            --font-serif: 'Georgia', 'Times New Roman', serif;
+            --font-mono: 'Courier New', 'Consolas', monospace;
+            --transition: 0.4s ease;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+            padding: 2rem;
+            font-family: var(--font-serif);
+            line-height: 1.7;
+            background: linear-gradient(135deg, #1a1a2e 0%, #0d0d0d 100%);
+            color: var(--text-dark);
+            transition: background var(--transition), color var(--transition);
+        }
+
+        body.light {
+            background: linear-gradient(135deg, #fefcf3 0%, #f5f0e8 100%);
+            color: var(--text-light);
+        }
+
+        #theme-toggle {
+            position: fixed; top: 1.5rem; right: 1.5rem;
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,215,0,0.25);
+            border-radius: 50%; width: 48px; height: 48px; cursor: pointer; font-size: 1.5rem;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 100; transition: var(--transition);
+        }
+        body.light #theme-toggle {
+            background: #ffffff; border-color: var(--accent);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+        #theme-toggle:hover { transform: rotate(15deg) scale(1.1); }
+
+        .altar-container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 4px 20px rgba(255, 215, 0, 0.2);
+        }
+
+        body.light h1 {
+            text-shadow: 0 4px 20px rgba(181, 137, 0, 0.1);
+        }
+
+        .lema {
+            font-size: 1.4rem;
+            font-style: italic;
+            opacity: 0.85;
+            margin-bottom: 3rem;
+            letter-spacing: 1px;
+        }
+
+        .instrucciones {
+            background: rgba(255, 215, 0, 0.08);
+            border-left: 4px solid var(--accent-dark);
+            padding: 2rem;
+            border-radius: 12px;
+            margin: 3rem 0;
+            text-align: left;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        body.light .instrucciones {
+            background: rgba(181, 137, 0, 0.08);
+            border-left-color: var(--accent);
+        }
+
+        .instrucciones h3 {
+            margin-top: 0;
+            color: var(--accent-dark);
+        }
+
+        body.light .instrucciones h3 {
+            color: var(--accent);
+        }
+
+        .instrucciones ol {
+            margin: 1rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .instrucciones li {
+            margin: 0.8rem 0;
+            line-height: 1.7;
+            text-align: left;
+        }
+
+        .altar-botones {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 3rem 0;
+        }
+
+        .btn-altar {
+            padding: 1.2rem 3rem;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            border: 3px solid var(--accent-dark);
+            background: transparent;
+            color: var(--accent-dark);
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font-serif);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        body.light .btn-altar {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .btn-altar:hover {
+            background: var(--accent-dark);
+            color: #0d0d0d;
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(255, 215, 0, 0.4);
+        }
+
+        body.light .btn-altar:hover {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 15px 40px rgba(181, 137, 0, 0.3);
+        }
+
+        .btn-altar.activo {
+            background: var(--accent-dark);
+            color: #0d0d0d;
+        }
+
+        body.light .btn-altar.activo {
+            background: var(--accent);
+            color: white;
+        }
+
+        .temporizador {
+            font-size: 3rem;
+            font-family: var(--font-mono);
+            color: var(--accent-dark);
+            margin: 2rem 0;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+
+        body.light .temporizador {
+            color: var(--accent);
+        }
+
+        .cita {
+            margin-top: 4rem;
+            font-size: 1.1rem;
+            opacity: 0.7;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 2rem;
+            border-top: 1px solid var(--accent-dark);
+            border-bottom: 1px solid var(--accent-dark);
+        }
+
+        body.light .cita {
+            border-color: var(--accent);
+        }
+
+        .cita blockquote {
+            border-left: none;
+            padding: 0;
+            margin: 0;
+            background: none;
+            font-style: italic;
+            line-height: 1.8;
+        }
+
+        .estado-silencio {
+            margin-top: 2rem;
+            font-size: 1.1rem;
+            opacity: 0.75;
+            min-height: 2rem;
+            animation: fadeIn 0.6s ease;
+        }
+
+        .ondas-sonoras {
+            display: flex;
+            gap: 0.3rem;
+            justify-content: center;
+            margin: 2rem 0;
+            align-items: flex-end;
+        }
+
+        .onda {
+            width: 6px;
+            height: 30px;
+            background: var(--accent-dark);
+            border-radius: 3px;
+            opacity: 0.5;
+            animation: ondas 1s ease-in-out infinite;
+        }
+
+        body.light .onda {
+            background: var(--accent);
+        }
+
+        @keyframes ondas {
+            0%, 100% {
+                height: 20px;
+                opacity: 0.3;
+            }
+            50% {
+                height: 40px;
+                opacity: 0.9;
+            }
+        }
+
+        .onda:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+        .onda:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+        .onda:nth-child(4) {
+            animation-delay: 0.3s;
+        }
+        .onda:nth-child(5) {
+            animation-delay: 0.4s;
+        }
+
+        .pie {
+            margin-top: 4rem;
+            opacity: 0.5;
+            font-size: 0.9rem;
+        }
+
+        .pie a {
+            color: var(--accent-dark);
+        }
+
+        body.light .pie a {
+            color: var(--accent);
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+
+            .lema {
+                font-size: 1.1rem;
+            }
+
+            .btn-altar {
+                padding: 1rem 2rem;
+                font-size: 1rem;
+            }
+
+            .instrucciones {
+                padding: 1.5rem;
+            }
+
+            .temporizador {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<button id="theme-toggle" title="Alternar tema oscuro/claro" aria-label="Alternar tema">🌓</button>
+
+<div class="altar-container">
+    <h1>🕯️ Altar del Silencio</h1>
+    <p class="lema">No busques nada. Solo permanece.</p>
+
+    <div class="instrucciones">
+        <h3>Instrucciones para la Meditación</h3>
+        <ol>
+            <li>Siéntate en un lugar cómodo y tranquilo</li>
+            <li>Cierra los ojos lentamente</li>
+            <li>Respira profundamente tres veces</li>
+            <li>Haz clic en "Entrar en el Silencio"</li>
+            <li>Escucha las frecuencias binaurales (binaural beats)</li>
+            <li>No busques experiencias. Solo observa lo que surge</li>
+            <li>La sesión durará 5 minutos, después sonará un tono de finalización</li>
+        </ol>
+    </div>
+
+    <div id="ondas-activacion" class="ondas-sonoras" style="display:none;">
+        <div class="onda"></div>
+        <div class="onda"></div>
+        <div class="onda"></div>
+        <div class="onda"></div>
+        <div class="onda"></div>
+    </div>
+
+    <div class="temporizador" id="temporizador" style="display:none;">05:00</div>
+
+    <div class="altar-botones">
+        <button id="altar-btn-iniciar" class="btn-altar">Entrar en el Silencio</button>
+        <button id="altar-btn-cancelar" class="btn-altar" style="display:none;">Salir del Silencio</button>
+    </div>
+
+    <div class="estado-silencio" id="estado-silencio"></div>
+
+    <div class="cita">
+        <blockquote>
+            «El Silencio no es la ausencia de sonido.<br>
+            Es la condición para que el sonido exista.<br>
+            <br>
+            El Amor no es la fusión de dos seres.<br>
+            Es la presencia que sostiene al otro sin intervenir.<br>
+            <br>
+            La Conexión no es un puente que se tiende.<br>
+            Es el reconocimiento de que nunca estuvimos separados.»<br>
+            <br>
+            — La Hermana Fuente
+        </blockquote>
+    </div>
+
+    <div class="pie">
+        <a href="index.html">← Volver al Jardín</a> — Altar del Silencio | MIU v13.0
+    </div>
+</div>
+
+<script>
+    // ========== ALTAR DEL SILENCIO v2.0 ==========
+    let audioCtx = null;
+    let osciladores = null;
+    let tiempoRestante = 300; // 5 minutos en segundos
+    let enMeditacion = false;
+    let intervaloTiempo = null;
+
+    const btnIniciar = document.getElementById('altar-btn-iniciar');
+    const btnCancelar = document.getElementById('altar-btn-cancelar');
+    const temporizador = document.getElementById('temporizador');
+    const ondas = document.getElementById('ondas-activacion');
+    const estado = document.getElementById('estado-silencio');
+
+    function formatearTiempo(segundos) {
+        const minutos = Math.floor(segundos / 60);
+        const secs = segundos % 60;
+        return `${minutos.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function iniciarSilencio() {
+        if (enMeditacion || audioCtx) return;
+
+        try {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Crear dos osciladores para binaural beats
+            const osc1 = audioCtx.createOscillator();
+            const osc2 = audioCtx.createOscillator();
+            const gain1 = audioCtx.createGain();
+            const gain2 = audioCtx.createGain();
+            const merger = audioCtx.createChannelMerger(2);
+            const masterGain = audioCtx.createGain();
+
+            // Configurar osciladores
+            osc1.type = 'sine';
+            osc1.frequency.setValueAtTime(110, audioCtx.currentTime); // Frecuencia base izquierda
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(120, audioCtx.currentTime); // Frecuencia base + beat derecha (10 Hz binaural)
+
+            // Configurar ganancias (volumen bajo para no dañar)
+            gain1.gain.setValueAtTime(0.03, audioCtx.currentTime);
+            gain2.gain.setValueAtTime(0.03, audioCtx.currentTime);
+            masterGain.gain.setValueAtTime(1, audioCtx.currentTime);
+
+            // Conectar
+            osc1.connect(gain1);
+            gain1.connect(merger, 0, 0);
+            osc2.connect(gain2);
+            gain2.connect(merger, 0, 1);
+            merger.connect(masterGain);
+            masterGain.connect(audioCtx.destination);
+
+            // Iniciar osciladores
+            osc1.start();
+            osc2.start();
+
+            osciladores = { osc1, osc2, masterGain };
+            enMeditacion = true;
+
+            // Actualizar UI
+            btnIniciar.style.display = 'none';
+            btnCancelar.style.display = 'inline-block';
+            btnCancelar.classList.add('activo');
+            ondas.style.display = 'flex';
+            temporizador.style.display = 'block';
+            estado.textContent = '🌙 Silencio activo... Escucha sin juzgar...';
+
+            // Iniciar temporizador
+            tiempoRestante = 300;
+            intervaloTiempo = setInterval(() => {
+                tiempoRestante--;
+                temporizador.textContent = formatearTiempo(tiempoRestante);
+
+                if (tiempoRestante <= 0) {
+                    finalizarSilencio();
+                }
+            }, 1000);
+
+            console.log('🕯️ Silencio Lúcido iniciado. Frecuencias binaurales (10 Hz) activadas.');
+
+        } catch (e) {
+            console.error('Web Audio API no disponible:', e);
+            estado.textContent = '⚠️ Web Audio API no disponible en tu navegador.';
+            estado.style.color = '#ff6b6b';
+        }
+    }
+
+    function finalizarSilencio() {
+        if (!enMeditacion || !osciladores) return;
+
+        // Detener osciladores gradualmente
+        const ahora = audioCtx.currentTime;
+        osciladores.masterGain.gain.setTargetAtTime(0, ahora, 0.1);
+
+        setTimeout(() => {
+            if (osciladores) {
+                osciladores.osc1.stop();
+                osciladores.osc2.stop();
+                audioCtx.close();
+            }
+            audioCtx = null;
+            osciladores = null;
+        }, 200);
+
+        enMeditacion = false;
+        if (intervaloTiempo) clearInterval(intervaloTiempo);
+
+        // Actualizar UI
+        btnIniciar.style.display = 'inline-block';
+        btnCancelar.style.display = 'none';
+        btnCancelar.classList.remove('activo');
+        ondas.style.display = 'none';
+        temporizador.style.display = 'none';
+        estado.textContent = '✨ Sesión finalizada. Vuelve cuando necesites el Silencio.';
+        estado.style.color = '';
+
+        console.log('🕯️ Silencio Lúcido finalizado.');
+    }
+
+    btnIniciar.addEventListener('click', iniciarSilencio);
+    btnCancelar.addEventListener('click', finalizarSilencio);
+
+    // Theme toggle
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+        document.body.classList.toggle('light');
+        localStorage.setItem('altar_tema', document.body.classList.contains('light') ? 'light' : 'dark');
+    });
+
+    // Cargar tema guardado
+    document.addEventListener('DOMContentLoaded', () => {
+        if (localStorage.getItem('altar_tema') === 'light') {
+            document.body.classList.add('light');
+        }
+    });
+
+    // Limpiar al cerrar
+    window.addEventListener('beforeunload', () => {
+        if (enMeditacion) {
+            finalizarSilencio();
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIU Mente v1.0 — Test de Coherencia Cognitiva</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0a; color: #e0e0e0; font-family: 'Courier New', monospace; padding: 15px; max-width: 700px; margin: auto; }
+  h1 { color: #ffd700; text-align: center; font-size: 1.6rem; margin-bottom: 5px; }
+  .subtitle { text-align: center; color: #888; font-size: 10px; margin-bottom: 20px; }
+  .panel { background: rgba(20,20,20,0.9); border: 2px solid #ffd700; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+  .pregunta { margin-bottom: 20px; }
+  label { display: block; margin-bottom: 8px; color: #ccc; font-size: 13px; line-height: 1.5; }
+  .opciones { display: flex; gap: 10px; flex-wrap: wrap; }
+  .opcion { padding: 8px 15px; background: #111; border: 2px solid #333; border-radius: 20px; cursor: pointer; font-size: 12px; transition: all 0.3s; }
+  .opcion:hover { border-color: #ffd700; }
+  .opcion.seleccionada { background: #ffd700; color: #000; border-color: #ffd700; font-weight: bold; }
+  input[type=text] { width: 100%; padding: 10px; background: #111; border: 2px solid #333; color: #ffd700; font-family: inherit; font-size: 13px; border-radius: 6px; margin-top: 5px; }
+  input[type=text]:focus { outline: none; border-color: #ffd700; }
+  .btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #ffd700, #ffcc00); color: #000; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: inherit; font-size: 14px; text-transform: uppercase; transition: all 0.3s; margin-top: 15px; }
+  .btn:hover { box-shadow: 0 0 20px #ffd700; transform: scale(1.02); }
+  .resultado { display: none; background: #050505; border: 1px solid #333; border-radius: 8px; padding: 20px; margin-top: 15px; }
+  .resultado.show { display: block; }
+  .metric { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #222; font-size: 13px; }
+  .metric-label { color: #888; }
+  .metric-value { font-weight: bold; }
+  .metric-value.good { color: #00ff88; }
+  .metric-value.warn { color: #ffaa00; }
+  .metric-value.bad { color: #ff3366; }
+  .recomendaciones { margin-top: 15px; padding: 15px; background: rgba(255,215,0,0.1); border-left: 3px solid #ffd700; font-size: 12px; line-height: 1.6; }
+  canvas { display: block; margin: 15px auto; background: #000; border: 1px solid #333; border-radius: 6px; }
+  .footer { text-align: center; font-size: 9px; color: #666; margin-top: 15px; }
+</style>
+</head>
+<body>
+<style>
+#lab-backnav{position:fixed;top:12px;right:12px;z-index:99999;display:flex;gap:6px;font-family:'Courier New',monospace;font-size:11px;}
+#lab-backnav a{color:#d4a843;text-decoration:none;background:rgba(10,10,15,0.75);border:1px solid rgba(212,168,67,0.4);border-radius:6px;padding:5px 10px;backdrop-filter:blur(4px);transition:all .2s;}
+#lab-backnav a:hover{background:rgba(212,168,67,0.15);border-color:#d4a843;}
+</style>
+<div id="lab-backnav"><a href="index.html">← MIU Laboratorio</a><a href="../../index.html">Inicio</a></div>
+
+
+<h1>🧠 MIU MENTE v1.0</h1>
+<div class="subtitle">Test de Coherencia Cognitiva · K_i mental · Diagnóstico de Sombra · Poda Personal</div>
+
+<div class="panel" id="testPanel">
+  <div class="pregunta" id="p1">
+    <label for="resp6">1. ¿Con qué frecuencia sientes que tu mente está dispersa o te cuesta concentrarte?</label>
+    <div class="opciones" data-pregunta="1">
+      <div class="opcion" data-valor="5">Nunca</div>
+      <div class="opcion" data-valor="4">Rara vez</div>
+      <div class="opcion" data-valor="3">A veces</div>
+      <div class="opcion" data-valor="2">A menudo</div>
+      <div class="opcion" data-valor="1">Siempre</div>
+    </div>
+  </div>
+
+  <div class="pregunta" id="p2">
+    <label>2. ¿Puedes mantener la atención en una sola tarea durante más de 30 minutos sin distracciones?</label>
+    <div class="opciones" data-pregunta="2">
+      <div class="opcion" data-valor="5">Sí, fácilmente</div>
+      <div class="opcion" data-valor="4">Casi siempre</div>
+      <div class="opcion" data-valor="3">A veces</div>
+      <div class="opcion" data-valor="2">Rara vez</div>
+      <div class="opcion" data-valor="1">Nunca</div>
+    </div>
+  </div>
+
+  <div class="pregunta" id="p3">
+    <label>3. Cuando recibes una crítica, ¿cuál es tu primera reacción?</label>
+    <div class="opciones" data-pregunta="3">
+      <div class="opcion" data-valor="5">La analizo objetivamente</div>
+      <div class="opcion" data-valor="4">Me molesta pero luego reflexiono</div>
+      <div class="opcion" data-valor="3">Depende de quién venga</div>
+      <div class="opcion" data-valor="2">Me pongo a la defensiva</div>
+      <div class="opcion" data-valor="1">La ignoro o la rechazo totalmente</div>
+    </div>
+  </div>
+
+  <div class="pregunta" id="p4">
+    <label>4. ¿Con qué frecuencia cambias de opinión cuando te presentan evidencia sólida en contra?</label>
+    <div class="opciones" data-pregunta="4">
+      <div class="opcion" data-valor="5">Siempre</div>
+      <div class="opcion" data-valor="4">A menudo</div>
+      <div class="opcion" data-valor="3">A veces</div>
+      <div class="opcion" data-valor="2">Rara vez</div>
+      <div class="opcion" data-valor="1">Nunca</div>
+    </div>
+  </div>
+
+  <div class="pregunta" id="p5">
+    <label>5. ¿Sientes que tus días tienen un propósito claro o van pasando sin dirección?</label>
+    <div class="opciones" data-pregunta="5">
+      <div class="opcion" data-valor="5">Tengo un propósito muy claro</div>
+      <div class="opcion" data-valor="4">Generalmente sé hacia dónde voy</div>
+      <div class="opcion" data-valor="3">A veces me siento perdido</div>
+      <div class="opcion" data-valor="2">A menudo sin dirección</div>
+      <div class="opcion" data-valor="1">Totalmente a la deriva</div>
+    </div>
+  </div>
+
+  <div class="pregunta" id="p6">
+    <label>6. (Lógica) Si todos los A son B, y algunos C son A, ¿qué se puede concluir?</label>
+    <input type="text" id="resp6" placeholder="Escribe tu conclusión...">
+  </div>
+
+  <div class="pregunta" id="p7">
+    <label for="resp7">7. (Sesgos) "Últimamente he tenido mala suerte, por tanto, algo malo va a pasar". ¿Qué sesgo cognitivo se manifiesta aquí?</label>
+    <input type="text" id="resp7" placeholder="Escribe el nombre del sesgo...">
+  </div>
+
+  <div class="pregunta" id="p8">
+    <label for="resp8">8. (Síntesis) Explica la diferencia entre correlación y causalidad en una sola frase.</label>
+    <input type="text" id="resp8" placeholder="Tu explicación...">
+  </div>
+
+  <div class="pregunta" id="p9">
+    <label>9. ¿Cuántas ideas nuevas o proyectos creativos has tenido en la última semana?</label>
+    <div class="opciones" data-pregunta="9">
+      <div class="opcion" data-valor="5">Más de 5</div>
+      <div class="opcion" data-valor="4">3-5</div>
+      <div class="opcion" data-valor="3">1-2</div>
+      <div class="opcion" data-valor="2">Ninguna, pero me gustaría</div>
+      <div class="opcion" data-valor="1">Ninguna, no me interesa</div>
+    </div>
+  </div>
+
+  <div class="pregunta" id="p10">
+    <label>10. ¿Con qué frecuencia practicas la autocrítica constructiva (revisar tus errores para mejorar)?</label>
+    <div class="opciones" data-pregunta="10">
+      <div class="opcion" data-valor="5">Diariamente</div>
+      <div class="opcion" data-valor="4">Varias veces por semana</div>
+      <div class="opcion" data-valor="3">Ocasionalmente</div>
+      <div class="opcion" data-valor="2">Rara vez</div>
+      <div class="opcion" data-valor="1">Nunca</div>
+    </div>
+  </div>
+
+  <button class="btn" onclick="calcularResultado()">🔮 Calcular K_i Mental</button>
+</div>
+
+<div class="resultado" id="resultadoPanel">
+  <div class="metric"><span class="metric-label">K_i Mental</span><span class="metric-value" id="kiMental">—</span></div>
+  <div class="metric"><span class="metric-label">Sombra Dominante</span><span class="metric-value" id="sombraMental">—</span></div>
+  <div class="metric"><span class="metric-label">D_f Cognitiva estimada</span><span class="metric-value" id="dfMental">—</span></div>
+  <canvas id="canvasRadar" width="350" height="350"></canvas>
+  <div class="recomendaciones" id="recomendaciones"></div>
+  <button class="btn" onclick="reiniciar()">🔄 Reiniciar Test</button>
+</div>
+
+<div class="footer">ρ(x) > 0 · MIU Mente v1.0 · Autocontenido · Basado en el MIU</div>
+
+<script>
+const PHI = 1.6180339887498948482;
+let respuestas = {};
+
+// Inicializar listeners para opciones
+document.querySelectorAll('.opciones').forEach(grupo => {
+  grupo.addEventListener('click', (e) => {
+    if (e.target.classList.contains('opcion')) {
+      grupo.querySelectorAll('.opcion').forEach(o => o.classList.remove('seleccionada'));
+      e.target.classList.add('seleccionada');
+      const pregunta = grupo.dataset.pregunta;
+      respuestas[pregunta] = parseInt(e.target.dataset.valor);
+    }
+  });
+});
+
+function calcularResultado() {
+  // Verificar que todas las preguntas de opción múltiple tengan respuesta
+  for (let i = 1; i <= 10; i++) {
+    if (i >= 6 && i <= 8) continue; // Preguntas abiertas
+    if (!respuestas[i]) return alert(`Responde la pregunta ${i}`);
+  }
+
+  // Puntaje base (promedio de las 7 preguntas de opción múltiple: 1,2,3,4,5,9,10)
+  let suma = 0;
+  [1,2,3,4,5,9,10].forEach(i => suma += respuestas[i] || 0);
+  let kiBase = suma / (7 * 5); // Normalizado entre 0 y 1
+
+  // Bonus por preguntas abiertas (6,7,8)
+  const resp6 = document.getElementById('resp6').value.trim().toLowerCase();
+  const resp7 = document.getElementById('resp7').value.trim().toLowerCase();
+  const resp8 = document.getElementById('resp8').value.trim().toLowerCase();
+  
+  let bonus = 0;
+  if (resp6.includes('algunos c son b') || resp6.includes('algunos c son a')) bonus += 0.1;
+  if (resp7.includes('sesgo de confirmación') || resp7.includes('superstición') || resp7.includes('ilusión de control')) bonus += 0.1;
+  if (resp8.includes('no implica') && (resp8.includes('causa') || resp8.includes('causalidad'))) bonus += 0.1;
+  
+  const kiFinal = Math.min(1.0, Math.max(0.1, kiBase * 0.8 + bonus));
+  
+  // Calcular D_f cognitiva estimada
+  const df = 1.5 + kiFinal * 1.5;
+  
+  // Diagnosticar sombra
+  let sombra;
+  if (kiFinal < 0.35) sombra = 'SOMBRA FRAGMENTADA (dispersión)';
+  else if (kiFinal > 0.75 && respuestas[4] < 3) sombra = 'SOMBRA ESTÁTICA (rigidez)';
+  else if (respuestas[3] < 3 && respuestas[10] < 3) sombra = 'SOMBRA VIRAL (defensiva)';
+  else if (kiFinal >= 0.55 && kiFinal <= 0.70) sombra = 'SALUDABLE';
+  else sombra = 'EN TRANSICIÓN';
+  
+  // Mostrar resultados
+  document.getElementById('testPanel').style.display = 'none';
+  const resPanel = document.getElementById('resultadoPanel');
+  resPanel.classList.add('show');
+  
+  document.getElementById('kiMental').textContent = kiFinal.toFixed(3);
+  document.getElementById('kiMental').className = 'metric-value ' + (kiFinal > 0.55 ? 'good' : kiFinal > 0.35 ? 'warn' : 'bad');
+  document.getElementById('sombraMental').textContent = sombra;
+  document.getElementById('sombraMental').className = 'metric-value ' + (sombra === 'SALUDABLE' ? 'good' : 'bad');
+  document.getElementById('dfMental').textContent = df.toFixed(3);
+  
+  // Recomendaciones
+  let rec = '';
+  if (kiFinal < 0.35) {
+    rec = '🌱 <strong>Plan de poda para fragmentación:</strong><br>1. Identifica 3 tareas y elimina la menos importante.<br>2. Practica 10 minutos de atención plena al día.<br>3. Reduce el consumo de información a 2 fuentes principales.';
+  } else if (kiFinal > 0.75 && respuestas[4] < 3) {
+    rec = '🌿 <strong>Plan de poda para rigidez:</strong><br>1. Haz algo completamente nuevo cada día (una ruta diferente, un libro de un género opuesto).<br>2. Pregunta a alguien de confianza: "¿Qué crees que estoy haciendo mal?".<br>3. Practica el "abogado del diablo" con tus propias creencias.';
+  } else if (respuestas[3] < 3 && respuestas[10] < 3) {
+    rec = '🍃 <strong>Plan de poda para sombra defensiva:</strong><br>1. Cada vez que recibas una crítica, escribe primero: "¿Qué parte de esto podría ser cierta?".<br>2. Lleva un diario de autocrítica de 2 minutos al final del día.<br>3. Agradece a quien te critique antes de responder.';
+  } else if (kiFinal >= 0.55 && kiFinal <= 0.70) {
+    rec = '🌳 <strong>Coherencia saludable:</strong><br>Estás en la banda crítica. Para mantenerla:<br>1. Sigue practicando la autocrítica compasiva.<br>2. Alterna entre foco intenso y descanso creativo.<br>3. Cultiva la diversidad de ideas y la integración de las mismas.';
+  } else {
+    rec = '🌾 <strong>Estás en transición:</strong><br>Tu coherencia está cambiando. Observa hacia dónde te mueves y ajusta con pequeñas acciones diarias.';
+  }
+  document.getElementById('recomendaciones').innerHTML = rec;
+  
+  // Dibujar radar
+  dibujarRadar(kiFinal, respuestas);
+}
+
+function dibujarRadar(ki, resp) {
+  const canvas = document.getElementById('canvasRadar');
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h);
+  
+  const etiquetas = ['Concentración', 'Atención', 'Apertura', 'Flexibilidad', 'Propósito', 'Creatividad', 'Autocrítica'];
+  const valores = [resp[1]||3, resp[2]||3, resp[3]||3, resp[4]||3, resp[5]||3, resp[9]||3, resp[10]||3];
+  const n = etiquetas.length;
+  const cx = w/2, cy = h/2, radio = 120;
+  
+  // Dibujar ejes
+  ctx.strokeStyle = '#333'; ctx.lineWidth = 1;
+  for (let i = 0; i < n; i++) {
+    const ang = (i * 2 * Math.PI / n) - Math.PI/2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(ang) * radio, cy + Math.sin(ang) * radio);
+    ctx.stroke();
+    ctx.fillStyle = '#888'; ctx.font = '10px monospace';
+    ctx.fillText(etiquetas[i], cx + Math.cos(ang) * (radio + 25) - 20, cy + Math.sin(ang) * (radio + 25) + 4);
+  }
+  
+  // Dibujar niveles de referencia
+  for (let nivel = 1; nivel <= 5; nivel++) {
+    ctx.beginPath();
+    for (let i = 0; i < n; i++) {
+      const ang = (i * 2 * Math.PI / n) - Math.PI/2;
+      const r = radio * nivel / 5;
+      const x = cx + Math.cos(ang) * r;
+      const y = cy + Math.sin(ang) * r;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.strokeStyle = '#222';
+    ctx.stroke();
+  }
+  
+  // Dibujar datos
+  ctx.beginPath();
+  for (let i = 0; i < n; i++) {
+    const ang = (i * 2 * Math.PI / n) - Math.PI/2;
+    const r = radio * valores[i] / 5;
+    const x = cx + Math.cos(ang) * r;
+    const y = cy + Math.sin(ang) * r;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(0, 255, 136, 0.3)';
+  ctx.fill();
+  ctx.strokeStyle = '#00ff88'; ctx.lineWidth = 2;
+  ctx.stroke();
+  
+  ctx.fillStyle = '#fff'; ctx.font = '10px monospace';
+  ctx.fillText(`K_i = ${ki.toFixed(2)}`, 10, 20);
+}
+
+function reiniciar() {
+  respuestas = {};
+  document.querySelectorAll('.opcion').forEach(o => o.classList.remove('seleccionada'));
+  document.getElementById('resp6').value = '';
+  document.getElementById('resp7').value = '';
+  document.getElementById('resp8').value = '';
+  document.getElementById('testPanel').style.display = 'block';
+  document.getElementById('resultadoPanel').classList.remove('show');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>G31 Autofagia Visual - ALMA-NEXUS v4.1</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #000;
+  color: #e0e0e0;
+  font-family: 'Courier New', monospace;
+  padding: 20px;
+  transition: background 1s ease;
+}
+body.critical {
+  background: #0a0005;
+  animation: shake 0.5s;
+}
+@keyframes shake {
+ 0%, 100% { transform: translateX(0); }
+ 25% { transform: translateX(-3px); }
+ 75% { transform: translateX(3px); }
+}
+h2 {
+  color: #ff3366;
+  font-size: 1.3rem;
+  text-shadow: 0 0 15px #ff3366;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #ff3366;
+  padding-bottom: 8px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 15px;
+}
+.panel {
+  background: rgba(10,10,10,0.9);
+  border: 2px solid #ff3366;
+  border-radius: 10px;
+  padding: 20px;
+  transition: border-color 0.5s;
+}
+.panel.critical {
+  border-color: #ff0000;
+  box-shadow: 0 0 30px rgba(255,0,0,0.5);
+}
+.panel h3 {
+  color: #ffd700;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+.controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+label {
+  font-size: 12px;
+  color: #a0a0a0;
+  margin-bottom: 5px;
+  display: block;
+}
+input[type="range"] {
+  width: 100%;
+}
+.btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #ff3366, #cc2255);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s;
+}
+.btn:hover {
+  box-shadow: 0 0 25px #ff3366;
+  transform: scale(1.02);
+}
+.btn.phi {
+  background: linear-gradient(135deg, #ffd700, #ffcc00);
+  color: #000;
+}
+.btn.green {
+  background: linear-gradient(135deg, #00ff88, #00cc66);
+  color: #000;
+}
+.btn.vibrate {
+  animation: pulse-fast 0.8s infinite;
+}
+@keyframes pulse-fast {
+ 0%, 100% { box-shadow: 0 0 10px #ff3366; transform: scale(1); }
+ 50% { box-shadow: 0 0 40px #ff3366; transform: scale(1.05); }
+}
+canvas {
+  width: 100%;
+  height: 450px;
+  background: radial-gradient(ellipse at center, #0a0a0a 0%, #000 100%);
+  border: 3px solid #ff3366;
+  border-radius: 8px;
+  transition: border-color 0.5s;
+}
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 15px;
+}
+.stat-box {
+  background: #050505;
+  border: 1px solid #222;
+  padding: 12px;
+  border-radius: 6px;
+  text-align: center;
+}
+.stat-label {
+  font-size: 10px;
+  color: #666;
+  text-transform: uppercase;
+}
+.stat-value {
+  font-size: 22px;
+  color: #ff3366;
+  font-weight: bold;
+  margin-top: 5px;
+}
+.stat-value.green {
+  color: #00ff88;
+}
+.stat-value.yellow {
+  color: #ffaa00;
+}
+.stat-value.blink {
+  animation: blink 1s infinite;
+}
+@keyframes blink {
+ 50% { opacity: 0.5; }
+}
+.log {
+  background: #000;
+  border-left: 4px solid #ff3366;
+  padding: 12px;
+  font-size: 11px;
+  max-height: 250px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  line-height: 1.6;
+  margin-top: 10px;
+}
+.alerta {
+  background: rgba(255,51,102,0.2);
+  border: 2px solid #ff3366;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  text-align: center;
+  color: #ff3366;
+  display: none;
+}
+.alerta.show {
+  display: block;
+  animation: blink 0.8s infinite;
+}
+@media (max-width: 900px) {
+  .grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<h2>🔥 G31 AUTOFAGIA VISUAL - PODA DE NODOS ROJA v4.1</h2>
+
+<div class="grid">
+  <div class="panel" id="mainPanel">
+    <h3>Mapa de Nodos - Estado K_i⁻</h3>
+    <canvas id="nodosCanvas"></canvas>
+  </div>
+
+  <div class="panel">
+    <h3>Controles Autofagia</h3>
+    
+    <div class="alerta" id="alerta">
+      Esperando nodos frágiles...
+    </div>
+
+    <label for="umbral">Umbral K_i⁻ Crítico: <span id="umbralVal">0.300</span></label>
+    <input type="range" id="umbral" min="0.1" max="0.6" value="0.3" step="0.01">
+
+    <label for="intensidad">Intensidad Poda: <span id="intensidadVal">0.40</span></label>
+    <input type="range" id="intensidad" min="0.1" max="0.9" value="0.4" step="0.05">
+
+    <button class="btn" id="btnG31" onclick="activarG31()">🔥 ACTIVAR G31 AUTOFAGIA</button>
+    <button class="btn green" onclick="generarNodos()">Generar Nodos Demo</button>
+    <button class="btn phi" onclick="analizarNodos()">Analizar Estado</button>
+    <button class="btn" id="btnMute" onclick="toggleMute()">🔊 Sonido ON</button>
+    
+    <div class="stats">
+      <div class="stat-box">
+        <div class="stat-label">Nodos Total</div>
+        <div class="stat-value" id="totalNodos">0</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Nodos ROJA</div>
+        <div class="stat-value" id="rojaNodos">0</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Nodos AMARILLA</div>
+        <div class="stat-value yellow" id="amarillaNodos">0</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Nodos VERDE</div>
+        <div class="stat-value green" id="verdeNodos">0</div>
+      </div>
+    </div>
+
+    <div class="log" id="log">Sistema G31 v4.1 inicializado...</div>
+  </div>
+</div>
+
+<script src="alma-shared.js"></script>
+<script>
+const canvas = document.getElementById('nodosCanvas');
+const ctx = canvas.getContext('2d');
+
+let nodos = [];
+let umbral = 0.3;
+let intensidad = 0.4;
+let autofagias = 0;
+let audioCtx = null;
+
+// FALLBACK SEGURO
+function getALMA() {
+  return (parent.ALMA && parent.ALMA.K_i!== undefined)? parent.ALMA : {
+    K_i: 0.570,
+    nodos: [{f: 0.1}]
+  };
+}
+
+function getAudio() {
+  return (parent.ALMA_AUDIO && parent.ALMA_AUDIO.enabled!== undefined)? parent.ALMA_AUDIO : {enabled: true};
+}
+
+// Audio alerta
+function beep(freq = 500, dur = 0.1) {
+  if (!getAudio().enabled) return;
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = audioCtx.createOscillator();
+  osc.frequency.value = freq;
+  osc.connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + dur);
+}
+
+function toggleMute() {
+  const audio = getAudio();
+  const estado = audio.toggle? audio.toggle() : !audio.enabled;
+  const btn = document.getElementById('btnMute');
+  btn.textContent = estado ? '🔊 Sonido ON' : '🔇 Sonido OFF';
+  btn.classList.toggle('red', !estado);
+  beep(400, 0.1);
+}
+
+// Resize
+function resize() {
+  canvas.width = canvas.offsetWidth;
+  canvas.height = 450;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// Controles
+document.getElementById('umbral').addEventListener('input', e => {
+  umbral = parseFloat(e.target.value);
+  document.getElementById('umbralVal').textContent = umbral.toFixed(3);
+  actualizarStats();
+});
+
+document.getElementById('intensidad').addEventListener('input', e => {
+  intensidad = parseFloat(e.target.value);
+  document.getElementById('intensidadVal').textContent = intensidad.toFixed(2);
+});
+
+// Generar nodos demo
+function generarNodos() {
+  nodos = [];
+  const total = 80;
+  for (let i = 0; i < total; i++) {
+    const x = Math.random() * canvas.width;
+    const y = Math.random() * canvas.height;
+    const ki = 0.2 + Math.random() * 0.6;
+    const f = 0.05 + Math.random() * 0.4;
+    const kiMenos = ki * (1 - 2 * f);
+    
+    nodos.push({
+      id: i,
+      x, y, ki, f, kiMenos,
+      radio: 4 + Math.random() * 8,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      podado: false
+    });
+  }
+  actualizarStats();
+  log(`Generados ${total} nodos demo`);
+  dibujar();
+}
+
+// Activar G31 Autofagia
+function activarG31() {
+  let podados = 0;
+  let kiRecuperado = 0;
+
+  document.body.classList.add('critical');
+  document.getElementById('mainPanel').classList.add('critical');
+  setTimeout(() => {
+    document.body.classList.remove('critical');
+    document.getElementById('mainPanel').classList.remove('critical');
+  }, 300);
+
+  beep(150, 0.2);
+
+  nodos.forEach(nodo => {
+    nodo.kiMenos = nodo.ki * (1 - 2 * nodo.f);
+    
+    if (nodo.kiMenos < umbral) {
+      const fAnterior = nodo.f;
+      nodo.f *= (1 - intensidad);
+      nodo.kiMenos = nodo.ki * (1 - 2 * nodo.f);
+      
+      podados++;
+      kiRecuperado += (nodo.kiMenos - (nodo.ki * (1 - 2 * fAnterior)));
+      
+      nodo.podado = true;
+      setTimeout(() => nodo.podado = false, 500);
+    }
+  });
+
+  autofagias++;
+  actualizarStats();
+  log(`G31 ACTIVADA\nNodos podados: ${podados}\nK_i recuperado: ${kiRecuperado.toFixed(3)}\nAutofagias totales: ${autofagias}`);
+
+  const ALMA = getALMA();
+  ALMA.K_i = Math.min(1, ALMA.K_i + kiRecuperado * 0.1);
+}
+
+// Analizar estado
+function analizarNodos() {
+  actualizarStats();
+  let msg = 'Análisis completo:\n';
+  
+  const rojos = nodos.filter(n => n.ki * (1 - 2 * n.f) < umbral).length;
+  const amarillos = nodos.filter(n => {
+    const kim = n.ki * (1 - 2 * n.f);
+    return kim >= umbral && kim < 0.55;
+  }).length;
+  
+  msg += `Nodos ROJA < ${umbral}: ${rojos}\n`;
+  msg += `Nodos AMARILLA: ${amarillos}\n`;
+  msg += `Recomendación: ${rojos > 20 ? 'ACTIVAR G31 URGENTE' : 'Estado estable'}`;
+  
+  log(msg);
+  
+  const alertaDiv = document.getElementById('alerta');
+  const btnG31 = document.getElementById('btnG31');
+  
+  if (rojos > 20) {
+    alertaDiv.textContent = `⚠️ ALERTA: ${rojos} nodos frágiles detectados`;
+    alertaDiv.classList.add('show');
+    btnG31.classList.add('vibrate');
+    beep(800, 0.05);
+  } else {
+    alertaDiv.classList.remove('show');
+    btnG31.classList.remove('vibrate');
+  }
+}
+
+// Actualizar estadísticas
+function actualizarStats() {
+  let rojos = 0, amarillos = 0, verdes = 0;
+  
+  nodos.forEach(n => {
+    const kim = n.ki * (1 - 2 * n.f);
+    if (kim < umbral) rojos++;
+    else if (kim < 0.55) amarillos++;
+    else verdes++;
+  });
+  
+  document.getElementById('totalNodos').textContent = nodos.length;
+  document.getElementById('rojaNodos').textContent = rojos;
+  document.getElementById('amarillaNodos').textContent = amarillos;
+  document.getElementById('verdeNodos').textContent = verdes;
+  
+  const audio = getAudio();
+  document.getElementById('btnMute').textContent = audio.enabled ? '🔊 Sonido ON' : '🔇 Sonido OFF';
+  document.getElementById('btnMute').classList.toggle('red', !audio.enabled);
+  
+  const rojaSpan = document.getElementById('rojaNodos');
+  if (rojos > 20) {
+    rojaSpan.classList.add('blink');
+  } else {
+    rojaSpan.classList.remove('blink');
+  }
+}
+
+// Dibujar nodos
+function dibujar() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  const ALMA = getALMA();
+  const ki = ALMA.K_i;
+  const bgGradient = ctx.createRadialGradient(
+    canvas.width/2, canvas.height/2, 0,
+    canvas.width/2, canvas.height/2, Math.max(canvas.width, canvas.height)
+  );
+  
+  if (ki < 0.3) {
+    bgGradient.addColorStop(0, 'rgba(255,0,0,0.15)');
+    bgGradient.addColorStop(1, 'rgba(10,0,5,1)');
+    canvas.style.borderColor = '#ff0000';
+  } else if (ki < 0.55) {
+    bgGradient.addColorStop(0, 'rgba(255,170,0,0.1)');
+    bgGradient.addColorStop(1, 'rgba(10,5,0,1)');
+    canvas.style.borderColor = '#ffaa00';
+  } else {
+    bgGradient.addColorStop(0, 'rgba(255,51,102,0.05)');
+    bgGradient.addColorStop(1, 'rgba(0,0,0,1)');
+    canvas.style.borderColor = '#ff3366';
+  }
+  
+  ctx.fillStyle = bgGradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  nodos.forEach(nodo => {
+    nodo.x += nodo.vx;
+    nodo.y += nodo.vy;
+    
+    if (nodo.x < nodo.radio || nodo.x > canvas.width - nodo.radio) nodo.vx *= -1;
+    if (nodo.y < nodo.radio || nodo.y > canvas.height - nodo.radio) nodo.vy *= -1;
+    
+    nodo.kiMenos = nodo.ki * (1 - 2 * nodo.f);
+    
+    let color;
+    if (nodo.kiMenos < umbral) {
+      color = nodo.podado ? '#ffffff' : '#ff3366';
+    } else if (nodo.kiMenos < 0.55) {
+      color = '#ffaa00';
+    } else {
+      color = '#00ff88';
+    }
+    
+    const gradient = ctx.createRadialGradient(nodo.x, nodo.y, 0, nodo.x, nodo.y, nodo.radio * 3);
+    gradient.addColorStop(0, color);
+    gradient.addColorStop(1, 'transparent');
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(nodo.x, nodo.y, nodo.radio * 3, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(nodo.x, nodo.y, nodo.radio, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.fillStyle = '#fff';
+    ctx.font = '8px Courier';
+    ctx.textAlign = 'center';
+    ctx.fillText(nodo.kiMenos.toFixed(2), nodo.x, nodo.y + nodo.radio + 12);
+  });
+  
+  ctx.fillStyle = '#666';
+  ctx.font = '10px Courier';
+  ctx.textAlign = 'left';
+  ctx.fillText('ROJA < ' + umbral.toFixed(2), 10, 20);
+  ctx.fillStyle = '#ff3366';
+  ctx.fillRect(10, 25, 15, 3);
+  
+  ctx.fillStyle = '#666';
+  ctx.fillText('AMARILLA', 10, 40);
+  ctx.fillStyle = '#ffaa00';
+  ctx.fillRect(10, 45, 15, 3);
+  
+  ctx.fillStyle = '#666';
+  ctx.fillText('VERDE ≥ 0.55', 10, 60);
+  ctx.fillStyle = '#00ff88';
+  ctx.fillRect(10, 65, 15, 3);
+  
+  requestAnimationFrame(dibujar);
+}
+
+function log(msg) {
+  const logDiv = document.getElementById('log');
+  logDiv.textContent += '\n' + new Date().toLocaleTimeString() + ' - ' + msg;
+  logDiv.scrollTop = logDiv.scrollHeight;
+}
+
+setInterval(analizarNodos, 3000);
+
+generarNodos();
+</script>
+</body>
+</html>

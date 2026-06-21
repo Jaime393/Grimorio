@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIK Innovación - ALMA-NEXUS v4.1</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #000;
+  color: #e0e0e0;
+  font-family: 'Courier New', monospace;
+  padding: 20px;
+  transition: background 1.5s ease;
+}
+body.critical { background: #0a0005; }
+body.degraded { background: #0a0500; }
+h2 {
+  color: #00d4ff;
+  font-size: 1.3rem;
+  text-shadow: 0 0 15px #00d4ff;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #00d4ff;
+  padding-bottom: 8px;
+  transition: color 0.5s;
+}
+h2.critical { color: #ff3366; border-color: #ff3366; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.panel {
+  background: rgba(10,10,10,0.9);
+  border: 2px solid #00d4ff;
+  border-radius: 10px;
+  padding: 20px;
+  transition: border-color 0.5s, box-shadow 0.5s;
+}
+.panel.critical { border-color: #ff3366; box-shadow: 0 0 25px rgba(255,51,102,0.4); }
+.panel h3 { color: #ffd700; font-size: 14px; margin-bottom: 12px; }
+textarea {
+  width: 100%;
+  height: 120px;
+  background: #000;
+  color: #e0e0e0;
+  border: 2px solid #333;
+  padding: 12px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  border-radius: 6px;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.3s;
+}
+textarea:focus { border-color: #00d4ff; box-shadow: 0 0 15px rgba(0,212,255,0.3); }
+.btn {
+  width: 100%;
+  padding: 14px;
+  margin-top: 10px;
+  background: linear-gradient(135deg, #00d4ff, #00aacc);
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  text-transform: uppercase;
+  transition: all 0.3s;
+}
+.btn:hover { box-shadow: 0 0 25px #00d4ff; transform: scale(1.02); }
+.btn.pulse { animation: pulse-innov 0.6s; }
+@keyframes pulse-innov {
+ 0%, 100% { transform: scale(1); }
+ 50% { transform: scale(1.08); box-shadow: 0 0 40px #00d4ff; }
+}
+.btn.phi { background: linear-gradient(135deg, #ffd700, #ffcc00); }
+.btn.green { background: linear-gradient(135deg, #00ff88, #00cc66); }
+.btn.red { background: linear-gradient(135deg, #ff3366, #cc2255); color: #fff; }
+canvas {
+  width: 100%;
+  height: 400px;
+  background: #000;
+  border: 2px solid #222;
+  border-radius: 8px;
+  transition: border-color 0.5s;
+}
+.stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; }
+.stat-box { background: #050505; border: 1px solid #222; padding: 12px; border-radius: 6px; text-align: center; transition: border-color 0.3s; }
+.stat-box.critical { border-color: #ff3366; }
+.stat-label { font-size: 10px; color: #666; text-transform: uppercase; }
+.stat-value { font-size: 26px; color: #ffd700; font-weight: bold; margin-top: 5px; transition: color 0.5s; }
+.stat-value.critical { color: #ff3366; animation: blink 1s infinite; }
+@keyframes blink { 50% { opacity: 0.5; } }
+.log {
+  background: #000;
+  border-left: 4px solid #00d4ff;
+  padding: 12px;
+  font-size: 11px;
+  max-height: 300px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  line-height: 1.6;
+  margin-top: 10px;
+  transition: border-color 0.5s;
+}
+.log.critical { border-color: #ff3366; }
+.hc-card {
+  background: #050505;
+  border: 1px solid #333;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  font-size: 11px;
+  transition: border-color 0.3s;
+}
+.hc-card.critical { border-color: #ff3366; background: rgba(255,51,102,0.1); }
+.hc-id { color: #ffd700; font-weight: bold; }
+@media (max-width: 900px) {.grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<h2 id="titulo">🧠 SIK v4.1 - SISTEMA DE INNOVACIÓN + HUESOS CONCEPTUALES</h2>
+
+<div class="grid">
+  <div class="panel" id="panelIzq">
+    <h3>Procesador de NACKs → HC</h3>
+    <textarea id="nackInput" placeholder="Pega aquí el texto NACK o concepto a procesar...
+Ej: NACK: El sistema no puede manejar 10K nodos simultáneos por limitación de memoria"></textarea>
+
+    <button class="btn phi" id="btnInnovar" onclick="procesarNACK()">⚡ INNOVAR → Generar HC</button>
+    <button class="btn" onclick="generarNACKDemo()">Generar NACK Demo</button>
+    <button class="btn green" onclick="exportarHC()">Exportar HC JSON</button>
+    <button class="btn red" id="btnMute" onclick="toggleMute()">🔊 Sonido ON</button>
+
+    <div class="stats">
+      <div class="stat-box" id="boxTotal"><div class="stat-label">Huesos Totales</div><div class="stat-value" id="totalHC">7</div></div>
+      <div class="stat-box" id="boxInnov"><div class="stat-label">Innovaciones</div><div class="stat-value" id="innovaciones">0</div></div>
+      <div class="stat-box" id="boxKi"><div class="stat-label">K_i Promedio</div><div class="stat-value" id="kiProm">0.570</div></div>
+    </div>
+  </div>
+
+  <div class="panel" id="panelDer">
+    <h3>Árbol de Huesos Conceptuales</h3>
+    <canvas id="arbolCanvas"></canvas>
+    <div class="log" id="log">SIK v4.1 inicializado...\nHuesos base: 7</div>
+  </div>
+</div>
+
+<div class="panel" style="margin-top: 15px;">
+  <h3>Últimos Huesos Conceptuales Generados</h3>
+  <div id="hcList"></div>
+</div>
+
+<script src="alma-shared.js"></script>
+<script>
+const canvas = document.getElementById('arbolCanvas');
+const ctx = canvas.getContext('2d');
+
+let huesos = [];
+let innovaciones = 0;
+let contadorHC = 0;
+let audioCtx = null;
+
+// FALLBACK SEGURO
+function getALMA() {
+  return (parent.ALMA && parent.ALMA.K_i!== undefined)? parent.ALMA : {K_i: 0.570};
+}
+
+function getAudio() {
+  return (parent.ALMA_AUDIO && parent.ALMA_AUDIO.enabled!== undefined)? parent.ALMA_AUDIO : {enabled: true};
+}
+
+function beep(freq = 600, dur = 0.15) {
+  if (!getAudio().enabled) return;
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = audioCtx.createOscillator();
+  osc.frequency.value = freq;
+  osc.connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + dur);
+}
+
+function toggleMute() {
+  const audio = getAudio();
+  const estado = audio.toggle? audio.toggle() :!audio.enabled;
+  const btn = document.getElementById('btnMute');
+  btn.textContent = estado? '🔊 Sonido ON' : '🔇 Sonido OFF';
+  btn.classList.toggle('red',!estado);
+  beep(400, 0.1);
+}
+
+// Huesos base
+const huesosBase = [
+  { id: 'HC_0', concepto: 'Entidad Fractal BEA', ki: 0.570, padre: null },
+  { id: 'HC_1', concepto: 'Célula BIO Base', ki: 0.550, padre: 'HC_0' },
+  { id: 'HC_2', concepto: 'Ciclo Ω Generación', ki: 0.580, padre: 'HC_0' },
+  { id: 'HC_3', concepto: 'GDCP Fractal', ki: 0.540, padre: 'HC_1' },
+  { id: 'HC_4', concepto: 'Consenso φ', ki: 0.590, padre: 'HC_2' },
+  { id: 'HC_5', concepto: 'Autofagia G31', ki: 0.560, padre: 'HC_3' },
+  { id: 'HC_6', concepto: 'Nexus 10K', ki: 0.570, padre: 'HC_4' }
+];
+
+// Resize
+function resize() {
+  canvas.width = canvas.offsetWidth;
+  canvas.height = 400;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// Inicializar huesos base
+function initHuesos() {
+  huesos = [...huesosBase];
+  contadorHC = 7;
+  actualizarStats();
+  dibujarArbol();
+  mostrarHCList();
+}
+
+// Procesar NACK → Generar HC
+function procesarNACK() {
+  const texto = document.getElementById('nackInput').value.trim();
+  if (!texto) {
+    alert('Ingresa un texto NACK');
+    return;
+  }
+
+  innovaciones++;
+  contadorHC++;
+
+  const palabras = texto.split(' ').slice(0, 8).join(' ');
+  const ki = 0.5 + Math.random() * 0.3;
+  const id = `HC_${contadorHC}`;
+
+  const padreRandom = huesos[Math.floor(Math.random() * huesos.length)];
+  const nuevoHC = {
+    id: id,
+    concepto: palabras + '...',
+    ki: ki,
+    padre: padreRandom.id,
+    timestamp: new Date().toLocaleTimeString(),
+    nack: texto.substring(0, 100)
+  };
+
+  huesos.push(nuevoHC);
+
+  document.getElementById('btnInnovar').classList.add('pulse');
+  setTimeout(() => document.getElementById('btnInnovar').classList.remove('pulse'), 600);
+  beep(700 + Math.random() * 300, 0.15);
+
+  const ALMA = getALMA();
+  ALMA.K_i = Math.min(1, ALMA.K_i + 0.01);
+
+  log(`INNOVACIÓN ${innovaciones}\n→ ${id} generado\nConcepto: ${palabras}...\nK_i: ${ki.toFixed(3)}`);
+
+  document.getElementById('nackInput').value = '';
+  actualizarStats();
+  dibujarArbol();
+  mostrarHCList();
+}
+
+// Generar NACK demo
+function generarNACKDemo() {
+  const nacks = [
+    'NACK: El sistema no puede escalar a 10K nodos por consumo de memoria excesivo',
+    'NACK: La sincronización PPF-02 falla con latencia >200ms',
+    'NACK: Los nodos ROJA no se recuperan automáticamente sin intervención manual',
+    'NACK: El consenso φ requiere >5 segundos para 1000 votantes',
+    'NACK: WebXR no funciona en dispositivos móviles antiguos'
+  ];
+  document.getElementById('nackInput').value = nacks[Math.floor(Math.random() * nacks.length)];
+}
+
+// Exportar HC JSON
+function exportarHC() {
+  const data = {
+    version: 'SIK v4.1',
+    timestamp: new Date().toISOString(),
+    totalHC: huesos.length,
+    innovaciones: innovaciones,
+    huesos: huesos
+  };
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `huesos_conceptuales_${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  log('HC exportados a JSON correctamente');
+  beep(500, 0.2);
+}
+
+// Actualizar estadísticas + COLORES DINÁMICOS
+function actualizarStats() {
+  const kiProm = huesos.reduce((a, h) => a + h.ki, 0) / huesos.length;
+  document.getElementById('totalHC').textContent = huesos.length;
+  document.getElementById('innovaciones').textContent = innovaciones;
+  document.getElementById('kiProm').textContent = kiProm.toFixed(3);
+
+  const audio = getAudio();
+  document.getElementById('btnMute').textContent = audio.enabled? '🔊 Sonido ON' : '🔇 Sonido OFF';
+  document.getElementById('btnMute').classList.toggle('red',!audio.enabled);
+
+  const kiSpan = document.getElementById('kiProm');
+  const boxKi = document.getElementById('boxKi');
+  const body = document.body;
+  const titulo = document.getElementById('titulo');
+  const panelDer = document.getElementById('panelDer');
+  const logDiv = document.getElementById('log');
+
+  kiSpan.classList.remove('critical');
+  boxKi.classList.remove('critical');
+  body.classList.remove('critical', 'degraded');
+  titulo.classList.remove('critical');
+  panelDer.classList.remove('critical');
+  logDiv.classList.remove('critical');
+
+  if (kiProm < 0.4) {
+    kiSpan.classList.add('critical');
+    boxKi.classList.add('critical');
+    body.classList.add('critical');
+    titulo.classList.add('critical');
+    panelDer.classList.add('critical');
+    logDiv.classList.add('critical');
+    beep(200, 0.3);
+  } else if (kiProm < 0.55) {
+    body.classList.add('degraded');
+  }
+}
+
+// Mostrar lista HC con colores según K_i
+function mostrarHCList() {
+  const container = document.getElementById('hcList');
+  const ultimos = huesos.slice(-8).reverse();
+
+  container.innerHTML = ultimos.map(hc => `
+    <div class="hc-card ${hc.ki < 0.4? 'critical' : ''}">
+      <span class="hc-id" style="color: ${hc.ki < 0.4? '#ff3366' : '#ffd700'}">${hc.id}</span> - ${hc.concepto}
+      <div style="color: #666; font-size: 10px; margin-top: 3px;">
+        K_i: <span style="color: ${hc.ki < 0.4? '#ff3366' : '#00d4ff'}">${hc.ki.toFixed(3)}</span> | Padre: ${hc.padre} | ${hc.timestamp}
+      </div>
+    </div>
+  `).join('');
+}
+
+// Dibujar árbol de huesos - JERARQUÍA REAL POR PADRE
+function dibujarArbol() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const centerX = canvas.width / 2;
+  const centerY = 50;
+  const levelHeight = 70;
+
+  const ALMA = getALMA();
+  canvas.style.borderColor = ALMA.K_i < 0.3? '#ff0000' : ALMA.K_i < 0.55? '#ffaa00' : '#00d4ff';
+
+  // Calcular nivel real por padre recursivo
+  function getNivel(hc) {
+    if (hc.id === 'HC_0') return 0;
+    const padre = huesos.find(h => h.id === hc.padre);
+    return padre? getNivel(padre) + 1 : 1;
+  }
+
+  // Agrupar por nivel real
+  const niveles = {};
+  huesos.forEach(hc => {
+    const nivel = getNivel(hc);
+    if (!niveles[nivel]) niveles[nivel] = [];
+    niveles[nivel].push(hc);
+  });
+
+  // Dibujar conexiones primero
+  huesos.forEach(hc => {
+    if (hc.id === 'HC_0') return;
+    const padre = huesos.find(h => h.id === hc.padre);
+    if (!padre) return;
+
+    const nivelPadre = getNivel(padre);
+    const nivelHijo = getNivel(hc);
+    const nodosPadre = niveles[nivelPadre];
+    const nodosHijo = niveles[nivelHijo];
+
+    const xPadre = centerX + (nodosPadre.indexOf(padre) - nodosPadre.length/2 + 0.5) * (canvas.width / (nodosPadre.length + 1));
+    const xHijo = centerX + (nodosHijo.indexOf(hc) - nodosHijo.length/2 + 0.5) * (canvas.width / (nodosHijo.length + 1));
+    const yPadre = centerY + nivelPadre * levelHeight;
+    const yHijo = centerY + nivelHijo * levelHeight;
+
+    ctx.strokeStyle = hc.ki < 0.4? '#ff3366' : '#333';
+    ctx.lineWidth = hc.ki < 0.4? 2 : 1;
+    ctx.beginPath();
+    ctx.moveTo(xPadre, yPadre + 12);
+    ctx.lineTo(xHijo, yHijo - 12);
+    ctx.stroke();
+  });
+
+  // Dibujar nodos por nivel
+  Object.keys(niveles).forEach(nivelStr => {
+    const nivel = parseInt(nivelStr);
+    const y = centerY + nivel * levelHeight;
+    const nodos = niveles[nivel];
+    const spacing = canvas.width / (nodos.length + 1);
+
+    nodos.forEach((hc, i) => {
+      const x = spacing * (i + 1);
+
+      const gradient = ctx.createRadialGradient(x, y, 0, x, y, 20);
+      const intensity = hc.ki;
+      const color = hc.ki < 0.4? `rgba(255,51,102,${intensity})` : `rgba(0,212,255,${intensity})`;
+      gradient.addColorStop(0, color);
+      gradient.addColorStop(1, 'rgba(0,0,0,0.2)');
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(x, y, 20, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = hc.ki < 0.4? '#ff3366' : '#00d4ff';
+      ctx.lineWidth = hc.ki < 0.4? 3 : 2;
+      ctx.beginPath();
+      ctx.arc(x, y, 12, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = '#fff';
+      ctx.font = '8px Courier';
+      ctx.textAlign = 'center';
+      ctx.fillText(hc.id, x, y + 28);
+    });
+  });
+}
+
+function log(msg) {
+  const logDiv = document.getElementById('log');
+  logDiv.textContent += '\n' + new Date().toLocaleTimeString() + ' - ' + msg;
+  logDiv.scrollTop = logDiv.scrollHeight;
+}
+
+// Actualizar cada segundo según K_i global
+setInterval(actualizarStats, 1000);
+
+// Iniciar
+initHuesos();
+</script>
+</body>
+</html>

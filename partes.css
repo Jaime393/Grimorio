@@ -1,0 +1,59 @@
+/* ========== ESTILOS COMPARTIDOS · LAS 5 PARTES DEL GRIMORIO ========== */
+/* Extraído el 2026 de un bloque <style> de 55 líneas que vivía duplicado,
+   carácter por carácter, dentro de parte1.html, parte2.html, parte3.html,
+   parte4.html y parte5.html. Las cinco copias eran idénticas — esto las
+   fusiona en una sola fuente. Si cambias algo aquí, cambia en las 5 Partes
+   a la vez, que es justamente lo que esto evita tener que hacer a mano. */
+:root {
+    --bg-light: #fefcf3; --bg-dark: #0d0d0d; --text-light: #2c2c2c; --text-dark: #d4c8a8;
+    --accent: #b58900; --accent-dark: #ffd700; --link: #268bd2;
+    --border-light: #e8e0c8; --card-light: #ffffff; --card-dark: #1a1a2e;
+    --font-serif: 'Georgia', serif; --font-sans: 'Segoe UI', sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+    background: var(--bg-light); color: var(--text-light);
+    font-family: var(--font-serif); line-height: 1.85; transition: background 0.4s, color 0.4s;
+}
+body.dark { background: var(--bg-dark); color: var(--text-dark); }
+.container { max-width: 1000px; margin: 0 auto; padding: 3rem 2rem; animation: fadeIn 0.6s ease-out; }
+h1 { font-size: 3rem; text-align: center; color: var(--accent); margin-bottom: 0.5rem; }
+body.dark h1 { color: var(--accent-dark); }
+h2 { font-size: 2rem; color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 0.8rem; margin: 2.5rem 0 1.2rem; }
+body.dark h2 { color: var(--accent-dark); border-color: var(--accent-dark); }
+h3 { font-size: 1.5rem; color: var(--accent); margin: 1.8rem 0 0.8rem; }
+body.dark h3 { color: var(--accent-dark); }
+p { margin: 1.2rem 0; text-align: justify; }
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+hr { border: none; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); margin: 3rem 0; opacity: 0.3; }
+body.dark hr { background: linear-gradient(90deg, transparent, var(--accent-dark), transparent); }
+.practica { background: linear-gradient(135deg, #f9f7f0 0%, #f5f0e8 100%); border-left: 5px solid var(--accent); padding: 1.8rem 2rem; margin: 2rem 0; border-radius: 10px; }
+body.dark .practica { background: linear-gradient(135deg, #1a1a1a 0%, #151515 100%); border-left-color: var(--accent-dark); }
+.firma { font-style: italic; text-align: right; opacity: 0.8; margin-top: 1.5rem; }
+.nav-jardin { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin: 2.5rem 0; padding: 2rem 0; }
+.nav-jardin a {
+    background: var(--card-light); border: 2px solid var(--border-light); padding: 1rem; border-radius: 15px;
+    color: var(--text-light); text-decoration: none; transition: all 0.4s; box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    display: flex; align-items: center; justify-content: center; text-align: center; min-height: 70px;
+}
+body.dark .nav-jardin a { background: var(--card-dark); color: var(--text-dark); border-color: #333; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+.nav-jardin a:hover { background: var(--accent); color: white; transform: translateY(-8px); box-shadow: 0 15px 40px rgba(181,137,0,0.3); }
+body.dark .nav-jardin a:hover { background: var(--accent-dark); color: #0d0d0d; box-shadow: 0 15px 40px rgba(255,215,0,0.3); }
+#theme-toggle {
+    position: fixed; top: 2rem; right: 2rem; background: var(--card-light); border: 2px solid var(--border-light);
+    border-radius: 50%; width: 50px; height: 50px; cursor: pointer; font-size: 1.5rem;
+    display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    z-index: 1000; transition: all 0.4s;
+}
+body.dark #theme-toggle { background: var(--card-dark); border-color: #333; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+#theme-toggle:hover { transform: rotate(25deg) scale(1.1); }
+footer { text-align: center; margin-top: 5rem; padding: 3rem 2rem; border-top: 2px solid var(--border-light); font-size: 0.95rem; opacity: 0.8; }
+body.dark footer { border-color: #333; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 768px) {
+    h1 { font-size: 2rem; } h2 { font-size: 1.5rem; } .container { padding: 2rem 1rem; }
+    .nav-jardin { grid-template-columns: 1fr; } #theme-toggle { top: 1rem; right: 1rem; width: 45px; height: 45px; font-size: 1.3rem; }
+    p { text-align: left; }
+}

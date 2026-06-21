@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Ley de Gaia — Validación empírica del MIU-IFT v13.0. 7 datasets, resultado honesto: EVIDENCIA_DEBIL 1/7.">
+<title>Ley de Gaia — Validación Empírica | Grimorio MIU</title>
+<style>
+  :root {
+    --bg: #fefcf3; --bg-dark: #0d0d0d;
+    --text: #2c2c2c; --text-dark: #d4c8a8;
+    --accent: #b58900; --accent-dark: #ffd700;
+    --card: #ffffff; --card-dark: #1a1a2e;
+    --border: #e8e0c8; --border-dark: #333;
+    --green: #2e7d32; --red: #b71c1c; --orange: #e65100;
+    --font-serif: Georgia, 'Times New Roman', serif;
+    --font-sans: 'Segoe UI', Helvetica, Arial, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text);
+    font-family: var(--font-serif); line-height: 1.8;
+    transition: background .4s, color .4s; }
+  body.dark { background: var(--bg-dark); color: var(--text-dark); }
+
+  /* NAV */
+  .topnav { position: sticky; top: 0; z-index: 100;
+    background: var(--bg); border-bottom: 1px solid var(--border);
+    padding: .6rem 1.5rem; display: flex; gap: 1.5rem;
+    align-items: center; font-family: var(--font-sans); font-size: .9em; }
+  body.dark .topnav { background: var(--bg-dark); border-color: var(--border-dark); }
+  .topnav a { color: var(--accent); text-decoration: none; }
+  .topnav a:hover { text-decoration: underline; }
+  .topnav span { margin-left: auto; cursor: pointer; font-size: 1.1em; }
+
+  /* CONTENIDO */
+  .container { max-width: 900px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+  h1 { font-family: var(--font-sans); color: var(--accent); font-size: 2.2rem;
+       text-align: center; margin-bottom: .4rem; }
+  body.dark h1 { color: var(--accent-dark); }
+  .subtitle { text-align: center; color: #666; font-size: .95em;
+              margin-bottom: 2.5rem; font-family: var(--font-sans); }
+  body.dark .subtitle { color: #999; }
+  h2 { font-family: var(--font-sans); color: var(--accent);
+       font-size: 1.3rem; margin: 2.2rem 0 .8rem;
+       border-bottom: 1px solid var(--border); padding-bottom: .5rem; }
+  body.dark h2 { color: var(--accent-dark); border-color: var(--border-dark); }
+  p { margin-bottom: 1rem; }
+
+  /* BADGE CONCLUSIÓN */
+  .badge-container { display: flex; gap: 1rem; flex-wrap: wrap;
+    justify-content: center; margin: 1.5rem 0; }
+  .badge { display: inline-block; padding: .5rem 1.4rem;
+    border-radius: 20px; font-family: var(--font-sans);
+    font-weight: bold; font-size: 1rem; }
+  .badge-debil { background: #fff3e0; color: #e65100;
+    border: 2px solid #e65100; }
+  body.dark .badge-debil { background: #1a0e00; color: #ff9800; border-color: #ff9800; }
+  .badge-pendiente { background: #e3f2fd; color: #1565c0;
+    border: 2px solid #1565c0; }
+  body.dark .badge-pendiente { background: #001a2e; color: #58a6ff; border-color: #58a6ff; }
+
+  /* TABLA NODOS */
+  .tabla-wrap { overflow-x: auto; margin: 1.2rem 0; }
+  table { width: 100%; border-collapse: collapse;
+    font-family: var(--font-sans); font-size: .88em; }
+  th { background: var(--accent); color: white; padding: .6rem .8rem;
+       text-align: left; font-weight: 600; }
+  body.dark th { background: #2a1f00; color: var(--accent-dark); }
+  td { padding: .55rem .8rem; border-bottom: 1px solid var(--border); }
+  body.dark td { border-color: var(--border-dark); }
+  tr:hover td { background: #fdf6e3; }
+  body.dark tr:hover td { background: #1a1500; }
+  .det  { color: var(--green); font-weight: bold; }
+  .nodet{ color: var(--red); }
+  .snr-high { font-weight: bold; color: var(--green); }
+
+  /* GAUGE ROW */
+  .gauges { display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem; margin: 1.5rem 0; }
+  .gauge-card { background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 1rem .8rem; text-align: center;
+    font-family: var(--font-sans); }
+  body.dark .gauge-card { background: var(--card-dark); border-color: var(--border-dark); }
+  .gauge-card .icon { font-size: 1.6rem; }
+  .gauge-card .nodo-name { font-size: .75em; color: #666; margin: .3rem 0 .5rem; }
+  body.dark .gauge-card .nodo-name { color: #999; }
+  .gauge-bar { height: 6px; background: #eee; border-radius: 3px; overflow: hidden; margin: .4rem 0; }
+  body.dark .gauge-bar { background: #333; }
+  .gauge-fill { height: 100%; border-radius: 3px; transition: width .8s ease; }
+  .gauge-card .snr-val { font-size: .85em; font-weight: bold; }
+  .gauge-card .estado-lbl { font-size: .7em; margin-top: .3rem;
+    padding: .15rem .5rem; border-radius: 10px; display: inline-block; }
+  .lbl-det  { background: #e8f5e9; color: #2e7d32; }
+  .lbl-no   { background: #ffebee; color: #b71c1c; }
+  body.dark .lbl-det { background: #0d1f0d; color: #00c853; }
+  body.dark .lbl-no  { background: #1f0d0d; color: #ff5252; }
+
+  /* NOTA EPISTÉMICA */
+  .nota-ep { border-left: 4px solid var(--orange);
+    background: #fff8f0; padding: 1.2rem 1.5rem;
+    border-radius: 4px; margin: 1.5rem 0; }
+  body.dark .nota-ep { background: #1a0e00; border-color: #ff9800; }
+  .nota-ep h3 { color: var(--orange); font-family: var(--font-sans);
+    font-size: 1rem; margin-bottom: .6rem; }
+  body.dark .nota-ep h3 { color: #ff9800; }
+  .nota-ep ul { margin-left: 1.4rem; }
+  .nota-ep li { margin-bottom: .4rem; }
+
+  /* PRÓXIMOS PASOS */
+  .paso { background: #f1f8e9; border-left: 3px solid #558b2f;
+    padding: .7rem 1rem; margin: .5rem 0; border-radius: 3px;
+    font-family: var(--font-sans); font-size: .9em; }
+  body.dark .paso { background: #0d1a00; border-color: #7cb342; }
+  code { background: #f5f5f5; padding: .15rem .4rem;
+    border-radius: 3px; font-size: .85em; }
+  body.dark code { background: #222; color: #aaa; }
+
+  /* HALLAZGOS */
+  .hallazgo { display: flex; gap: .8rem; align-items: flex-start;
+    padding: .8rem; border-radius: 6px; margin: .6rem 0;
+    font-family: var(--font-sans); font-size: .92em; }
+  .hallazgo-ok { background: #e8f5e9; }
+  .hallazgo-no { background: #ffebee; }
+  body.dark .hallazgo-ok { background: #0d1f0d; }
+  body.dark .hallazgo-no { background: #1f0d0d; }
+  .hallazgo-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: .1rem; }
+
+  footer { text-align: center; padding: 2rem; color: #888;
+    font-size: .85em; border-top: 1px solid var(--border);
+    font-family: var(--font-sans); margin-top: 3rem; }
+  body.dark footer { border-color: var(--border-dark); }
+  footer a { color: var(--accent); }
+  body.dark footer a { color: var(--accent-dark); }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html">🌿 Inicio</a>
+  <span style="color:#666">›</span>
+  <a href="docs/index.html">📚 Documentación</a>
+  <span style="color:#666">›</span>
+  <span style="color:var(--accent)">🌍 Ley de Gaia</span>
+  <span id="toggle-tema" title="Cambiar tema">🌓</span>
+</nav>
+
+<div class="container">
+
+  <h1>🌍 Ley de Gaia</h1>
+  <p class="subtitle">
+    Validación empírica del período Ω_F/10 = 176 días predicho por MIU-IFT v13.0<br>
+    7 datasets · 10,405 meses de datos · Bootstrap 1000× · α = 0.05
+  </p>
+
+  <div class="badge-container">
+    <span class="badge badge-debil">EVIDENCIA_DEBIL · 1/7 nodos</span>
+    <span class="badge badge-pendiente">estado_validacion: pendiente</span>
+  </div>
+
+  <!-- GAUGES -->
+  <div class="gauges" id="gauges-container">
+    <!-- generado por JS -->
+  </div>
+
+  <!-- TABLA COMPLETA -->
+  <h2>📊 Resultados por Nodo</h2>
+  <p>Método: FFT + umbral χ²(2) α=0.05 + Bootstrap empírico 1000×.
+  Armónicos estacionales (anual, semianual, trimestral) removidos antes de buscar 176d.</p>
+
+  <div class="tabla-wrap">
+    <table>
+      <tr>
+        <th>Nodo</th><th>Fuente</th><th>N meses</th>
+        <th>SNR</th><th>Umbral</th><th>p-bootstrap</th>
+        <th>Período</th><th>Estado</th>
+      </tr>
+      <tr>
+        <td>💧 Hidrósfera</td>
+        <td>GRACE-FO TWS global (JPL RL06.1M)</td>
+        <td>94</td>
+        <td class="snr-high">60.18</td>
+        <td>3.00</td>
+        <td>0.000</td>
+        <td>178.8 días</td>
+        <td class="det">✅ DETECTADO</td>
+      </tr>
+      <tr>
+        <td>🌿 Biodiversidad</td>
+        <td>GBIF Colombia ocurrencias</td>
+        <td>73</td>
+        <td>0.11</td><td>3.00</td><td>1.000</td>
+        <td>—</td>
+        <td class="nodet">❌ NO detectado</td>
+      </tr>
+      <tr>
+        <td>🌍 CO₂ atm.</td>
+        <td>Mauna Loa NOAA/Scripps (des.)</td>
+        <td>818</td>
+        <td>0.01</td><td>3.00</td><td>1.000</td>
+        <td>—</td>
+        <td class="nodet">❌ NO detectado</td>
+      </tr>
+      <tr>
+        <td>☀️ Solar (ctrl)</td>
+        <td>Manchas solares SIDC 1749-2026</td>
+        <td>3329</td>
+        <td>0.31</td><td>3.00</td><td>1.000</td>
+        <td>—</td>
+        <td class="nodet">❌ NO detectado</td>
+      </tr>
+      <tr>
+        <td>🔬 CH₄ atm.</td>
+        <td>Metano global NOAA/GML</td>
+        <td>512</td>
+        <td>0.02</td><td>3.00</td><td>1.000</td>
+        <td>—</td>
+        <td class="nodet">❌ NO detectado</td>
+      </tr>
+      <tr>
+        <td>🌡 Clima local</td>
+        <td>GHCN-Daily Bogotá El Dorado</td>
+        <td>822</td>
+        <td>1.30</td><td>3.00</td><td>1.000</td>
+        <td>—</td>
+        <td class="nodet">❌ NO detectado</td>
+      </tr>
+      <tr>
+        <td>🌐 T. global</td>
+        <td>NASA GISTEMP v4 (1880-2026)</td>
+        <td>1757</td>
+        <td>0.81</td><td>3.00</td><td>1.000</td>
+        <td>—</td>
+        <td class="nodet">❌ NO detectado</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- HALLAZGOS CLAVE -->
+  <h2>🔬 Hallazgos Clave</h2>
+
+  <div class="hallazgo hallazgo-ok">
+    <span class="hallazgo-icon">✅</span>
+    <div><strong>Señal GRACE real e independiente:</strong> El pico en 178.8 días (SNR=60,
+    p=0.000) sobrevive la remoción completa de armónicos estacionales.
+    No es el ciclo semianual astronómico disfrazado.</div>
+  </div>
+
+  <div class="hallazgo hallazgo-ok">
+    <span class="hallazgo-icon">✅</span>
+    <div><strong>Control solar pasado:</strong> Con 3,329 meses de manchas solares
+    (la serie más larga del proyecto), el detector devuelve SNR=0.31.
+    El ciclo hidrosférico de 178.8d <em>no tiene origen solar directo</em>.</div>
+  </div>
+
+  <div class="hallazgo hallazgo-no">
+    <span class="hallazgo-icon">❌</span>
+    <div><strong>No aparece en atmósfera ni clima:</strong> CO₂ (818m), CH₄ (512m),
+    temperatura Bogotá (822m) y temperatura global GISTEMP (1757m) muestran
+    todos SNR &lt; 1.5. La señal no se propaga al sistema climático acoplado.</div>
+  </div>
+
+  <div class="hallazgo hallazgo-no">
+    <span class="hallazgo-icon">⚠️</span>
+    <div><strong>Hipótesis alternativa pendiente:</strong> El período orbital exacto de
+    GRACE-FO es ~91 días. Un artefacto en 2×91 = 182d podría contaminar la banda.
+    Se necesita verificar la fase orbital del satélite para descartarlo.</div>
+  </div>
+
+  <!-- NOTA EPISTÉMICA -->
+  <h2>📐 Nota Epistémica</h2>
+  <div class="nota-ep">
+    <h3>Lo que este análisis SÍ dice</h3>
+    <ul>
+      <li>Existe un ciclo real de ~178.8 días en las anomalías de agua terrestre global</li>
+      <li>Ese ciclo no es el semianual astronómico (test de remoción de armónicos)</li>
+      <li>Ese ciclo no tiene origen solar directo (control manchas, 3329 puntos)</li>
+      <li>El error respecto al target MIU (176d) es del 1.6% — dentro de la banda</li>
+    </ul>
+    <h3 style="margin-top:1rem">Lo que este análisis NO dice</h3>
+    <ul>
+      <li>Que el ciclo GRACE sea causado por el campo ρ(x) del MIU</li>
+      <li>Que la Ley de Gaia opere a escala atmosférica, climática o de biodiversidad</li>
+      <li>Que 178.8d ≡ Ω_F/10 con certeza (es consistente, no confirmación)</li>
+    </ul>
+    <p style="margin-top:1rem">
+      <strong>El MIU-IFT v13.0 es un programa de investigación activo, no una teoría validada.</strong>
+      Las predicciones falsables (DESI DR3, Euclid DR1, BepiColombo 2026-2028)
+      están en <a href="docs/index.html">📚 Documentación</a>.
+    </p>
+  </div>
+
+  <!-- PRÓXIMOS PASOS -->
+  <h2>🚀 Para Subir de EVIDENCIA_DEBIL → PARCIAL</h2>
+  <div class="paso">1. <strong>GHCN global:</strong> Clima de múltiples estaciones del mundo (no solo Bogotá) → nodo Clima Global</div>
+  <div class="paso">2. <strong>GBIF global:</strong> Ocurrencias globales, no solo Colombia → de 73 a ~500 meses con cobertura real</div>
+  <div class="paso">3. <strong>Verificar fase orbital GRACE-FO:</strong> Descartar artefacto 2×91=182d comparando con ficheros de órbita JPL</div>
+  <div class="paso">4. <strong>PDO mensual + AMO mensual:</strong> Ciclos oceánicos de largo plazo → nodo Océano</div>
+  <div class="paso">5. <strong>PANGAEA.934337</strong> (modelo de edad radiocarbónica Glen Carron) → nodo Paleoclima calibrado</div>
+
+  <!-- CÓDIGO Y DATOS -->
+  <h2>💻 Código y Datos</h2>
+  <p>El pipeline completo (Python, ~1,200 líneas) está disponible en el repositorio
+  junto con los scripts <code>peak_detector_v2.py</code>, <code>synthesis_v5.py</code>
+  y 11 módulos de análisis por nodo. Reproduce los resultados con:</p>
+  <pre style="background:#f5f5f5;padding:1rem;border-radius:6px;overflow-x:auto;font-size:.85em">pip install pandas numpy scipy matplotlib
+python scripts/synthesis_v5.py</pre>
+  <p>Fuentes de datos: GRACE JPL RL06.1M, GBIF API, NOAA/Scripps CO₂,
+  NOAA/GML CH₄, SIDC manchas solares, GHCN-Daily, NASA GISTEMP v4.</p>
+
+</div><!-- /container -->
+
+<footer>
+  <p>🌍 Ley de Gaia — MIU-IFT v13.0 | Grimorio Multiversal v2.5</p>
+  <p style="margin-top:.5rem">
+    <a href="index.html">← Inicio</a> ·
+    <a href="docs/index.html">Documentación</a> ·
+    <a href="laboratorio/index.html">Laboratorio</a>
+  </p>
+  <p style="margin-top:.8rem;font-style:italic">ρ(x) &gt; 0 — Zvvvvv</p>
+</footer>
+
+<script>
+  // Datos de los nodos para gauges
+  const nodos = [
+    { icon:'💧', name:'Hidrósfera\nGRACE', snr:60.18, umbral:3.00,
+      periodo:'178.8d', estado:'DETECTADO', color:'#2e7d32' },
+    { icon:'🌿', name:'Biodiversidad\nGBIF', snr:0.11, umbral:3.00,
+      estado:'NO_DETECTADO', color:'#b71c1c' },
+    { icon:'🌍', name:'CO₂\nMauna Loa', snr:0.01, umbral:3.00,
+      estado:'NO_DETECTADO', color:'#b71c1c' },
+    { icon:'☀️', name:'Solar\nControl', snr:0.31, umbral:3.00,
+      estado:'NO_DETECTADO', color:'#b71c1c' },
+    { icon:'🔬', name:'CH₄\nNOAA', snr:0.02, umbral:3.00,
+      estado:'NO_DETECTADO', color:'#b71c1c' },
+    { icon:'🌡', name:'Clima\nBogotá', snr:1.30, umbral:3.00,
+      estado:'NO_DETECTADO', color:'#b71c1c' },
+    { icon:'🌐', name:'T.Global\nGISTEMP', snr:0.81, umbral:3.00,
+      estado:'NO_DETECTADO', color:'#b71c1c' },
+  ];
+
+  const container = document.getElementById('gauges-container');
+  nodos.forEach(n => {
+    const pct = Math.min(n.snr / (n.umbral * 3) * 100, 100);
+    const esLabel = n.estado === 'DETECTADO' ? 'lbl-det' : 'lbl-no';
+    const esText  = n.estado === 'DETECTADO' ? '✅ DETECTADO' : '❌ no det.';
+    const div = document.createElement('div');
+    div.className = 'gauge-card';
+    div.innerHTML = `
+      <div class="icon">${n.icon}</div>
+      <div class="nodo-name">${n.name.replace('\n','<br>')}</div>
+      <div class="gauge-bar">
+        <div class="gauge-fill" style="width:${pct}%;background:${n.color}"></div>
+      </div>
+      <div class="snr-val" style="color:${n.color}">SNR ${n.snr}</div>
+      ${n.periodo ? `<div style="font-size:.78em;color:#666">${n.periodo}</div>` : ''}
+      <div class="estado-lbl ${esLabel}">${esText}</div>
+    `;
+    container.appendChild(div);
+  });
+
+  // Tema oscuro
+  const toggle = document.getElementById('toggle-tema');
+  const saved = localStorage.getItem('grimorio_tema');
+  if (saved === 'dark') document.body.classList.add('dark');
+  toggle.addEventListener('click', () => {
+    document.body.classList.toggle('dark');
+    localStorage.setItem('grimorio_tema',
+      document.body.classList.contains('dark') ? 'dark' : 'light');
+  });
+</script>
+</body>
+</html>

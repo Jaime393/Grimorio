@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consenso φ WebXR - ALMA-NEXUS</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #000;
+  color: #e0e0e0;
+  font-family: 'Courier New', monospace;
+  padding: 20px;
+  transition: background 1.5s ease;
+}
+body.critical {
+  background: #0a0005;
+}
+body.degraded {
+  background: #0a0500;
+}
+h2 {
+  color: #00d4ff;
+  font-size: 1.3rem;
+  text-shadow: 0 0 15px #00d4ff;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #00d4ff;
+  padding-bottom: 8px;
+  transition: color 0.5s;
+}
+h2.critical {
+  color: #ff3366;
+  text-shadow: 0 0 15px #ff3366;
+  border-color: #ff3366;
+}
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+.panel {
+  background: rgba(10,10,10,0.9);
+  border: 2px solid #00d4ff;
+  border-radius: 10px;
+  padding: 20px;
+  transition: border-color 0.5s, box-shadow 0.5s;
+}
+.panel.critical {
+  border-color: #ff3366;
+  box-shadow: 0 0 30px rgba(255,51,102,0.4);
+}
+.panel h3 {
+  color: #ffd700;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+.votacion {
+  background: #050505;
+  border: 1px solid #222;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  transition: border-color 0.3s;
+}
+.votacion.critical {
+  border-color: #ff3366;
+}
+.propuesta {
+  color: #00d4ff;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+.barras {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+.barra-container {
+  flex: 1;
+}
+.barra-label {
+  font-size: 11px;
+  margin-bottom: 5px;
+  color: #a0a0a0;
+}
+.barra {
+  height: 30px;
+  background: #111;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+.barra-fill {
+  height: 100%;
+  transition: width 0.5s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+}
+.barra-si.barra-fill {
+  background: linear-gradient(90deg, #00ff88, #00cc66);
+  color: #000;
+}
+.barra-no.barra-fill {
+  background: linear-gradient(90deg, #ff3366, #cc2255);
+  color: #fff;
+}
+.btn {
+  width: 100%;
+  padding: 14px;
+  margin-top: 10px;
+  background: linear-gradient(135deg, #00d4ff, #00aacc);
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  text-transform: uppercase;
+  transition: all 0.3s;
+}
+.btn:hover {
+  box-shadow: 0 0 25px #00d4ff;
+  transform: scale(1.02);
+}
+.btn.pulse {
+  animation: pulse-consenso 0.8s infinite;
+}
+@keyframes pulse-consenso {
+ 0%, 100% { box-shadow: 0 0 10px #ff3366; transform: scale(1); }
+ 50% { box-shadow: 0 0 40px #ff3366; transform: scale(1.05); }
+}
+.btn.flash {
+  animation: flash-green 0.5s;
+}
+@keyframes flash-green {
+ 0%, 100% { background: linear-gradient(135deg, #00ff88, #00cc66); }
+ 50% { background: #ffffff; color: #000; }
+}
+.btn.phi {
+  background: linear-gradient(135deg, #ffd700, #ffcc00);
+}
+.btn.green {
+  background: linear-gradient(135deg, #00ff88, #00cc66);
+}
+.btn.red {
+  background: linear-gradient(135deg, #ff3366, #cc2255);
+}
+canvas {
+  width: 100%;
+  height: 350px;
+  background: radial-gradient(ellipse at center, #0a0a0a 0%, #000 100%);
+  border: 2px solid #222;
+  border-radius: 8px;
+  transition: border-color 0.5s;
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 15px;
+}
+.stat-box {
+  background: #050505;
+  border: 1px solid #222;
+  padding: 12px;
+  border-radius: 6px;
+  text-align: center;
+}
+.stat-label {
+  font-size: 10px;
+  color: #666;
+  text-transform: uppercase;
+}
+.stat-value {
+  font-size: 24px;
+  color: #ffd700;
+  font-weight: bold;
+  margin-top: 5px;
+  transition: color 0.5s;
+}
+.stat-value.critical {
+  color: #ff3366;
+  animation: blink 1s infinite;
+}
+@keyframes blink {
+ 50% { opacity: 0.5; }
+}
+.resultado {
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 15px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 14px;
+  animation: fadeIn 0.5s;
+}
+@keyframes fadeIn {
+ from { opacity: 0; transform: scale(0.9); }
+ to { opacity: 1; transform: scale(1); }
+}
+.resultado.exito {
+  background: rgba(0,255,136,0.2);
+  border: 2px solid #00ff88;
+  color: #00ff88;
+  box-shadow: 0 0 30px rgba(0,255,136,0.5);
+}
+.resultado.fracaso {
+  background: rgba(255,51,102,0.2);
+  border: 2px solid #ff3366;
+  color: #ff3366;
+  box-shadow: 0 0 30px rgba(255,51,102,0.5);
+}
+.log {
+  background: #000;
+  border-left: 4px solid #ffd700;
+  padding: 12px;
+  font-size: 11px;
+  max-height: 180px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  line-height: 1.6;
+  margin-top: 10px;
+  transition: border-color 0.5s;
+}
+.log.critical {
+  border-color: #ff3366;
+}
+@media (max-width: 900px) {
+.grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<h2 id="titulo">⚖️ CONSENSO φ CUÁNTICO + WebXR VR</h2>
+
+<div class="grid">
+  <div class="panel" id="panelIzq">
+    <h3>Votación Actual</h3>
+    <div class="votacion" id="votacionBox">
+      <div class="propuesta">Propuesta: ¿Podar nodos ROJA K_i⁻ < 0.3?</div>
+      <div class="propuesta" style="font-size: 11px; color: #666;">
+        Umbral cuántico φ⁻¹ = 61.8% requerido
+      </div>
+
+      <div class="barras">
+        <div class="barra-container">
+          <div class="barra-label">VOTOS SÍ</div>
+          <div class="barra barra-si">
+            <div class="barra-fill" id="barSi" style="width: 0%">0%</div>
+          </div>
+        </div>
+        <div class="barra-container">
+          <div class="barra-label">VOTOS NO</div>
+          <div class="barra barra-no">
+            <div class="barra-fill" id="barNo" style="width: 0%">0%</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn green" id="btnSi" onclick="votarSi()">Votar SÍ</button>
+      <button class="btn red" id="btnNo" onclick="votarNo()">Votar NO</button>
+      <button class="btn phi" onclick="nuevaVotacion()">Nueva Votación</button>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-label">Votos SÍ</div>
+        <div class="stat-value" id="votosSi">0</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Votos NO</div>
+        <div class="stat-value" id="votosNo">0</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">K_i Total SÍ</div>
+        <div class="stat-value" id="kiSi">0.000</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">K_i Total NO</div>
+        <div class="stat-value" id="kiNo">0.000</div>
+      </div>
+    </div>
+
+    <div id="resultado" style="display: none;"></div>
+  </div>
+
+  <div class="panel" id="panelDer">
+    <h3>Visualización 3D WebXR</h3>
+    <canvas id="vrCanvas"></canvas>
+    <button class="btn phi" id="vrBtn" onclick="iniciarVR()">Entrar VR</button>
+    <button class="btn" onclick="simularVotos()">Simular 100 Votos</button>
+
+    <div class="log" id="log">Sistema de consenso inicializado...\nUmbral φ⁻¹ = 61.8%</div>
+  </div>
+</div>
+
+<script src="alma-shared.js"></script>
+<script>
+const canvas = document.getElementById('vrCanvas');
+const ctx = canvas.getContext('2d');
+
+let votosSi = 0;
+let votosNo = 0;
+let kiSi = 0;
+let kiNo = 0;
+let xrSession = null;
+let audioCtx = null;
+
+// AUDIO GLOBAL con MUTE - respeta botón de omega.html
+function beep(freq = 500, dur = 0.1) {
+  if (!parent.ALMA_AUDIO ||!parent.ALMA_AUDIO.enabled) return;
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = audioCtx.createOscillator();
+  osc.frequency.value = freq;
+  osc.connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + dur);
+}
+
+// Resize
+function resize() {
+  canvas.width = canvas.offsetWidth;
+  canvas.height = 350;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// Votar SÍ CON SONIDO
+function votarSi() {
+  votosSi++;
+  kiSi += parent.ALMA.nodos[0].ki;
+  actualizarBarras();
+  beep(600, 0.08);
+  log(`Voto SÍ registrado | K_i aportado: ${parent.ALMA.nodos[0].ki.toFixed(3)}`);
+}
+
+// Votar NO CON SONIDO
+function votarNo() {
+  votosNo++;
+  kiNo += parent.ALMA.nodos[0].ki;
+  actualizarBarras();
+  beep(300, 0.12);
+  log(`Voto NO registrado | K_i aportado: ${parent.ALMA.nodos[0].ki.toFixed(3)}`);
+}
+
+// Actualizar barras y calcular consenso CON EFECTOS
+function actualizarBarras() {
+  const totalKi = kiSi + kiNo;
+  if (totalKi === 0) return;
+
+  const pctSi = (kiSi / totalKi) * 100;
+  const pctNo = (kiNo / totalKi) * 100;
+
+  document.getElementById('barSi').style.width = pctSi + '%';
+  document.getElementById('barSi').textContent = pctSi.toFixed(1) + '%';
+
+  document.getElementById('barNo').style.width = pctNo + '%';
+  document.getElementById('barNo').textContent = pctNo.toFixed(1) + '%';
+
+  document.getElementById('votosSi').textContent = votosSi;
+  document.getElementById('votosNo').textContent = votosNo;
+  document.getElementById('kiSi').textContent = kiSi.toFixed(3);
+  document.getElementById('kiNo').textContent = kiNo.toFixed(3);
+
+  if (parent.ALMA) {
+    parent.ALMA.consenso = pctSi / 100;
+  }
+
+  const resultado = document.getElementById('resultado');
+  const btnSi = document.getElementById('btnSi');
+  const body = document.body;
+  const titulo = document.getElementById('titulo');
+  const panelIzq = document.getElementById('panelIzq');
+  const panelDer = document.getElementById('panelDer');
+  const votacionBox = document.getElementById('votacionBox');
+  const logDiv = document.getElementById('log');
+
+  btnSi.classList.remove('pulse', 'flash');
+  body.classList.remove('critical', 'degraded');
+  titulo.classList.remove('critical');
+  panelIzq.classList.remove('critical');
+  panelDer.classList.remove('critical');
+  votacionBox.classList.remove('critical');
+  logDiv.classList.remove('critical');
+
+  if (pctSi > parent.ALMA.phi_inv * 100) {
+    resultado.className = 'resultado exito';
+    resultado.style.display = 'block';
+    resultado.innerHTML = '✓ CONSENSO ALCANZADO<br>Umbral φ⁻¹ = 61.8% superado<br>Propuesta APROBADA';
+    btnSi.classList.add('flash');
+    beep(800, 0.3);
+    body.style.background = '#000a05';
+  } else if (pctNo > parent.ALMA.phi_inv * 100) {
+    resultado.className = 'resultado fracaso';
+    resultado.style.display = 'block';
+    resultado.innerHTML = '✗ CONSENSO NEGATIVO<br>Umbral φ⁻¹ = 61.8% superado<br>Propuesta RECHAZADA';
+    beep(200, 0.4);
+    body.style.background = '#0a0005';
+  } else {
+    resultado.style.display = 'none';
+    btnSi.classList.add('pulse');
+    body.classList.add('degraded');
+    titulo.classList.add('critical');
+    panelIzq.classList.add('critical');
+    votacionBox.classList.add('critical');
+    logDiv.classList.add('critical');
+  }
+
+  dibujarVR();
+}
+
+// Nueva votación
+function nuevaVotacion() {
+  votosSi = 0;
+  votosNo = 0;
+  kiSi = 0;
+  kiNo = 0;
+  document.getElementById('resultado').style.display = 'none';
+  document.body.style.background = '#000';
+  actualizarBarras();
+  log('Nueva votación iniciada');
+  beep(400, 0.15);
+}
+
+// Simular 100 votos aleatorios
+function simularVotos() {
+  for (let i = 0; i < 100; i++) {
+    if (Math.random() > 0.4) votarSi();
+    else votarNo();
+  }
+  log('Simulación: 100 votos procesados');
+}
+
+// Dibujar visualización VR 3D
+function dibujarVR() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const centerX = canvas.width / 2;
+  const centerY = canvas.height / 2;
+  const radio = 120;
+
+  if (parent.ALMA) {
+    const ki = parent.ALMA.K_i;
+    if (ki < 0.3) canvas.style.borderColor = '#ff0000';
+    else if (ki < 0.55) canvas.style.borderColor = '#ffaa00';
+    else canvas.style.borderColor = '#00d4ff';
+  }
+
+  ctx.strokeStyle = '#333';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radio, 0, Math.PI * 2);
+  ctx.stroke();
+
+  const angleThreshold = parent.ALMA.phi_inv * Math.PI * 2;
+  ctx.strokeStyle = '#ffd700';
+  ctx.lineWidth = 3;
+  ctx.setLineDash([5, 5]);
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radio, -Math.PI/2, -Math.PI/2 + angleThreshold);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  const angleSi = (kiSi / (kiSi + kiNo || 1)) * Math.PI * 2;
+  const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radio);
+  gradient.addColorStop(0, 'rgba(0,255,136,0.9)');
+  gradient.addColorStop(1, 'rgba(0,255,136,0.3)');
+  ctx.fillStyle = gradient;
+  ctx.beginPath();
+  ctx.moveTo(centerX, centerY);
+  ctx.arc(centerX, centerY, radio, -Math.PI/2, -Math.PI/2 + angleSi);
+  ctx.closePath();
+  ctx.fill();
+
+  const gradientNo = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radio);
+  gradientNo.addColorStop(0, 'rgba(255,51,102,0.9)');
+  gradientNo.addColorStop(1, 'rgba(255,51,102,0.3)');
+  ctx.fillStyle = gradientNo;
+  ctx.beginPath();
+  ctx.moveTo(centerX, centerY);
+  ctx.arc(centerX, centerY, radio, -Math.PI/2 + angleSi, Math.PI * 1.5);
+  ctx.closePath();
+  ctx.fill();
+
+  const pct = ((kiSi / (kiSi + kiNo || 1)) * 100);
+  ctx.fillStyle = pct > 61.8? '#00ff88' : '#ff3366';
+  ctx.font = 'bold 24px Courier';
+  ctx.textAlign = 'center';
+  ctx.fillText(`${pct.toFixed(1)}%`, centerX, centerY);
+  ctx.font = '10px Courier';
+  ctx.fillStyle = '#666';
+  ctx.fillText('CONSENSO', centerX, centerY + 18);
+}
+
+// WebXR VR
+async function iniciarVR() {
+  const btn = document.getElementById('vrBtn');
+
+  if (!navigator.xr) {
+    alert('WebXR no soportado en este navegador');
+    return;
+  }
+
+  try {
+    if (!xrSession) {
+      xrSession = await navigator.xr.requestSession('immersive-vr');
+      btn.textContent = 'Salir VR';
+      log('Sesión VR iniciada');
+      beep(500, 0.2);
+
+      xrSession.addEventListener('end', () => {
+        xrSession = null;
+        btn.textContent = 'Entrar VR';
+        log('Sesión VR finalizada');
+      });
+    } else {
+      await xrSession.end();
+    }
+  } catch (e) {
+    alert('Error VR: ' + e.message);
+  }
+}
+
+function log(msg) {
+  const logDiv = document.getElementById('log');
+  logDiv.textContent += '\n' + msg;
+  logDiv.scrollTop = logDiv.scrollHeight;
+}
+
+// Actualizar cada segundo según K_i global
+setInterval(() => {
+  if (parent.ALMA) {
+    const ki = parent.ALMA.K_i;
+    if (ki < 0.3) {
+      document.body.classList.add('critical');
+    } else if (ki < 0.55) {
+      document.body.classList.add('degraded');
+    }
+  }
+}, 1000);
+
+// Dibujar inicial
+dibujarVR();
+</script>
+</body>
+</html>

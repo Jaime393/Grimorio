@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Ley K_i - Coherencia Fractal Universal - MIU</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #0a0a0a;
+            font-family: 'Georgia', serif;
+            overflow: hidden;
+        }
+        
+        .container {
+            position: relative;
+            width: 1600px;
+            height: 1000px;
+            background: linear-gradient(180deg, #1a3a1a 0%, #2E5C2E 40%, #1a2a1a 100%);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 150px rgba(255, 215, 0, 0.2), 0 0 300px rgba(46, 125, 50, 0.15);
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .title {
+            position: absolute;
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 215, 0, 0.8);
+            font-size: 24px;
+            font-weight: normal;
+            text-align: center;
+            letter-spacing: 2px;
+            z-index: 10;
+        }
+        
+        .subtitle {
+            position: absolute;
+            top: 55px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 215, 0, 0.5);
+            font-size: 13px;
+            text-align: center;
+        }
+        
+        .footer {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 215, 0, 0.6);
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<style>
+#gal-backnav{position:fixed;top:12px;left:12px;z-index:99999;display:flex;gap:6px;font-family:'Courier New',monospace;font-size:11px;}
+#gal-backnav a{color:#ffd700;text-decoration:none;background:rgba(10,10,15,0.7);border:1px solid rgba(255,215,0,0.35);border-radius:6px;padding:5px 10px;backdrop-filter:blur(4px);transition:all .2s;}
+#gal-backnav a:hover{background:rgba(255,215,0,0.15);border-color:#ffd700;}
+</style>
+<div id="gal-backnav"><a href="index.html">← Galería</a><a href="../index.html">Inicio</a></div>
+
+    <div class="container">
+        <canvas id="forestCanvas"></canvas>
+        <div class="title">La Ley de Coherencia Fractal Universal</div>
+        <div class="subtitle">K_i = φ · D_f / 2.5</div>
+        <div class="footer">
+            MIU-IFT v13.0 — 350 sistemas compilados: R²=0.989 (consistencia interna), pendiente de validación externa
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('forestCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        
+        let time = 0;
+        const phi = 1.618033988749;
+        
+        // Clase para árboles fractales mejorada
+        class AdvancedFractalTree {
+            constructor(x, y, angle, depth, maxDepth, D_f, scale = 1) {
+                this.x = x;
+                this.y = y;
+                this.angle = angle;
+                this.depth = depth;
+                this.maxDepth = maxDepth;
+                this.D_f = D_f;
+                this.K_i = (phi * D_f) / 2.5;
+                this.scale = scale;
+                this.children = [];
+                this.length = 100 * Math.pow(0.7, depth) * scale;
+                this.width = Math.max(0.3, 4 - depth * 0.5);
+                
+                if (depth < maxDepth && Math.random() > 0.15) {
+                    this.createBranches();
+                }
+            }
+            
+            createBranches() {
+                // Número de ramas según D_f (dimensión fractal)
+                let branchCount;
+                if (this.D_f > 2.3) branchCount = 4 + Math.floor(Math.random() * 2);
+                else if (this.D_f > 1.8) branchCount = 2 + Math.floor(Math.random() * 2);
+                else branchCount = 1 + Math.floor(Math.random() * 1.5);
+                
+                for (let i = 0; i < branchCount; i++) {
+                    const angleVariation = (Math.random() - 0.5) * (Math.PI / 3) * (1 + this.depth * 0.1);
+                    const newAngle = this.angle + angleVariation;
+                    
+                    const endX = this.x + this.length * Math.cos(newAngle);
+                    const endY = this.y + this.length * Math.sin(newAngle);
+                    
+                    this.children.push(new AdvancedFractalTree(
+                        endX, endY, newAngle,
+                        this.depth + 1, this.maxDepth,
+                        this.D_f, this.scale * 0.75
+                    ));
+                }
+            }
+            
+            getColor() {
+                const hueShift = this.depth * 8;
+                if (this.D_f > 2.3) {
+                    // Verde tropical intenso
+                    const greenIntensity = 100 - this.depth * 15;
+                    return `hsl(${120 - hueShift}, 80%, ${Math.max(20, greenIntensity - this.depth * 5)}%)`;
+                } else if (this.D_f > 1.8) {
+                    // Ámbar templado
+                    const amberIntensity = 100 - this.depth * 12;
+                    return `hsl(${40 - hueShift * 0.5}, 70%, ${Math.max(25, amberIntensity - this.depth * 4)}%)`;
+                } else {
+                    // Ocre ralo
+                    const ocreIntensity = 100 - this.depth * 10;
+                    return `hsl(${30}, 60%, ${Math.max(30, ocreIntensity - this.depth * 3)}%)`;
+                }
+            }
+            
+            draw(ctx) {
+                if (this.length < 1) return;
+                
+                const endX = this.x + this.length * Math.cos(this.angle);
+                const endY = this.y + this.length * Math.sin(this.angle);
+                
+                // Efecto de pulsación
+                const pulseFactor = 0.8 + 0.2 * Math.sin(time * 0.01 + this.depth);
+                const lineWidth = Math.max(0.2, this.width * pulseFactor);
+                
+                ctx.strokeStyle = this.getColor();
+                ctx.lineWidth = lineWidth;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.globalAlpha = 0.75 + Math.sin(time * 0.008 + this.depth * 0.5) * 0.2;
+                
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(endX, endY);
+                ctx.stroke();
+                
+                ctx.globalAlpha = 1;
+                
+                // Dibujar hijos
+                this.children.forEach(child => child.draw(ctx));
+            }
+        }
+        
+        // Crear bosque con diferentes zonas de D_f
+        const trees = [];
+        
+        // ZONA 1: ALTA D_f (Bosque tropical denso - superior izquierda)
+        for (let i = 0; i < 15; i++) {
+            const x = 100 + (i % 5) * 120;
+            const y = 150 + Math.floor(i / 5) * 150;
+            const offsetX = Math.sin(i * 0.7) * 40;
+            const offsetY = Math.cos(i * 0.9) * 30;
+            
+            trees.push(new AdvancedFractalTree(
+                x + offsetX, y + offsetY, -Math.PI / 2, 0, 6,
+                2.45 + Math.random() * 0.1, 0.9
+            ));
+        }
+        
+        // ZONA 2: MEDIA D_f (Bosque templado - medio y derecha)
+        for (let i = 0; i < 12; i++) {
+            const x = 600 + (i % 4) * 180;
+            const y = 200 + Math.floor(i / 4) * 200;
+            const offsetX = Math.sin(i * 0.6) * 50;
+            const offsetY = Math.cos(i * 0.8) * 40;
+            
+            trees.push(new AdvancedFractalTree(
+                x + offsetX, y + offsetY, -Math.PI / 2, 0, 5,
+                2.0 + Math.random() * 0.25, 1.1
+            ));
+        }
+        
+        // ZONA 3: BAJA D_f (Sabana rala - inferior)
+        for (let i = 0; i < 8; i++) {
+            const x = 150 + i * 180;
+            const y = 750;
+            const offsetX = Math.sin(i * 0.5) * 60;
+            const offsetY = Math.cos(i * 0.7) * 30;
+            
+            trees.push(new AdvancedFractalTree(
+                x + offsetX, y + offsetY, -Math.PI / 2, 0, 4,
+                1.35 + Math.random() * 0.15, 1.3
+            ));
+        }
+        
+        // Dibujar cielo con gradiente
+        function drawSky() {
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.3);
+            skyGrad.addColorStop(0, '#0D1B2A');
+            skyGrad.addColorStop(1, 'rgba(45, 92, 46, 0)');
+            
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height * 0.3);
+        }
+        
+        // Dibujar niebla del Silencio Primordial
+        function drawMist() {
+            // Niebla azulada en los bordes
+            const mistGrad = ctx.createRadialGradient(centerX, centerY, 300, centerX, centerY, 800);
+            mistGrad.addColorStop(0, 'rgba(144, 202, 249, 0)');
+            mistGrad.addColorStop(0.6, 'rgba(100, 150, 200, 0.08)');
+            mistGrad.addColorStop(1, 'rgba(50, 100, 150, 0.15)');
+            
+            ctx.fillStyle = mistGrad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Niebla más densa en los bordes inferiores
+            const bottomMist = ctx.createLinearGradient(0, canvas.height * 0.7, 0, canvas.height);
+            bottomMist.addColorStop(0, 'rgba(50, 100, 150, 0)');
+            bottomMist.addColorStop(1, 'rgba(50, 100, 150, 0.2)');
+            
+            ctx.fillStyle = bottomMist;
+            ctx.fillRect(0, canvas.height * 0.7, canvas.width, canvas.height * 0.3);
+        }
+        
+        // Dibujar espirales áureas de fondo
+        function drawGoldenSpiralsBackground() {
+            ctx.strokeStyle = 'rgba(184, 134, 11, 0.08)';
+            ctx.lineWidth = 2;
+            ctx.globalAlpha = 0.6;
+            
+            for (let spiral = 0; spiral < 3; spiral++) {
+                ctx.beginPath();
+                const rotation = (spiral * Math.PI * 2 / 3);
+                
+                for (let i = 0; i < 150; i++) {
+                    const theta = (i / 12) + rotation;
+                    const radius = 20 * Math.pow(phi, theta / (Math.PI * 2));
+                    
+                    const x = centerX + radius * Math.cos(theta);
+                    const y = centerY + radius * Math.sin(theta);
+                    
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                    
+                    if (radius > 500) break;
+                }
+                ctx.stroke();
+            }
+            
+            ctx.globalAlpha = 1;
+        }
+        
+        // Dibujar claro central con espiral de Fibonacci
+        function drawClear() {
+            const clearX = centerX;
+            const clearY = centerY + 20;
+            
+            // Círculo del claro con degradado
+            const clearGrad = ctx.createRadialGradient(clearX, clearY, 0, clearX, clearY, 150);
+            clearGrad.addColorStop(0, 'rgba(255, 250, 150, 0.4)');
+            clearGrad.addColorStop(0.5, 'rgba(200, 200, 100, 0.2)');
+            clearGrad.addColorStop(1, 'rgba(100, 150, 100, 0.05)');
+            
+            ctx.fillStyle = clearGrad;
+            ctx.beginPath();
+            ctx.arc(clearX, clearY, 150, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Espiral de Fibonacci dorada
+            ctx.strokeStyle = 'rgba(255, 215, 0, 0.8)';
+            ctx.lineWidth = 2.5;
+            
+            for (let spiral = 0; spiral < 2; spiral++) {
+                ctx.beginPath();
+                const rotation = spiral * Math.PI;
+                
+                for (let i = 0; i < 120; i++) {
+                    const theta = (i / 18) + rotation;
+                    const radius = 5 * Math.pow(phi, theta / (Math.PI * 2));
+                    
+                    const x = clearX + radius * Math.cos(theta);
+                    const y = clearY + radius * Math.sin(theta);
+                    
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                    
+                    if (radius > 120) break;
+                }
+                ctx.stroke();
+            }
+            
+            // Monolito de cristal
+            drawMonolith(clearX, clearY);
+            
+            // Columna de luz
+            drawLightColumn(clearX, clearY);
+        }
+        
+        // Dibujar monolito
+        function drawMonolith(x, y) {
+            // Triángulo de cristal
+            ctx.strokeStyle = 'rgba(255, 215, 0, 0.9)';
+            ctx.lineWidth = 4;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            ctx.beginPath();
+            ctx.moveTo(x - 20, y + 40);
+            ctx.lineTo(x, y - 30);
+            ctx.lineTo(x + 20, y + 40);
+            ctx.closePath();
+            ctx.stroke();
+            
+            // Interior del monolito con gradiente
+            const monolithGrad = ctx.createLinearGradient(x - 20, y - 30, x, y + 40);
+            monolithGrad.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
+            monolithGrad.addColorStop(0.5, 'rgba(255, 215, 0, 0.1)');
+            monolithGrad.addColorStop(1, 'rgba(255, 215, 0, 0.2)');
+            
+            ctx.fillStyle = monolithGrad;
+            ctx.beginPath();
+            ctx.moveTo(x - 20, y + 40);
+            ctx.lineTo(x, y - 30);
+            ctx.lineTo(x + 20, y + 40);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Brillo del monolito
+            const coreGrad = ctx.createRadialGradient(x - 2, y - 20, 2, x, y, 30);
+            coreGrad.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+            coreGrad.addColorStop(0.4, 'rgba(255, 215, 0, 0.4)');
+            coreGrad.addColorStop(1, 'rgba(255, 215, 0, 0)');
+            
+            ctx.fillStyle = coreGrad;
+            ctx.beginPath();
+            ctx.arc(x, y - 20, 30, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Etiqueta de la ley
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.9)';
+            ctx.font = 'bold 16px "Courier New"';
+            ctx.textAlign = 'center';
+            ctx.fillText('K_i = φ · D_f / 2.5', x, y + 80);
+        }
+        
+        // Dibujar columna de luz
+        function drawLightColumn(x, y) {
+            ctx.strokeStyle = 'rgba(255, 215, 0, 0.7)';
+            ctx.lineWidth = 15;
+            ctx.globalAlpha = 0.6 + 0.4 * Math.sin(time * 0.015);
+            ctx.lineCap = 'round';
+            
+            ctx.beginPath();
+            ctx.moveTo(x, y - 30);
+            ctx.lineTo(x, -200);
+            ctx.stroke();
+            
+            // Degradado de luz
+            const columnGrad = ctx.createLinearGradient(x - 20, y - 30, x + 20, -200);
+            columnGrad.addColorStop(0, 'rgba(255, 215, 0, 0.8)');
+            columnGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)');
+            columnGrad.addColorStop(1, 'rgba(255, 215, 0, 0.1)');
+            
+            ctx.strokeStyle = columnGrad;
+            ctx.lineWidth = 25;
+            ctx.beginPath();
+            ctx.moveTo(x, y - 30);
+            ctx.lineTo(x, -200);
+            ctx.stroke();
+            
+            ctx.globalAlpha = 1;
+        }
+        
+        // Dibujar estela de humo coherente
+        function drawCoherentSmoke() {
+            const clearX = centerX;
+            const smokeStartY = centerY - 30;
+            
+            // Anillos de la estela
+            for (let ring = 0; ring < 4; ring++) {
+                const ringRadius = 50 + ring * 70 + Math.sin(time * 0.008 + ring * 0.5) * 30;
+                const ringY = smokeStartY - 150 - ring * 120;
+                
+                // Anillo de humo
+                ctx.strokeStyle = `rgba(26, 35, 126, ${0.5 - ring * 0.1})`;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(clearX, ringY, ringRadius, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // Anillo de violeta interior
+                ctx.strokeStyle = `rgba(123, 31, 162, ${0.3 - ring * 0.06})`;
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.arc(clearX, ringY, ringRadius * 0.85, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // Anotaciones en los anillos
+                ctx.fillStyle = `rgba(26, 35, 126, ${0.7 - ring * 0.15})`;
+                ctx.font = 'bold 12px "Courier New"';
+                ctx.textAlign = 'center';
+                
+                if (ring === 0) {
+                    ctx.fillText('R² = 0.989', clearX + ringRadius + 40, ringY - 10);
+                } else if (ring === 1) {
+                    ctx.fillText('p < 10⁻⁴⁸', clearX + ringRadius + 50, ringY - 15);
+                } else if (ring === 2) {
+                    ctx.fillText('350 sistemas', clearX + ringRadius + 50, ringY - 15);
+                } else if (ring === 3) {
+                    ctx.fillText('validados', clearX + ringRadius + 35, ringY - 15);
+                }
+            }
+        }
+        
+        // Etiquetas de valores K_i en árboles específicos
+        function drawTreeLabels() {
+            const labels = [
+                { x: 120, y: 280, value: '0.618', label: 'Microtúbulos', zone: 'Alta D_f' },
+                { x: 750, y: 380, value: '0.570', label: 'CMB', zone: 'Media D_f' },
+                { x: 200, y: 800, value: '0.346', label: 'Clima', zone: 'Baja D_f (RIESGO)' },
+                { x: 920, y: 420, value: '0.587', label: 'Manglares', zone: 'Media D_f' }
+            ];
+            
+            labels.forEach((item, idx) => {
+                // Punto de conexión
+                ctx.fillStyle = `rgba(255, 215, 0, 0.6)`;
+                ctx.beginPath();
+                ctx.arc(item.x, item.y, 6, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Línea de conexión
+                ctx.strokeStyle = `rgba(255, 215, 0, 0.4)`;
+                ctx.lineWidth = 1;
+                ctx.setLineDash([3, 3]);
+                ctx.beginPath();
+                ctx.moveTo(item.x, item.y);
+                ctx.lineTo(item.x + 80, item.y - 60);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                // Valor de K_i
+                ctx.fillStyle = 'rgba(255, 215, 0, 0.9)';
+                ctx.font = 'bold 14px "Courier New"';
+                ctx.textAlign = 'left';
+                ctx.fillText(item.value, item.x + 85, item.y - 50);
+                
+                // Nombre del sistema
+                ctx.fillStyle = 'rgba(255, 215, 0, 0.7)';
+                ctx.font = '11px Georgia';
+                ctx.fillText(item.label, item.x + 85, item.y - 35);
+                
+                // Zona
+                ctx.fillStyle = idx === 2 ? 'rgba(255, 100, 100, 0.6)' : 'rgba(255, 215, 0, 0.5)';
+                ctx.font = '9px "Courier New"';
+                ctx.fillText(item.zone, item.x + 85, item.y - 22);
+            });
+        }
+        
+        // Anotaciones científicas en esquinas
+        function drawAnnotations() {
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.7)';
+            ctx.font = '12px "Courier New"';
+            
+            // Superior izquierda
+            ctx.textAlign = 'left';
+            ctx.fillText('Microtúbulos:', 40, 100);
+            ctx.font = '10px "Courier New"';
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.5)';
+            ctx.fillText('D_f = 2.50, K_i = 0.618', 40, 116);
+            
+            // Superior derecha
+            ctx.font = '12px "Courier New"';
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.7)';
+            ctx.textAlign = 'right';
+            ctx.fillText('Manglares:', canvas.width - 40, 100);
+            ctx.font = '10px "Courier New"';
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.5)';
+            ctx.fillText('D_f = 2.28, K_i = 0.587', canvas.width - 40, 116);
+            
+            // Inferior izquierda
+            ctx.font = '12px "Courier New"';
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.7)';
+            ctx.textAlign = 'left';
+            ctx.fillText('Clima global:', 40, canvas.height - 65);
+            ctx.font = '10px "Courier New"';
+            ctx.fillStyle = 'rgba(255, 100, 100, 0.7)';
+            ctx.fillText('D_f = 1.40, K_i = 0.346 (RIESGO COLAPSO)', 40, canvas.height - 49);
+            
+            // Inferior derecha
+            ctx.font = '12px "Courier New"';
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.7)';
+            ctx.textAlign = 'right';
+            ctx.fillText('CMB:', canvas.width - 40, canvas.height - 65);
+            ctx.font = '10px "Courier New"';
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.5)';
+            ctx.fillText('D_f = 2.305, K_i = 0.570', canvas.width - 40, canvas.height - 49);
+        }
+        
+        // Animación principal
+        function animate() {
+            // Fondo degradado
+            const bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            bgGrad.addColorStop(0, '#1a3a1a');
+            bgGrad.addColorStop(0.4, '#2E5C2E');
+            bgGrad.addColorStop(1, '#1a2a1a');
+            
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Elementos en orden
+            drawSky();
+            drawGoldenSpiralsBackground();
+            drawMist();
+            
+            // Dibujar todos los árboles
+            trees.forEach(tree => tree.draw(ctx));
+            
+            // Claro central y elementos
+            drawClear();
+            drawCoherentSmoke();
+            drawTreeLabels();
+            drawAnnotations();
+            
+            time++;
+            requestAnimationFrame(animate);
+        }
+        
+        animate();
+        
+        // Responsividad
+        window.addEventListener('resize', () => {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        });
+    </script>
+</body>
+</html>

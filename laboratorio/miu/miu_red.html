@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIU Red v1.0 — Constructor de Redes de Coherencia Fractal</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0a; color: #e0e0e0; font-family: 'Courier New', monospace; padding: 15px; max-width: 950px; margin: auto; }
+  h1 { color: #00d4ff; text-align: center; font-size: 1.5rem; margin-bottom: 5px; }
+  .subtitle { text-align: center; color: #888; font-size: 10px; margin-bottom: 15px; }
+  .panel { background: rgba(20,20,20,0.9); border: 2px solid #00d4ff; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+  .row { display: flex; gap: 15px; flex-wrap: wrap; }
+  .col { flex: 1; min-width: 220px; }
+  label { display: block; margin: 8px 0 4px; color: #ccc; font-size: 11px; }
+  input, textarea, select { width: 100%; padding: 10px; background: #111; border: 2px solid #333; color: #00d4ff; font-family: inherit; font-size: 13px; border-radius: 6px; margin-bottom: 8px; }
+  textarea { height: 60px; resize: vertical; }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: #00d4ff; }
+  .btn { padding: 10px 18px; background: linear-gradient(135deg, #00d4ff, #0099cc); color: #000; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: inherit; font-size: 12px; text-transform: uppercase; transition: all 0.3s; margin: 4px; }
+  .btn:hover { box-shadow: 0 0 20px #00d4ff; transform: scale(1.02); }
+  .btn.secondary { background: linear-gradient(135deg, #333, #555); color: #fff; }
+  .btn.red { background: linear-gradient(135deg, #ff3366, #cc2255); }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 10px 0; }
+  .stat { background: #050505; border: 1px solid #333; padding: 10px; border-radius: 6px; text-align: center; }
+  .stat-label { font-size: 9px; color: #666; }
+  .stat-value { font-size: 20px; font-weight: bold; color: #00d4ff; }
+  canvas { display: block; background: #000; border: 1px solid #333; border-radius: 6px; width: 100%; margin-top: 10px; }
+  .lista-nodos { max-height: 150px; overflow-y: auto; font-size: 10px; margin-top: 10px; }
+  .nodo-item { padding: 5px 8px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
+  .nodo-item:hover { background: rgba(255,255,255,0.03); }
+  .nodo-item button { background: #ff3366; color: #fff; border: none; padding: 2px 8px; cursor: pointer; border-radius: 3px; font-size: 9px; }
+  .footer { text-align: center; font-size: 9px; color: #666; margin-top: 15px; }
+  @media (max-width: 500px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<style>
+#lab-backnav{position:fixed;top:12px;right:12px;z-index:99999;display:flex;gap:6px;font-family:'Courier New',monospace;font-size:11px;}
+#lab-backnav a{color:#d4a843;text-decoration:none;background:rgba(10,10,15,0.75);border:1px solid rgba(212,168,67,0.4);border-radius:6px;padding:5px 10px;backdrop-filter:blur(4px);transition:all .2s;}
+#lab-backnav a:hover{background:rgba(212,168,67,0.15);border-color:#d4a843;}
+</style>
+<div id="lab-backnav"><a href="index.html">← MIU Laboratorio</a><a href="../../index.html">Inicio</a></div>
+
+
+<h1>🌐 MIU RED v1.0</h1>
+<div class="subtitle">Constructor de Redes de Coherencia Fractal · K_i = φ · D_f / 2.5</div>
+
+<div class="panel">
+  <div class="row">
+    <div class="col">
+      <label for="nombreNodo">🌿 Nombre del concepto</label>
+      <input type="text" id="nombreNodo" placeholder="Ej: Número primo, φ, Inducción">
+      <label for="kiNodo">🎯 K_i inicial (0-1)</label>
+      <input type="number" id="kiNodo" value="0.5" step="0.05" min="0.1" max="1.0">
+      <button class="btn" onclick="agregarNodo()">➕ Agregar Nodo</button>
+      <button class="btn secondary" onclick="generarEjemplos()">🌌 Generar 8 ejemplos</button>
+    </div>
+    <div class="col">
+      <label for="conexion">🔗 Conectar nodos (IDs separados por coma)</label>
+      <input type="text" id="conexion" placeholder="Ej: 0,1 (conecta nodo 0 con nodo 1)">
+      <button class="btn" onclick="conectarNodos()">🔗 Conectar</button>
+      <button class="btn secondary" onclick="calcularRed()">🧮 Calcular K_i y D_f</button>
+      <button class="btn red" onclick="limpiarRed()">🗑️ Limpiar Red</button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Nodos</div><div class="stat-value" id="nNodos">0</div></div>
+    <div class="stat"><div class="stat-label">Aristas</div><div class="stat-value" id="nAristas">0</div></div>
+    <div class="stat"><div class="stat-label">K_i Global</div><div class="stat-value" id="kiRed">0.570</div></div>
+    <div class="stat"><div class="stat-label">D_f Red</div><div class="stat-value" id="dfRed">1.00</div></div>
+  </div>
+
+  <canvas id="canvasRed" width="900" height="350"></canvas>
+
+  <div style="display:flex; gap:10px; margin-top:10px;">
+    <button class="btn secondary" onclick="exportarRed()">💾 Exportar JSON</button>
+    <input type="file" id="importFile" accept=".json" onchange="importarRed(event)" style="display:none;">
+    <button class="btn secondary" onclick="document.getElementById('importFile').click()">📥 Importar JSON</button>
+  </div>
+
+  <div class="lista-nodos" id="listaNodos"></div>
+</div>
+
+<div class="footer">ρ(x) > 0 · MIU Red v1.0 · Construye y analiza tu propia red de coherencia fractal</div>
+
+<script>
+// ===== NÚCLEO MIU =====
+const PHI = 1.6180339887498948482;
+const PHI_INV = 0.6180339887498948482;
+let nodos = [];
+let aristas = [];
+
+function agregarNodo() {
+  const nombre = document.getElementById('nombreNodo').value.trim() || `Nodo_${nodos.length}`;
+  const ki = parseFloat(document.getElementById('kiNodo').value) || 0.5;
+  const x = 50 + Math.random() * 800;
+  const y = 50 + Math.random() * 250;
+  nodos.push({ id: nodos.length, nombre, ki, x, y });
+  document.getElementById('nombreNodo').value = '';
+  actualizarUI();
+}
+
+function conectarNodos() {
+  const ids = document.getElementById('conexion').value.split(',').map(Number).filter(n => !isNaN(n));
+  if (ids.length === 2 && nodos[ids[0]] && nodos[ids[1]]) {
+    aristas.push({ origen: ids[0], destino: ids[1] });
+    document.getElementById('conexion').value = '';
+    actualizarUI();
+  } else {
+    alert('Ingresa dos IDs válidos separados por coma');
+  }
+}
+
+function generarEjemplos() {
+  const conceptos = [
+    'Número primo', 'Inducción matemática', 'Axioma de Peano', 'Constante φ',
+    'Teorema de Pitágoras', 'Conjetura de Goldbach', 'Paridad n²+n', 'Entropía'
+  ];
+  nodos = conceptos.map((c, i) => ({
+    id: i, nombre: c,
+    ki: 0.4 + Math.random() * 0.4,
+    x: 50 + Math.random() * 800,
+    y: 50 + Math.random() * 250
+  }));
+  aristas = [];
+  for (let i = 0; i < nodos.length - 1; i++) {
+    if (Math.random() < 0.6) aristas.push({ origen: i, destino: i + 1 });
+  }
+  actualizarUI();
+}
+
+function calcularRed() {
+  if (nodos.length < 3) return alert('Mínimo 3 nodos');
+  
+  // Calcular K_i global como promedio de K_i de nodos
+  const kiGlobal = nodos.reduce((s, n) => s + n.ki, 0) / nodos.length;
+  
+  // Calcular D_f mediante box‑counting sobre el grafo
+  const df = calcularDfRed();
+  
+  document.getElementById('kiRed').textContent = kiGlobal.toFixed(3);
+  document.getElementById('dfRed').textContent = df.toFixed(3);
+}
+
+function calcularDfRed() {
+  if (nodos.length < 3) return 1.0;
+  const escalas = [20, 40, 80, 160];
+  const counts = escalas.map(e => {
+    const cajas = new Set();
+    nodos.forEach(n => {
+      cajas.add(`${Math.floor(n.x / e)},${Math.floor(n.y / e)}`);
+    });
+    return cajas.size;
+  });
+  let sx = 0, sy = 0, sxy = 0, sx2 = 0;
+  for (let i = 0; i < escalas.length; i++) {
+    const logE = Math.log(escalas[i]);
+    const logN = Math.log(counts[i] || 1);
+    sx += logE; sy += logN; sxy += logE * logN; sx2 += logE * logE;
+  }
+  const n = escalas.length;
+  return Math.max(1.0, Math.min(3.0, (n * sxy - sx * sy) / (n * sx2 - sx * sx)));
+}
+
+function dibujarRed() {
+  const canvas = document.getElementById('canvasRed');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  // Dibujar aristas
+  aristas.forEach(a => {
+    const o = nodos[a.origen], d = nodos[a.destino];
+    if (o && d) {
+      ctx.beginPath();
+      ctx.moveTo(o.x, o.y); ctx.lineTo(d.x, d.y);
+      ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+  });
+  
+  // Dibujar nodos
+  nodos.forEach(n => {
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, 8 + n.ki * 5, 0, Math.PI * 2);
+    ctx.fillStyle = n.ki > 0.55 ? '#00ff88' : n.ki > 0.35 ? '#ffaa00' : '#ff3366';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = '#fff'; ctx.font = '8px monospace';
+    ctx.fillText(n.id + ':' + n.nombre.substring(0, 10), n.x + 12, n.y + 4);
+  });
+}
+
+function actualizarUI() {
+  document.getElementById('nNodos').textContent = nodos.length;
+  document.getElementById('nAristas').textContent = aristas.length;
+  calcularRed();
+  dibujarRed();
+  
+  const lista = document.getElementById('listaNodos');
+  lista.innerHTML = nodos.map(n =>
+    `<div class="nodo-item"><span>[${n.id}] ${n.nombre} (K_i: ${n.ki.toFixed(2)})</span><button onclick="eliminarNodo(${n.id})">🗑️</button></div>`
+  ).join('');
+}
+
+function eliminarNodo(id) {
+  nodos = nodos.filter(n => n.id !== id);
+  aristas = aristas.filter(a => a.origen !== id && a.destino !== id);
+  actualizarUI();
+}
+
+function limpiarRed() {
+  if (!confirm('¿Borrar toda la red?')) return;
+  nodos = []; aristas = [];
+  actualizarUI();
+}
+
+function exportarRed() {
+  const blob = new Blob([JSON.stringify({ nodos, aristas }, null, 2)], {type: 'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'miu_red.json'; a.click();
+}
+
+function importarRed(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const data = JSON.parse(e.target.result);
+    nodos = data.nodos || [];
+    aristas = data.aristas || [];
+    actualizarUI();
+  };
+  reader.readAsText(file);
+}
+
+// Inicializar con algunos nodos de ejemplo
+generarEjemplos();
+</script>
+</body>
+</html>

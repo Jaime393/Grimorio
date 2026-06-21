@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Batalla de Teorías v5.0</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #000; color: #e0e0e0; font-family: 'Courier New', monospace; padding: 20px; transition: background 2s ease; }
+  body.battle { background: radial-gradient(ellipse at center, #150000 0%, #000 100%); animation: battle-pulse 1s infinite; }
+  @keyframes battle-pulse { 0%,100%{ box-shadow:inset 0 0 100px rgba(255,0,0,0.2) } 50%{ box-shadow:inset 0 0 200px rgba(255,100,0,0.4) } }
+  h2 { color: #ff3300; font-size: 1.8rem; text-shadow: 0 0 30px #ff3300; margin-bottom: 20px; text-align: center; border-bottom: 4px solid #ff3300; padding-bottom: 10px; }
+  h2.victory { color: #00ff88; text-shadow: 0 0 40px #00ff88; border-color: #00ff88; animation: victory-glow 2s infinite; }
+  @keyframes victory-glow { 0%,100%{ transform:scale(1) } 50%{ transform:scale(1.08) } }
+  .arena { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; position: relative; }
+  .teoria { background: rgba(10,10,10,0.95); border: 4px solid #333; border-radius: 15px; padding: 20px; transition: all 0.5s; position: relative; overflow: hidden; }
+  .teoria::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, transparent 40%, rgba(255,255,255,0.05) 70%); transform: rotate(0deg); transition: transform 2s; }
+  .teoria.attacking::before { animation: scan 1s infinite; }
+  @keyframes scan { 0%{ transform:rotate(0deg) } 100%{ transform:rotate(360deg) } }
+  .teoria.teoria-a { border-color: #00d4ff; box-shadow: 0 0 30px rgba(0,212,255,0.4); }
+  .teoria.teoria-b { border-color: #ffaa00; box-shadow: 0 0 30px rgba(255,170,0,0.4); }
+  .teoria.winner { border-color: #00ff88; box-shadow: 0 0 60px rgba(0,255,136,1); transform: scale(1.05); z-index: 10; }
+  .teoria.loser { border-color: #ff3366; opacity: 0.4; filter: grayscale(0.8); animation: death 3s forwards; }
+  @keyframes death { to { opacity: 0.1; transform: scale(0.8); } }
+  .teoria-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #333; }
+  .teoria-nombre { font-size: 18px; font-weight: bold; }
+  .teoria-a .teoria-nombre{color:#00d4ff} .teoria-b .teoria-nombre{color:#ffaa00} .winner .teoria-nombre{color:#00ff88;text-shadow:0 0 20px #00ff88}
+  .teoria-stats { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; margin: 15px 0; }
+  .stat-box { background: #050505; border: 1px solid #333; padding: 10px; border-radius: 6px; text-align: center; }
+  .stat-label { font-size: 9px; color: #666; text-transform: uppercase; }
+  .stat-value { font-size: 22px; font-weight: bold; margin-top: 4px; }
+  .stat-value.ki{color:#ffd700} .stat-value.teoremas{color:#00ff88} .stat-value.axiomas{color:#9d00ff} .stat-value.global{color:#ff3300}
+  .health-bar { height: 25px; background: #111; border-radius: 12px; overflow: hidden; margin: 10px 0; border: 2px solid #333; position: relative; }
+  .health-fill { height: 100%; transition: width 0.5s ease; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; color: #000; }
+  .teoria-a .health-fill{background:linear-gradient(90deg,#00d4ff,#0099cc)} .teoria-b .health-fill{background:linear-gradient(90deg,#ffaa00,#cc8800)} .winner .health-fill{background:linear-gradient(90deg,#00ff88,#00cc66)}
+  .axioms-list { background: #000; border: 2px solid #222; border-radius: 8px; padding: 10px; max-height: 150px; overflow-y: auto; font-size: 10px; margin: 10px 0; }
+  .axiom { padding: 5px; margin: 3px 0; border-left: 3px solid #333; background: rgba(255,255,255,0.02); }
+  .axiom.ki-alto{border-color:#00ff88;color:#00ff88} .axiom.ki-medio{border-color:#ffaa00;color:#ffaa00} .axiom.ki-bajo{border-color:#ff3366;color:#ff3366}
+  .battle-controls { background: rgba(10,10,10,0.95); border: 3px solid #ff3300; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px; }
+  .btn-group { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 15px 0; }
+  .btn { padding: 16px; background: linear-gradient(135deg, #ff3300, #cc2200); color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-family: inherit; font-size: 12px; text-transform: uppercase; transition: all 0.3s; }
+  .btn:hover { box-shadow: 0 0 30px #ff3300; transform: scale(1.08); }
+  .btn.green{background:linear-gradient(135deg,#00ff88,#00cc66);color:#000} .btn.phi{background:linear-gradient(135deg,#ffd700,#ffcc00);color:#000} .btn.purple{background:linear-gradient(135deg,#9d00ff,#7700cc)} .btn:disabled{opacity:0.5;cursor:not-allowed}
+  .battle-log { background: #000; border: 3px solid #ff3300; border-radius: 10px; padding: 15px; font-size: 11px; max-height: 250px; overflow-y: auto; white-space: pre-wrap; line-height: 1.6; }
+  .vs { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 48px; font-weight: bold; color: #ff3300; text-shadow: 0 0 30px #ff3300; z-index: 5; pointer-events: none; }
+  @media (max-width: 900px) { .arena{grid-template-columns:1fr} .btn-group{grid-template-columns:1fr 1fr} .vs{display:none} }
+</style>
+</head>
+<body>
+<style>
+#lab-backnav{position:fixed;top:12px;right:12px;z-index:99999;display:flex;gap:6px;font-family:'Courier New',monospace;font-size:11px;}
+#lab-backnav a{color:#d4a843;text-decoration:none;background:rgba(10,10,15,0.75);border:1px solid rgba(212,168,67,0.4);border-radius:6px;padding:5px 10px;backdrop-filter:blur(4px);transition:all .2s;}
+#lab-backnav a:hover{background:rgba(212,168,67,0.15);border-color:#d4a843;}
+</style>
+<div id="lab-backnav"><a href="index.html">← MIU Laboratorio</a><a href="../../index.html">Inicio</a></div>
+
+<h2 id="titulo">⚔️ BATALLA DE TEORÍAS v5.0 — Evolución Axiomática</h2>
+<div class="arena">
+  <div class="teoria teoria-a" id="teoriaA">
+    <div class="teoria-header"><div class="teoria-nombre">TEORÍA AZUL φ</div><div style="font-size:10px;color:#666">Axiomas: φ-based</div></div>
+    <div class="health-bar"><div class="health-fill" id="healthA" style="width:100%">100%</div></div>
+    <div class="teoria-stats">
+      <div class="stat-box"><div class="stat-label">K_i Prom</div><div class="stat-value ki" id="kiA">0.570</div></div>
+      <div class="stat-box"><div class="stat-label">K_i Global</div><div class="stat-value global" id="kiGlobalA">0.570</div></div>
+      <div class="stat-box"><div class="stat-label">Teoremas</div><div class="stat-value teoremas" id="teoremasA">0</div></div>
+      <div class="stat-box"><div class="stat-label">Axiomas</div><div class="stat-value axiomas" id="axiomasA">5</div></div>
+    </div>
+    <div class="axioms-list" id="axiomsListA"></div>
+  </div>
+  <div class="vs">VS</div>
+  <div class="teoria teoria-b" id="teoriaB">
+    <div class="teoria-header"><div class="teoria-nombre">TEORÍA NARANJA π</div><div style="font-size:10px;color:#666">Axiomas: π-based</div></div>
+    <div class="health-bar"><div class="health-fill" id="healthB" style="width:100%">100%</div></div>
+    <div class="teoria-stats">
+      <div class="stat-box"><div class="stat-label">K_i Prom</div><div class="stat-value ki" id="kiB">0.570</div></div>
+      <div class="stat-box"><div class="stat-label">K_i Global</div><div class="stat-value global" id="kiGlobalB">0.570</div></div>
+      <div class="stat-box"><div class="stat-label">Teoremas</div><div class="stat-value teoremas" id="teoremasB">0</div></div>
+      <div class="stat-box"><div class="stat-label">Axiomas</div><div class="stat-value axiomas" id="axiomasB">5</div></div>
+    </div>
+    <div class="axioms-list" id="axiomsListB"></div>
+  </div>
+</div>
+<div class="battle-controls">
+  <div class="btn-group">
+    <button class="btn green" onclick="iniciarBatalla()">⚔️ Iniciar Batalla</button>
+    <button class="btn phi" onclick="resetTeorias()">Reset Teorías</button>
+    <button class="btn purple" onclick="cruceAxiomas()">Cruce Genético</button>
+    <button class="btn" onclick="guardarEstado()">💾 Guardar</button>
+    <button class="btn" id="btnMute" onclick="toggleMute()">🔊 Sonido ON</button>
+  </div>
+  <div style="font-size:11px;color:#666;margin-top:10px">Reglas: Cada ciclo ambas teorías generan teoremas. K_i > 0.55 = éxito. Gana quien más teoremas al final. Perdedor = G31 autofagia total.</div>
+</div>
+<div class="battle-log" id="battleLog">Batalla v5.0 lista...\nTeoría Azul: axiomas basados en φ = 1.618\nTeoría Naranja: axiomas basados en π = 3.141</div>
+
+<script src="miu-shared.js"></script>
+<script>
+let batallando = false, ciclosBatalla = 0; const MAX_CICLOS = 30;
+let estadoLocal = { K_i: 0.570, ciclos: 0, nodos: [], version: '5.0' };
+let teoriaA = { nombre:'Azul φ', axiomas:[], teoremas:0, ki:0.570, health:100, color:'#00d4ff' };
+let teoriaB = { nombre:'Naranja π', axiomas:[], teoremas:0, ki:0.570, health:100, color:'#ffaa00' };
+
+window.addEventListener('message', e => {
+  if (e.data.type === 'miu:sync' && e.data.source) {
+    estadoLocal = e.data.state;
+    window.MIU = e.data.state;
+    actualizarUI();
+  }
+});
+
+function reportarEstado() { if (window.parent !== window && window.MIU_API) parent.postMessage({ type:'miu:update', source:'batalla', state:JSON.parse(JSON.stringify(estadoLocal)) }, '*'); }
+function beep(f,d) { if (window.MIU_API) window.MIU_API.beep(f,d); }
+function toggleMute() { if (window.MIU_API) { const e = window.MIU_API.getAudio().toggle(); document.getElementById('btnMute').textContent = e ? '🔊 Sonido ON' : '🔇 Sonido OFF'; document.getElementById('btnMute').classList.toggle('red', !e); beep(400, 0.1); } }
+
+function initTeorias() {
+  teoriaA.axiomas = [
+    {id:'A1',nombre:'Axioma φ Identidad',ki:0.6+Math.random()*0.2},
+    {id:'A2',nombre:'Lema φ⁻¹ Decaimiento',ki:0.55+Math.random()*0.2},
+    {id:'A3',nombre:'Teorema Resonancia',ki:0.58+Math.random()*0.15},
+    {id:'A4',nombre:'Corolario Ciclo Ω',ki:0.52+Math.random()*0.2},
+    {id:'A5',nombre:'Conjetura Entropía',ki:0.5+Math.random()*0.25}
+  ];
+  teoriaB.axiomas = [
+    {id:'B1',nombre:'Axioma π Circularidad',ki:0.6+Math.random()*0.2},
+    {id:'B2',nombre:'Lema Serie π',ki:0.55+Math.random()*0.2},
+    {id:'B3',nombre:'Teorema Irracionalidad',ki:0.58+Math.random()*0.15},
+    {id:'B4',nombre:'Corolario Trigonométrico',ki:0.52+Math.random()*0.2},
+    {id:'B5',nombre:'Conjetura Distribución',ki:0.5+Math.random()*0.25}
+  ];
+  teoriaA.teoremas = 0; teoriaB.teoremas = 0; teoriaA.health = 100; teoriaB.health = 100; ciclosBatalla = 0;
+  actualizarUI(); log('Teorías inicializadas — 5 axiomas cada una');
+}
+
+function guardarEstado() { localStorage.setItem('batalla_state', JSON.stringify({ A: teoriaA, B: teoriaB })); log('Estado guardado en localStorage'); beep(900, 0.3); }
+
+function actualizarUI() {
+  const kg = estadoLocal.K_i || 0.570;
+  teoriaA.ki = teoriaA.axiomas.length ? teoriaA.axiomas.reduce((a,ax) => a + ax.ki, 0) / teoriaA.axiomas.length : 0.57;
+  teoriaB.ki = teoriaB.axiomas.length ? teoriaB.axiomas.reduce((a,ax) => a + ax.ki, 0) / teoriaB.axiomas.length : 0.57;
+  document.getElementById('kiA').textContent = teoriaA.ki.toFixed(3); document.getElementById('kiB').textContent = teoriaB.ki.toFixed(3);
+  document.getElementById('kiGlobalA').textContent = kg.toFixed(3); document.getElementById('kiGlobalB').textContent = kg.toFixed(3);
+  document.getElementById('teoremasA').textContent = teoriaA.teoremas; document.getElementById('teoremasB').textContent = teoriaB.teoremas;
+  document.getElementById('axiomasA').textContent = teoriaA.axiomas.length; document.getElementById('axiomasB').textContent = teoriaB.axiomas.length;
+  document.getElementById('healthA').style.width = teoriaA.health + '%'; document.getElementById('healthA').textContent = Math.round(teoriaA.health) + '%';
+  document.getElementById('healthB').style.width = teoriaB.health + '%'; document.getElementById('healthB').textContent = Math.round(teoriaB.health) + '%';
+  document.getElementById('axiomsListA').innerHTML = teoriaA.axiomas.map(ax => `<div class="axiom ${ax.ki>0.6?'ki-alto':ax.ki>0.4?'ki-medio':'ki-bajo'}">${ax.id}: ${ax.nombre} [K_i ${ax.ki.toFixed(3)}]</div>`).join('');
+  document.getElementById('axiomsListB').innerHTML = teoriaB.axiomas.map(ax => `<div class="axiom ${ax.ki>0.6?'ki-alto':ax.ki>0.4?'ki-medio':'ki-bajo'}">${ax.id}: ${ax.nombre} [K_i ${ax.ki.toFixed(3)}]</div>`).join('');
+}
+
+async function iniciarBatalla() {
+  if (batallando) return;
+  batallando = true; ciclosBatalla = 0; document.body.classList.add('battle');
+  log('\n⚔️ BATALLA INICIADA ⚔️\n30 ciclos máximos | Gana quien más teoremas pruebe'); beep(900, 0.5);
+  while (ciclosBatalla < MAX_CICLOS && teoriaA.health > 0 && teoriaB.health > 0) {
+    ciclosBatalla++;
+    document.getElementById('teoriaA').classList.add('attacking'); document.getElementById('teoriaB').classList.add('attacking');
+    log(`\n[Ciclo ${ciclosBatalla}/${MAX_CICLOS}]`);
+    await Promise.all([ generarTeorema(teoriaA, 'A'), generarTeorema(teoriaB, 'B') ]);
+    const difKi = teoriaA.ki - teoriaB.ki, kg = estadoLocal.K_i || 0.570, bonus = kg * 0.1;
+    if (difKi > 0) { teoriaB.health -= (difKi * 20) + bonus; log(`Teoría Azul ataca! Daño: ${((difKi*20)+bonus).toFixed(1)}`, 'attack'); beep(800, 0.1); }
+    else { teoriaA.health -= (Math.abs(difKi) * 20) + bonus; log(`Teoría Naranja contraataca! Daño: ${((Math.abs(difKi)*20)+bonus).toFixed(1)}`, 'attack'); beep(600, 0.1); }
+    if (teoriaA.ki < 0.3) { teoriaA.axiomas = teoriaA.axiomas.filter(ax => ax.ki > 0.25); teoriaA.health -= 10; log('Teoría Azul: G31 autofagia activada', 'fail'); }
+    if (teoriaB.ki < 0.3) { teoriaB.axiomas = teoriaB.axiomas.filter(ax => ax.ki > 0.25); teoriaB.health -= 10; log('Teoría Naranja: G31 autofagia activada', 'fail'); }
+    teoriaA.health = Math.max(0, teoriaA.health); teoriaB.health = Math.max(0, teoriaB.health);
+    actualizarUI();
+    document.getElementById('teoriaA').classList.remove('attacking'); document.getElementById('teoriaB').classList.remove('attacking');
+    await new Promise(r => setTimeout(r, 800));
+  }
+  determinarGanador(); batallando = false; document.body.classList.remove('battle'); guardarEstado(); reportarEstado();
+}
+
+async function generarTeorema(teoria, id) {
+  let exitos = 0; const kg = estadoLocal.K_i || 0.570;
+  for (let ax of teoria.axiomas) {
+    if (Math.random() < Math.min(0.95, ax.ki + kg * 0.1)) { exitos++; teoria.teoremas++; ax.ki = Math.min(1, ax.ki + 0.02); log(`Teoría ${id}: ${ax.id} generó teorema! K_i ${ax.ki.toFixed(3)}`, 'success'); beep(700+Math.random()*200, 0.08); await new Promise(r => setTimeout(r, 100)); }
+    else { ax.ki *= 0.99; }
+  }
+  if (exitos === 0) log(`Teoría ${id}: Ningún axioma logró generar teorema este ciclo`, 'fail');
+}
+
+function determinarGanador() {
+  const g = teoriaA.teoremas > teoriaB.teoremas ? 'A' : 'B', p = g === 'A' ? 'B' : 'A';
+  document.getElementById('teoria' + g).classList.add('winner'); document.getElementById('teoria' + p).classList.add('loser');
+  document.getElementById('titulo').classList.add('victory');
+  const ganador = g === 'A' ? teoriaA : teoriaB, perdedor = g === 'A' ? teoriaB : teoriaA;
+  log(`\n🏆 VICTORIA: TEORÍA ${ganador.nombre.toUpperCase()} 🏆\nTeoremas: ${ganador.teoremas} vs ${perdedor.teoremas}\nK_i Prom: ${ganador.ki.toFixed(3)} vs ${perdedor.ki.toFixed(3)}`);
+  if (window.MIU_API) { window.MIU_API.addMemoria({ evento:'batalla_ganada', ganador:ganador.nombre, teoremas:ganador.teoremas, timestamp:Date.now() }); estadoLocal.K_i = Math.min(1, estadoLocal.K_i + 0.03); window.MIU_API.state.K_i = estadoLocal.K_i; }
+  beep(1000, 0.5); setTimeout(() => beep(1200, 0.5), 200); setTimeout(() => beep(1400, 0.7), 400);
+}
+
+function cruceAxiomas() {
+  if (batallando) { alert('Espera a que termine la batalla'); return; }
+  const mA = teoriaA.axiomas.filter(ax => ax.ki > 0.55).slice(0, 2), mB = teoriaB.axiomas.filter(ax => ax.ki > 0.55).slice(0, 2);
+  if (mA.length === 0 || mB.length === 0) { log('Cruce falló: no hay axiomas con K_i > 0.55'); return; }
+  const nuevo = { id: 'H' + Date.now(), nombre: 'Híbrido φ-π', ki: 0.65 + Math.random() * 0.2 };
+  teoriaA.axiomas.push({...nuevo, id: 'HA' + teoriaA.axiomas.length}); teoriaB.axiomas.push({...nuevo, id: 'HB' + teoriaB.axiomas.length});
+  log(`¡Cruce genético exitoso! Nuevo axioma híbrido creado | K_i ${nuevo.ki.toFixed(3)}`); actualizarUI(); guardarEstado(); beep(900, 0.3);
+}
+
+function resetTeorias() { batallando = false; document.body.classList.remove('battle'); document.getElementById('teoriaA').classList.remove('winner','loser'); document.getElementById('teoriaB').classList.remove('winner','loser'); document.getElementById('titulo').classList.remove('victory'); initTeorias(); beep(500, 0.3); reportarEstado(); }
+
+function log(msg) { const d = document.getElementById('battleLog'); d.innerHTML += '\n' + new Date().toLocaleTimeString() + ' - ' + msg; d.scrollTop = d.scrollHeight; }
+
+setTimeout(() => { if (window.parent !== window) parent.postMessage({ type:'miu:request_sync', source:'batalla' }, '*'); }, 300);
+initTeorias();
+setInterval(actualizarUI, 2000);
+</script>
+</body>
+</html>
