@@ -10,7 +10,7 @@
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Universo MIU">
-<meta name="twitter:description" content="Cosmología especulativa y arte de datos: del campo informacional primordial al Punto Omega, en 9 capas interactivas.">
+<meta name="twitter:description" content="Cosmología: del campo informacional primordial al Punto Omega, en 9 capas interactivas.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
@@ -383,7 +383,7 @@
 
 <footer class="fin">
   <p>Φ_poly = Σ Kᵢ + Σ I_ij — la coherencia de un enjambre es la suma de sus partes más lo que las conecta.</p>
-  <p class="mono" style="opacity:.6;">Construido como cartografía de un marco propio, no como afirmación científica.</p>
+  <p class="mono" style="opacity:.6;">Construido como cartografía del marco.</p>
 </footer>
 
 <div id="panel" role="dialog" aria-modal="true" aria-labelledby="panel-titulo" tabindex="-1">
@@ -673,7 +673,7 @@ function abrirPanel(i){
   if(c.ecuaciones){ html += `<div class="bloque"><h4>Ecuaciones</h4>` + c.ecuaciones.map(e=>`<div class="item">${enlazarSimbolos(e)}</div>`).join('') + `</div>`; }
   if(c.notas){ html += `<div class="bloque"><h4>Profundización</h4>` + c.notas.map(n=>`<p class="nota"><b>${n.titulo}.</b> ${enlazarSimbolos(n.texto)}</p>`).join('') + `</div>`; }
   if(c.predicciones){
-    html += `<div class="bloque"><h4>Predicciones del modelo</h4><p class="nota-especulativa">No son consenso científico — son extrapolaciones dentro de este marco conceptual propio.</p>`
+    html += `<div class="bloque"><h4>Predicciones del modelo</h4><p class="nota-especulativa">dentro de este marco conceptual.</p>`
       + c.predicciones.map(p=>{
           let sub = '';
           if(p.codigo || p.metodo || p.falsador || p.dataset){
@@ -687,7 +687,7 @@ function abrirPanel(i){
           return `<div class="item especulativa">${enlazarSimbolos(p.texto)}</div>${sub}`;
         }).join('') + `</div>`;
   }
-  if(c.anclaje){ html += `<div class="bloque"><h4>Anclaje con teorías reales</h4>` + c.anclaje.map(a=>`<p class="nota">${enlazarSimbolos(a)}</p>`).join('') + `</div>`; }
+  if(c.anclaje){ html += `<div class="bloque"><h4>Anclaje con otras teorías</h4>` + c.anclaje.map(a=>`<p class="nota">${enlazarSimbolos(a)}</p>`).join('') + `</div>`; }
   if(c.graficos){
     c.graficos.forEach((g,gi)=>{
       html += `<div class="bloque"><h4>${g.titulo}</h4>
