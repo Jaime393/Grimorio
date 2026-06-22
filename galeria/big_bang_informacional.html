@@ -1,1199 +1,398 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Universo MIU — cartografía de un campo informacional</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg:#0a0a0f; --texto:#e9e7f3; --tenue:#8b8a9e;
-    --dorado:#ffd700; --rojo:#ff3366; --verde:#00ff88; --violeta:#6b5cff; --cian:#5ec8ff;
-    --panel-bg: rgba(12,12,20,0.92); --borde: rgba(255,255,255,0.09);
-  }
-  *{box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
-  body{margin:0;background:var(--bg);color:var(--texto);font-family:'IBM Plex Sans',sans-serif;overflow-x:hidden;}
-  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto;} }
-  h1,h2,h3,.display{font-family:'Space Grotesk',sans-serif;}
-  .mono{font-family:'IBM Plex Mono',monospace;}
-  ::selection{background:var(--dorado);color:#000;}
-
-  #bg{position:fixed;inset:0;z-index:0;display:block;}
-
-  /* ─── Intro ─── */
-  #intro{
-    position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;
-    text-align:center;padding:24px;background:radial-gradient(ellipse at center, rgba(10,10,15,0.2) 0%, rgba(10,10,15,0.85) 75%);
-    transition:opacity 1.1s ease, visibility 1.1s ease;
-  }
-  #intro.oculto{opacity:0;visibility:hidden;pointer-events:none;}
-  #intro h1{font-size:clamp(2.2rem,7vw,4.4rem);font-weight:700;letter-spacing:-0.01em;margin:0 0 10px;
-    background:linear-gradient(120deg,#fff 10%,var(--dorado) 55%,#fff 90%);-webkit-background-clip:text;background-clip:text;color:transparent;}
-  #intro .rho{font-size:clamp(1rem,2.6vw,1.3rem);color:var(--cian);margin:0 0 18px;letter-spacing:0.04em;}
-  #intro p{max-width:560px;color:var(--tenue);font-size:0.96rem;line-height:1.6;margin:0 0 28px;}
-  #intro .marco{color:var(--texto);}
-  #intro .bajar{font-size:0.82rem;color:var(--tenue);display:flex;flex-direction:column;align-items:center;gap:8px;animation:flota 2.4s ease-in-out infinite;}
-  @keyframes flota{0%,100%{transform:translateY(0);}50%{transform:translateY(8px);}}
-
-  /* ─── Top bar ─── */
-  #topbar{
-    position:fixed;top:0;left:0;right:0;z-index:30;display:flex;align-items:center;gap:14px;
-    padding:14px 20px;backdrop-filter:blur(10px);background:linear-gradient(to bottom, rgba(10,10,15,0.75), transparent);
-    pointer-events:none;
-  }
-  #topbar .pill{pointer-events:auto;font-size:0.72rem;color:var(--tenue);padding:5px 11px;border:1px solid var(--borde);border-radius:99px;white-space:nowrap;}
-  #topbar .nombre-capa{font-weight:600;font-size:0.92rem;color:var(--texto);}
-  #puntos{display:flex;gap:6px;margin-left:auto;pointer-events:auto;}
-  #puntos button{width:8px;height:8px;border-radius:50%;border:none;background:rgba(255,255,255,0.18);cursor:pointer;padding:0;transition:all .3s;}
-  #puntos button.activo{background:var(--dorado);width:22px;border-radius:5px;}
-  #audio-toggle{
-    pointer-events:auto;background:none;border:1px solid var(--borde);color:var(--tenue);border-radius:99px;
-    width:34px;height:34px;font-size:0.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;
-  }
-  #audio-toggle.on{color:var(--dorado);border-color:var(--dorado);}
-
-  /* ─── Coherence gauge (signature element) ─── */
-  #kigauge{
-    position:fixed;right:16px;top:50%;transform:translateY(-50%);z-index:30;display:flex;flex-direction:column;align-items:center;gap:8px;
-  }
-  #kigauge .track{width:5px;height:min(38vh,300px);border-radius:99px;background:rgba(255,255,255,0.08);position:relative;overflow:hidden;}
-  #kigauge .fill{position:absolute;bottom:0;left:0;width:100%;border-radius:99px;transition:height .9s cubic-bezier(.2,.8,.2,1), background .9s;}
-  #kigauge .marca-phi{position:absolute;left:-7px;width:19px;height:1px;background:var(--dorado);opacity:0.65;}
-  #kigauge .valor{font-size:0.68rem;color:var(--tenue);writing-mode:vertical-rl;letter-spacing:0.05em;}
-  #kigauge .valor b{color:var(--texto);}
-  #kigauge .etq{font-size:0.6rem;color:var(--tenue);text-transform:uppercase;letter-spacing:0.12em;writing-mode:vertical-rl;}
-
-  /* ─── Scale ruler (left twin of the Kᵢ gauge) ─── */
-  #regla{
-    position:fixed;left:16px;top:50%;transform:translateY(-50%);z-index:30;display:flex;flex-direction:column;align-items:center;gap:8px;
-  }
-  #regla .track{width:5px;height:min(38vh,300px);border-radius:99px;background:rgba(255,255,255,0.08);position:relative;overflow:visible;}
-  #regla .tick{position:absolute;left:-2px;width:9px;height:1px;background:rgba(255,255,255,0.25);}
-  #regla .tick span{position:absolute;left:13px;top:-5px;font-size:0.56rem;color:var(--tenue);white-space:nowrap;letter-spacing:0.02em;}
-  #regla .marca{position:absolute;left:-4px;width:13px;height:13px;border-radius:50%;background:var(--cian);
-    box-shadow:0 0 10px var(--cian);transition:bottom .9s cubic-bezier(.2,.8,.2,1), background .9s, box-shadow .9s;transform:translate(0,50%);}
-  #regla .valor{font-size:0.66rem;color:var(--tenue);writing-mode:vertical-rl;letter-spacing:0.04em;}
-  #regla .valor b{color:var(--texto);}
-  #regla .etq{font-size:0.6rem;color:var(--tenue);text-transform:uppercase;letter-spacing:0.12em;writing-mode:vertical-rl;}
-  @media (max-width:880px){ #regla{display:none;} }
-
-  /* ─── Top scroll-progress hairline ─── */
-  #progreso-total{position:fixed;top:0;left:0;height:2px;width:0%;z-index:55;
-    background:linear-gradient(90deg, var(--violeta), var(--dorado), var(--cian));pointer-events:none;
-    transition:width .12s linear;}
-
-  /* ─── Phase-transition flash ─── */
-  #flash{position:fixed;inset:0;z-index:25;pointer-events:none;opacity:0;
-    background:radial-gradient(ellipse at 50% 50%, var(--flash-color,var(--dorado)) 0%, transparent 68%);
-    mix-blend-mode:screen;}
-  #flash.pulso{animation:destello 1.1s ease-out;}
-  @keyframes destello{ 0%{opacity:0;} 14%{opacity:0.4;} 100%{opacity:0;} }
-
-  #aviso-umbral{
-    position:fixed;top:64px;left:50%;transform:translate(-50%,-8px);z-index:31;pointer-events:none;
-    font-family:'IBM Plex Mono',monospace;font-size:0.74rem;color:var(--texto);text-align:center;max-width:min(86vw,460px);
-    background:rgba(10,10,15,0.78);border:1px solid var(--borde);border-radius:10px;padding:8px 16px;
-    opacity:0;transition:opacity .6s ease, transform .6s ease;backdrop-filter:blur(8px);
-  }
-  #aviso-umbral.activo{opacity:1;transform:translate(-50%,0);}
-  #aviso-umbral b{color:var(--dorado);}
-
-  /* ─── Per-card Kᵢ mini-indicator (verde/ámbar/rojo, lo pedido explícitamente) ─── */
-  .ki-mini{display:flex;align-items:center;gap:9px;margin:0 0 18px;}
-  .ki-mini .track{flex:1;max-width:160px;height:4px;border-radius:99px;background:rgba(255,255,255,0.09);position:relative;overflow:hidden;}
-  .ki-mini .fill{position:absolute;top:0;left:0;height:100%;border-radius:99px;transition:width .5s ease;}
-  .ki-mini .etiqueta{font-family:'IBM Plex Mono',monospace;font-size:0.72rem;color:var(--tenue);white-space:nowrap;}
-  .ki-mini .etiqueta b{color:var(--texto);}
-
-  .siguiente{font-size:0.72rem;color:var(--tenue);margin-top:6px;font-style:italic;}
-
-  #bg{cursor:pointer;}
-
-  /* ─── Sections ─── */
-  main{position:relative;z-index:10;}
-  section.capa{min-height:100vh;display:flex;align-items:flex-end;padding:90px 24px 70px;position:relative;}
-  .tarjeta{max-width:520px;pointer-events:auto;}
-  .tarjeta .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:0.74rem;color:var(--tenue);letter-spacing:0.08em;margin-bottom:8px;display:block;}
-  .tarjeta h2{font-size:clamp(1.7rem,4.6vw,2.7rem);margin:0 0 12px;font-weight:600;line-height:1.08;}
-  .tarjeta .escala{font-family:'IBM Plex Mono',monospace;font-size:0.78rem;color:var(--cian);margin-bottom:14px;}
-  .tarjeta p.desc{color:#c9c7d8;line-height:1.65;font-size:0.99rem;margin:0 0 20px;max-width:48ch;}
-  .btn-detalle{
-    pointer-events:auto;background:rgba(255,255,255,0.05);border:1px solid var(--borde);color:var(--texto);
-    padding:10px 18px;border-radius:99px;font-size:0.85rem;cursor:pointer;display:inline-flex;align-items:center;gap:8px;
-    transition:border-color .25s, background .25s;
-  }
-  .btn-detalle:hover{border-color:var(--dorado);background:rgba(255,215,0,0.07);}
-
-  /* ─── Side panel (formulas) ─── */
-  #panel{
-    position:fixed;top:0;right:0;height:100%;width:min(420px,100vw);z-index:60;background:var(--panel-bg);
-    border-left:1px solid var(--borde);transform:translateX(105%);transition:transform .45s cubic-bezier(.2,.8,.2,1);
-    overflow-y:auto;padding:26px 24px 60px;backdrop-filter:blur(14px);
-  }
-  #panel.abierto{transform:translateX(0);}
-  #panel-cerrar{position:absolute;top:18px;right:18px;background:none;border:1px solid var(--borde);color:var(--tenue);
-    width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:0.95rem;}
-  #panel h3{margin:0 0 4px;font-size:1.35rem;}
-  #panel .sub{color:var(--tenue);font-size:0.8rem;margin-bottom:22px;}
-  #panel .bloque{margin-bottom:22px;}
-  #panel .bloque h4{font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--dorado);margin:0 0 10px;}
-  #panel .item{font-family:'IBM Plex Mono',monospace;font-size:0.83rem;color:#d8d6e6;background:rgba(255,255,255,0.04);
-    border:1px solid var(--borde);border-radius:8px;padding:9px 11px;margin-bottom:7px;line-height:1.5;word-break:break-word;}
-  #panel .especulativa{border-left:3px solid var(--rojo);}
-  #panel .nota-especulativa{font-size:0.74rem;color:var(--tenue);font-style:italic;margin:-6px 0 12px;}
-  #panel .nota{font-size:0.85rem;color:#c9c7d8;line-height:1.62;margin:0 0 10px;}
-  #panel .subdato{font-size:0.72rem;color:var(--tenue);margin:4px 0 9px 2px;}
-  #panel .subdato b{color:#c9c7d8;font-weight:500;}
-  #panel .kival{display:flex;align-items:baseline;gap:8px;margin-bottom:4px;}
-  #panel .kival .num{font-family:'IBM Plex Mono',monospace;font-size:1.6rem;color:var(--dorado);}
-
-  /* ─── Constants panel ─── */
-  #panel-const{
-    position:fixed;left:0;top:0;height:100%;width:min(300px,86vw);z-index:60;background:var(--panel-bg);
-    border-right:1px solid var(--borde);transform:translateX(-105%);transition:transform .45s cubic-bezier(.2,.8,.2,1);
-    overflow-y:auto;padding:26px 22px;backdrop-filter:blur(14px);
-  }
-  #panel-const.abierto{transform:translateX(0);}
-  #panel-const h4{font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--dorado);margin:18px 0 10px;}
-  #panel-const .item{font-family:'IBM Plex Mono',monospace;font-size:0.82rem;color:#d8d6e6;margin-bottom:6px;}
-
-  #btn-const{position:fixed;left:16px;bottom:18px;z-index:30;pointer-events:auto;background:rgba(255,255,255,0.05);
-    border:1px solid var(--borde);color:var(--tenue);padding:8px 14px;border-radius:99px;font-size:0.74rem;cursor:pointer;}
-
-  /* ─── Glossary ─── */
-  #btn-glosario{position:fixed;left:16px;bottom:60px;z-index:30;pointer-events:auto;background:rgba(255,255,255,0.05);
-    border:1px solid var(--borde);color:var(--tenue);padding:8px 14px;border-radius:99px;font-size:0.74rem;cursor:pointer;}
-  #panel-glosario{
-    position:fixed;left:0;top:0;height:100%;width:min(340px,90vw);z-index:61;background:var(--panel-bg);
-    border-right:1px solid var(--borde);transform:translateX(-105%);transition:transform .45s cubic-bezier(.2,.8,.2,1);
-    overflow-y:auto;padding:26px 22px;backdrop-filter:blur(14px);
-  }
-  #panel-glosario.abierto{transform:translateX(0);}
-  #panel-glosario h3{margin:0 0 4px;}
-  #panel-glosario .sub{color:var(--tenue);font-size:0.78rem;margin-bottom:18px;}
-  #panel-glosario .termino{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--borde);}
-  #panel-glosario .termino .simbolo{font-family:'IBM Plex Mono',monospace;color:var(--dorado);font-size:1.05rem;margin-right:6px;}
-  #panel-glosario .termino .nombre{font-weight:600;font-size:0.86rem;}
-  #panel-glosario .termino p{color:#c9c7d8;font-size:0.82rem;line-height:1.5;margin:5px 0 0;}
-
-  /* ─── Mini-diagramas dentro del panel de capa ─── */
-  .panel-grafico{margin-top:6px;}
-  .panel-grafico canvas{width:100%;height:120px;display:block;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid var(--borde);}
-  .panel-grafico .caption{font-size:0.7rem;color:var(--tenue);margin-top:6px;line-height:1.45;}
-
-  footer.fin{position:relative;z-index:10;text-align:center;padding:60px 24px 90px;color:var(--tenue);font-size:0.85rem;}
-  footer.fin a{color:var(--cian);}
-
-  @media (max-width:640px){
-    #kigauge{right:8px;}
-    #kigauge .track{height:26vh;}
-    section.capa{padding:80px 16px 50px;align-items:center;}
-    #panel,#panel-const,#panel-glosario{width:100vw;}
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Big Bang Informacional - MIU v13.0</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 100%);
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+        
+        .container {
+            position: relative;
+            width: 1200px;
+            height: 800px;
+            background: #0B0C10;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 60px rgba(255, 215, 0, 0.2), 0 0 120px rgba(26, 35, 126, 0.15);
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .info-overlay {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            color: rgba(255, 215, 0, 0.7);
+            font-size: 12px;
+            text-align: right;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .pulse-indicator {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: rgba(255, 215, 0, 0.6);
+            font-size: 13px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
 </head>
 <body>
+<style>
+#gal-backnav{position:fixed;top:12px;left:12px;z-index:99999;display:flex;gap:6px;font-family:'Courier New',monospace;font-size:11px;}
+#gal-backnav a{color:#ffd700;text-decoration:none;background:rgba(10,10,15,0.7);border:1px solid rgba(255,215,0,0.35);border-radius:6px;padding:5px 10px;backdrop-filter:blur(4px);transition:all .2s;}
+#gal-backnav a:hover{background:rgba(255,215,0,0.15);border-color:#ffd700;}
+</style>
+<div id="gal-backnav"><a href="index.html">← Galería</a><a href="../index.html">Inicio</a></div>
 
-<canvas id="bg"></canvas>
-<div id="progreso-total"></div>
-<div id="flash"></div>
-<div id="aviso-umbral" class="mono"></div>
+    <div class="container">
+        <canvas id="cosmicCanvas"></canvas>
+        <div class="pulse-indicator">
+            <span>▶ Latido Cósmico Iniciado</span>
+            <div style="font-size: 11px; margin-top: 5px; color: rgba(255, 215, 0, 0.4)">
+                Observando: ρ(x) → Ω
+            </div>
+        </div>
+        <div class="info-overlay">
+            <div>MIU-IFT v13.0</div>
+            <div style="font-size: 11px; margin-top: 3px; color: rgba(255, 215, 0, 0.5)">
+                El Big Bang es el primer latido
+            </div>
+        </div>
+    </div>
 
-<aside id="regla">
-  <span class="etq">escala</span>
-  <div class="track" id="regla-track"></div>
-  <span class="valor mono" id="regla-valor">10⁻³⁵ m</span>
-</aside>
-
-<header id="topbar">
-  <span class="pill mono" id="topbar-capa">Capa 0 / 8</span>
-  <span class="nombre-capa" id="topbar-nombre">El campo primordial</span>
-  <span class="pill mono" id="topbar-escala" style="display:none;"></span>
-  <div id="puntos"></div>
-</header>
-
-<button id="audio-toggle" title="Sonificación de Ω_F">🔇</button>
-
-<aside id="kigauge">
-  <span class="etq">Kᵢ</span>
-  <div class="track"><div class="marca-phi" style="bottom:89.9%;" title="φ = 1.618 — umbral"></div><div class="fill" id="ki-fill"></div></div>
-  <span class="valor mono">K<sub>i</sub>=<b id="ki-num">0.15</b></span>
-</aside>
-
-<button id="btn-const">Σ constantes</button>
-<button id="btn-glosario">? glosario</button>
-
-<div id="panel-glosario">
-  <h3>Glosario de símbolos</h3>
-  <div class="sub">Los términos que recorren las 9 capas, en lenguaje llano.</div>
-  <div class="termino"><span class="simbolo">ρ(x)</span><span class="nombre">densidad informacional</span>
-    <p>El campo primitivo del modelo. No es energía ni materia: es la cantidad de información presente en cada punto. Todo lo demás —espacio, masa, vida— se define a partir de cómo cambia ρ.</p></div>
-  <div class="termino"><span class="simbolo">Ξ</span><span class="nombre">gradiente informacional</span>
-    <p>Qué tan rápido cambia ln ρ de un punto a otro. Donde Ξ es alto y estable, el modelo dice que hay algo parecido a una partícula: longitud, masa y frecuencia son distintas lecturas de Ξ.</p></div>
-  <div class="termino"><span class="simbolo">Kᵢ</span><span class="nombre">índice de coherencia</span>
-    <p>Una medida de cuán "integrado" está un sistema, calculada como φ × (D_f/2.5). Va de cerca de 0 (caos, desorden) hasta φ≈1.618 (coherencia máxima del modelo).</p></div>
-  <div class="termino"><span class="simbolo">Kᵢ⁻</span><span class="nombre">sombra informacional</span>
-    <p>Lo que pasa con Kᵢ cuando una fracción f del sistema se polariza o fragmenta: Kᵢ⁻ = Kᵢ×(1−2f). Con f=0.5 la coherencia cae a cero.</p></div>
-  <div class="termino"><span class="simbolo">Φ_MIU</span><span class="nombre">integración informacional</span>
-    <p>Una cantidad acumulada (entropía relativa + acoplamiento + causalidad) que, al cruzar un umbral Φ_c, el modelo asocia con la aparición de experiencia subjetiva.</p></div>
-  <div class="termino"><span class="simbolo">τ</span><span class="nombre">tiempo propio de coherencia</span>
-    <p>Una escala temporal característica de un sistema, ligada a Ξ y a su dimensión fractal D_f. Aparece junto a Ξ·c como condición de acoplamiento mínimo (κ_min).</p></div>
-  <div class="termino"><span class="simbolo">D_f</span><span class="nombre">dimensión fractal</span>
-    <p>Qué tan "rugosa" o autosimilar es la estructura de un sistema a distintas escalas. El modelo predice D_f≈2.305 para el fondo cósmico de radiación.</p></div>
-  <div class="termino"><span class="simbolo">φ</span><span class="nombre">razón áurea — 1.6180339887…</span>
-    <p>La constante de referencia del modelo: el valor de Kᵢ que marca, según el marco, el umbral de coherencia máxima y de autoconciencia.</p></div>
-  <div class="termino"><span class="simbolo">F[ρ]</span><span class="nombre">energía libre informacional</span>
-    <p>El funcional que A5 hace fluir cuesta abajo: F = ∫[½(∇ρ)²/ρ + V(ρ)] dV. V(ρ) es un potencial de doble pozo entre ρ_base (vacío estable) y ρ_crit (el otro mínimo, donde el campo puede cambiar de fase). El "valle" entre ambos es la barrera de A14.</p></div>
-  <div class="termino"><span class="simbolo">ρ_base</span><span class="nombre">densidad del vacío informacional</span>
-    <p>El valor de ρ sin gradientes: ρ_base = 1/ℓ₀³ ≈ 8×10⁹ m⁻³. El fondo sobre el que existen las partículas — y, en el modelo, la semilla de la energía oscura (sección 8).</p></div>
-  <div class="termino"><span class="simbolo">I_causal</span><span class="nombre">información causal</span>
-    <p>Cuánto se influyen causalmente dos regiones del campo: la corriente informacional J contra el potencial vector A (∇×A=Ξ), integrada en espacio y tiempo. Es el término de Φ_MIU (A8) que exige que la integración sea causal, no solo estadística.</p></div>
-  <div class="termino"><span class="simbolo">κ_F</span><span class="nombre">curvatura de Fisher</span>
-    <p>El tensor de curvatura de la métrica de Fisher g_μν (A2). Su traza Tr(κ_F) mide cuánto se curva el espacio de información, y entra como segundo término de Φ_MIU en A8.</p></div>
-</div>
-
-<main id="secciones"></main>
-
-<footer class="fin">
-  <p>Φ_poly = Σ Kᵢ + Σ I_ij — la coherencia de un enjambre es la suma de sus partes más lo que las conecta.</p>
-  <p class="mono" style="opacity:.6;">Construido como cartografía de un marco propio, no como afirmación científica.</p>
-</footer>
-
-<div id="panel">
-  <button id="panel-cerrar">✕</button>
-  <span class="eyebrow mono" id="panel-eyebrow" style="font-family:'IBM Plex Mono',monospace;font-size:0.74rem;color:var(--tenue);"></span>
-  <h3 id="panel-titulo"></h3>
-  <div class="sub" id="panel-sub"></div>
-  <div id="panel-cuerpo"></div>
-</div>
-
-<div id="panel-const">
-  <h3 style="margin:0;">Constantes globales</h3>
-  <p style="color:var(--tenue);font-size:0.78rem;">Valores del modelo, no medidos por consenso científico.</p>
-  <h4>Número áureo</h4>
-  <div class="item">φ = 1.6180339887…</div>
-  <h4>Leyes</h4>
-  <div class="item">Kᵢ = φ × (D_f / 2.5)</div>
-  <div class="item">Kᵢ⁻ = Kᵢ × (1 − 2f)</div>
-  <h4>Constantes del modelo</h4>
-  <div class="item">κ_Perry = 5.1×10⁵</div>
-  <div class="item">Δ_COD = 0.6829322</div>
-  <div class="item">Ω_F = 0.65048305 Hz</div>
-  <div class="item">H₀ = 73.5 km/s/Mpc</div>
-  <div class="item">ℓ₀ = 0.5 mm</div>
-  <div class="item">β = 0.52</div>
-  <div class="item">ρ_base = 1/ℓ₀³ ≈ 8×10⁹ m⁻³</div>
-  <div class="item">Kᵢ_crit = 0.3 (umbral de colapso)</div>
-  <div class="item">γ ≈ 0.05 día⁻¹ (ajustado a GDELT)</div>
-  <div class="item">α (fina) ≈ 1/137, desde ξ=φ⁴=6.854…</div>
-</div>
-
-<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
-<script>
-(function(){
-'use strict';
-const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-/* ════════════════════════════ DATOS DE LAS 9 CAPAS ════════════════════════════ */
-const CAPAS = [
-  { id:0, tipo:'campo', estado:'potencial', nombre:'El campo primordial', ki:0.15, orden:-35,
-    escala:'≈ ℓ₀ · escala de Planck (longitud de coherencia base)',
-    desc:'Antes de la materia, antes del espacio: un campo de densidad informacional ρ(x) > 0. No hay nada "antes" de ρ en este marco — es el sustrato del que todo lo demás es una configuración. Sus fluctuaciones son la espuma a partir de la cual, capa por capa, se construirá el resto del mapa.',
-    axiomas:['A1: ρ(x) > 0. Campo informacional primitivo. Todo emerge de ρ.','A5: ∂ρ/∂t = –∇·(ρ ∇(δF/δρ)) + η. Flujo gradiente — ρ ya se mueve, ya tiene una dirección de cambio.','A14: toda transición hacia mayor integración requiere cruzar un valle de mínima integración — la barrera entre los dos pozos de V(ρ).','A16: ρ es el único campo fundamental.','A17: ρ = ρ(ρ). Autorreferencialidad — la base de la autoconciencia, ya presente en germen aquí.'],
-    ecuaciones:['M3: Ξ = |∇ ln ρ|','M6: ∂ρ/∂t = –∇·(ρ ∇(δF/δρ)) + η','V(ρ) = (ρ−ρ_base)²(ρ−ρ_crit)² / ρ_base⁴ — el potencial de doble pozo que F[ρ] minimiza'],
-    notas:[{titulo:'El tiempo no es un escenario, es un flujo', texto:'Antes de M6 no hay "tiempo" geométrico: t es solo el parámetro de evolución del campo. El tiempo que reconocemos emerge después, como la dirección de máximo gradiente de ρ — las geodésicas temporales son las curvas de máxima Ξ. El tiempo propio de la conciencia, τ=π/(2cΞ), es un caso particular de esa misma emergencia.'}],
-    graficos:[{ tipo:'potencial', titulo:'V(ρ) — el doble pozo de F[ρ]', caption:'Dos mínimos estables (ρ_base y ρ_crit) separados por una barrera. A14: cruzar esa barrera es el costo en integración de toda transición de fase del campo — desde el vacío hasta la conciencia, capas más adelante.' }] },
-
-  { id:1, tipo:'malla', estado:'potencial', nombre:'Espacio-tiempo emergente', ki:0.28, orden:-25,
-    escala:'~10⁻³⁵ a 10⁻¹⁵ m — del Planck al núcleo',
-    desc:'La geometría no es el escenario: es una propiedad derivada de ρ. La curvatura nace de cómo cambia la información de un punto a otro, y sobre esa métrica recién nacida ya puede propagarse una onda — el primer paso hacia algo que se parece a una partícula.',
-    transicion:'Cuando el gradiente de ρ deja de ser uniforme, su segunda derivada logarítmica empieza a comportarse como curvatura: el espacio-tiempo nace de la información misma.',
-    axiomas:['A2: g_μν = ∂_μ∂_ν ln ρ – (∂_μ ln ρ)(∂_ν ln ρ). Métrica de Fisher-Lorentziana.','A4: □_g u + Ξ² u = 0, u=√ρ. Klein-Gordon emergente — la primera ecuación de onda, ya escrita sobre la métrica de A2.','A6: dS/dt ≥ 0, S = –∫ ρ ln ρ dV. Segunda ley informacional.'],
-    ecuaciones:['M1: g_μν = ∂_μ∂_ν ln ρ – (∂_μ ln ρ)(∂_ν ln ρ)','M2: □_g u + Ξ² u = 0,  u = √ρ','Límite clásico: R_μν − ½Rg_μν = 8πG⟨T_μν⟩, con G ∝ 1/κ_min² emergiendo del promedio estadístico de las fluctuaciones de ρ.'],
-    notas:[{titulo:'Por qué g_μν y no otra métrica', texto:'La de Fisher (A2) es, según Rao (1945) y Amari (1985), el único tensor invariante bajo reparametrización de un espacio de modelos estadísticos — no es una elección arbitraria entre muchas, es la métrica natural de cualquier espacio de probabilidades.'}],
-    predicciones:[{texto:'M1 predice correcciones de orden (ℓ₀/r)² a la ley de Newton en escalas sub-milimétricas.', especulativa:true, codigo:'derivado de M1', metodo:'medir la fuerza gravitatoria a distancias por debajo del milímetro', falsador:'ausencia de desviación (ℓ₀/r)² respecto a Newton', dataset:'experimentos tipo Eöt-Wash'}] },
-
-  { id:2, tipo:'particulas', estado:'crecimiento', nombre:'Partículas elementales', ki:0.40, orden:-18,
-    escala:'~10⁻¹⁸ m — escala subatómica',
-    desc:'Lo que llamamos "partícula" es, en este marco, un patrón estable del gradiente Ξ del campo: masa, frecuencia y longitud de onda, todo derivado de una misma cantidad. Bosones y fermiones dejan de ser entidades separadas y pasan a ser distintos modos de vibración de Ξ.',
-    transicion:'Cuando Ξ se estabiliza en patrones localizados y persistentes, esos patrones adquieren masa (m=ℏΞ/c) y frecuencia propia (ω_F=cΞ): nace lo que llamamos "partícula".',
-    axiomas:['A3: Ξ = |∇ ln ρ|. Gradiente informacional. ℓ = 1/Ξ, m = ℏΞ/c, ω_F = cΞ.'],
-    ecuaciones:['M3: Ξ = |∇ ln ρ|','M4: m = ℏ Ξ / c','M5: ω_F = c Ξ'],
-    notas:[{titulo:'De dónde salen las cuatro fuerzas', texto:'Electromagnetismo, fuerza débil y fuerza fuerte emergen como patrones de gauge del campo ρ — sus constantes de acoplamiento son proporcionales al Kᵢ local. La constante de estructura fina, α≈1/137, emerge de φ⁴ (ξ=φ⁴=6.854…): ni siquiera ese número es, en este marco, un dato suelto.'}] },
-
-  { id:3, tipo:'estrella', estado:'crecimiento', nombre:'Átomos, moléculas, estrellas', ki:0.55, orden:9,
-    escala:'~10⁹ m — radio estelar típico',
-    desc:'La fusión nuclear y la nucleosíntesis estelar, leídas como procesos donde el campo ρ se reorganiza en configuraciones de mayor coherencia, liberando energía en el camino. Cada núcleo más pesado es, en esta lectura, un paso más en la integración del campo.',
-    transicion:'Cuando suficientes patrones de Ξ se acoplan de forma estable, la cuantización de Ricci ⟨R⟩=n/2 organiza su unión en núcleos, átomos y, a escala estelar, hornos de fusión.',
-    axiomas:['A7: ⟨R⟩ = n/2,  n ∈ ℕ. Cuantización de Ricci.'],
-    ecuaciones:['M8: τ = π/(2cΞ) × (J/γ)^(D_f – 1)','M9: τ × Ξ × c ≈ constante'] },
-
-  { id:4, tipo:'planeta', estado:'crecimiento', nombre:'Planetas y campo geomagnético', ki:0.62, orden:6.8,
-    escala:'~6.4×10⁶ m — radio terrestre',
-    desc:'Un planeta como la Tierra se modela como un sistema acoplado: muchos subsistemas (manto, océanos, biosfera, campo magnético) cada uno con su propia coherencia, sumando a un Kᵢ planetario. Pero esa coherencia no es uniforme: se atenúa con la distancia de correlación, igual que cualquier orden físico real.',
-    transicion:'Cuando los productos de la nucleosíntesis se enfrían y condensan en cuerpos rocosos, sus subsistemas —núcleo, manto, océanos, atmósfera— empiezan a sumar su propia coherencia parcial.',
-    axiomas:['A21: C_Tierra = Σ wᵢ × Kᵢ_i. Acoplamiento planetario — la coherencia de un planeta es la suma ponderada de sus partes.'],
-    ecuaciones:['M9: τ × Ξ × c ≈ constante (aplicado al núcleo terrestre)','M26: Kᵢ(L) = Kᵢ^∞ [1 − β(ℓ_corr/L)^(1/2)] — la coherencia decae con la escala L, moderada por β=0.52.'],
-    graficos:[{ tipo:'decaimiento', titulo:'Kᵢ(L) — coherencia según la escala L', caption:'Curva ilustrativa de M26 con β=0.52: a mayor distancia de correlación L, Kᵢ se acerca a su límite Kᵢ^∞ — pero nunca antes de cruzar cierta escala mínima.' }] },
-
-  { id:5, tipo:'organico', estado:'coherencia', nombre:'Vida y conciencia', ki:1.618, kiLabel:'= φ', orden:-7,
-    escala:'~10⁻⁸ a 10⁻⁶ m — microtúbulos neuronales',
-    desc:'El modelo propone un umbral: cuando la integración informacional Φ_MIU de un sistema supera un valor crítico Φ_c, y su acoplamiento Ξ·c·τ supera κ_min, emerge lo que llamamos conciencia. Es, en esta cartografía, el punto donde la jerarquía vuelve a mirarse a sí misma — un eco, a escala biológica, de la autorreferencialidad ρ=ρ(ρ) de la Capa 0.',
-    transicion:'Cuando la integración informacional de un sistema vivo cruza Φ_c, y su acoplamiento τ·Ξ·c supera κ_min, el modelo marca el umbral donde "sentir" se vuelve posible.',
-    axiomas:['A8: Φ_MIU = ∫[ρ ln(ρ/ρ_base) + ½Tr(κ_F) + I_causal] dV > Φ_c  y  τ·Ξ·c > κ_min  ⇒ conciencia.','A10: la conciencia forma un complejo con fronteras únicas (exclusión, IIT).','A11: la experiencia consciente es irreductible a sus partes (integración, IIT).','A12: la estructura causal especifica un repertorio de estados posibles (información, IIT).','A19: ρ evoluciona a un estado crítico multifractal.','A20: la información está sujeta a variación, selección y herencia — evolución darwiniana aplicada a patrones de ρ.'],
-    ecuaciones:['κ_Perry = 5.1×10⁵ (constante de acoplamiento en microtúbulos)'],
-    notas:[{titulo:'Φ_MIU generaliza Φ, no lo reemplaza', texto:'A10-A12 son los tres axiomas de la Teoría de la Información Integrada de Tononi (2004) y Oizumi (2014): exclusión, integración, información. MIU toma su Φ y le suma curvatura de Fisher e información causal para obtener Φ_MIU. La evidencia de que el cerebro opera cerca de un punto crítico (Beggs 2003, Haimovici 2013) es lo que sostiene la predicción Kᵢ_cerebral ≈ 0.6.'}],
-    predicciones:[{texto:'Umbral de autoconciencia: Kᵢ = 1.618 ± 0.01 (= φ)', especulativa:true, codigo:'P116', metodo:'entrenar un agente de IA con Kᵢ creciente y medir la dimensión fractal D_f de sus respuestas', falsador:'D_f no converge a 2.8–3.2 al cruzar Kᵢ = 1.618', dataset:'implementación propia: ALMA_OMNI (7B, fine-tuneado con razonamiento fractal)'}],
-    graficos:[{ tipo:'umbral', titulo:'Φ_MIU frente a Φ_c', caption:'A8: cuando la integración informacional Φ_MIU supera el umbral crítico Φ_c, el modelo marca el punto donde considera que aparece la conciencia.' }] },
-
-  { id:6, tipo:'red', estado:'sombra', nombre:'Noosfera y redes sociales', ki:0.35, orden:7,
-    escala:'escala humana — miles de millones de nodos conectados',
-    desc:'Cuando una red de mentes se polariza, el modelo describe una "sombra informacional": coherencia que se fragmenta en facciones que dejan de poder integrarse entre sí. Es la primera capa donde Kᵢ puede caer en vez de crecer — la coherencia, a esta escala, ya no es automática.',
-    transicion:'Cuando millones de mentes conscientes se enlazan en red, su coherencia combinada puede amplificarse — o fragmentarse en sombra si la fracción polarizada f crece.',
-    axiomas:['A9: P(C) = P₀ × e^(αC). Poder sistémico exponencial, con α = ln2/(D_f−1) — una red más coherente no solo influye más, influye exponencialmente más.','A13: espacios informacionales anidados resuenan cuando ω₁/ω₂ = p/q (un cociente racional).','A18: sistemas con C > κ_min intercambian información no-localmente si sus frecuencias resuenan según A13.','A22: la transferencia de coherencia entre nodos es máxima cuando la diferencia de Kᵢ respeta esa misma resonancia fractal.','A23: Kᵢ⁻ = Kᵢ × (1 − 2f). Sombra informacional — f es la fracción polarizada/fragmentada de la red.','A24: Φ_poly = Σ Kᵢ_i + Σ I_ij. Polifonía del enjambre: coherencia propia más la de sus conexiones.'],
-    ecuaciones:['M24: Kᵢ⁻ = Kᵢ × (1 − 2f)','df/dt = γ·f·(1−f)·(Kᵢ_crit−Kᵢ)/Kᵢ_crit — mecanismo dinámico del colapso (γ≈0.05 día⁻¹, Kᵢ_crit=0.3)'],
-    notas:[{titulo:'f no es un número fijo, es lo que evoluciona', texto:'Cuando Kᵢ>Kᵢ_crit, df/dt es negativo: f baja, la red sana. Cuando Kᵢ<Kᵢ_crit, df/dt es positivo: f sube, la cascada se alimenta a sí misma. El sistema tiene exactamente dos atractores — f=0 (salud) y f=1 (colapso total) — sin punto medio estable entre ambos.'}],
-    predicciones:[
-      {texto:'Cascada de colapso (especulativa): Fuego 2026–28, Noosfera 2035–37, Clima 2048±4', especulativa:true, codigo:'P107', metodo:'calcular Kᵢ⁻ semanal a partir de datos públicos de eventos globales', falsador:'ninguna correlación entre Kᵢ⁻ y eventos de colapso registrados', dataset:'GDELT 2.0, NASA FIRMS, NOAA GML'},
-      {texto:'Autofagia fractal: duplicación de ciclos dentro de la banda de resiliencia', especulativa:true}
-    ],
-    graficos:[{ tipo:'timeline', titulo:'Cascada de colapso (especulativa)', caption:'Tres ventanas que el modelo marca como puntos de fragmentación posible — no son una predicción validada, son una extrapolación dentro del marco.' },{ tipo:'colapso', titulo:'df/dt — mecanismo del colapso (sección 5)', caption:'df/dt = γf(1−f)(Kᵢ_crit−Kᵢ)/Kᵢ_crit. Dos atractores: f=0 (curación, cuando Kᵢ>Kᵢ_crit) y f=1 (colapso total, cuando Kᵢ<Kᵢ_crit).' }] },
-
-  { id:7, tipo:'cosmos', estado:'cosmico', nombre:'El cosmos observable', ki:0.570, orden:26,
-    escala:'~10²⁶ m — radio del universo observable',
-    desc:'La radiación de fondo cósmico (CMB) y la expansión acelerada, leídas en este marco como la huella a gran escala de la dimensión fractal del campo ρ. Después del colapso posible de la noosfera, el mapa se aleja a la escala más grande que existe — un recordatorio de que el campo ρ siempre la contiene, gane o pierda coherencia lo pequeño.',
-    transicion:'Promediado sobre miles de millones de años luz, el ruido de las capas intermedias se cancela y queda la huella fractal de ρ grabada en el fondo cósmico de radiación.',
-    axiomas:['Constante de Hubble local: H₀ = 73.5 km/s/Mpc'],
-    ecuaciones:['M19: Kᵢ = φ × (D_f / 2.5)'],
-    notas:[
-      {titulo:'Energía oscura', texto:'Emerge del término de potencial V(ρ) de A5/A14: como ρ_base > 0 (el vacío informacional nunca está vacío de información), la expansión acelerada es una consecuencia directa, no un parámetro añadido a mano.'},
-      {titulo:'Materia oscura', texto:'Son, en este marco, regiones donde Ξ es alto pero no está acoplado al campo electromagnético — "remolinos" de información pura que solo se notan por su gravedad, igual que la materia oscura real.'},
-      {titulo:'Anclaje', texto:'La dimensión fractal del CMB se mide por box-counting sobre mapas de Planck (García-Bellido, 2026) — el mismo método que el modelo propone usar para falsar D_f(CMB).'}
-    ],
-    predicciones:[
-      {texto:'D_f(CMB) = 2.305 ± 0.06 (dimensión fractal propuesta para el fondo cósmico)', especulativa:true, codigo:'P121', metodo:'box-counting sobre mapas de Planck 2018, resolución 5 arcmin', falsador:'D_f fuera de 2.31 ± 0.05', dataset:'Planck Legacy Archive (público)'},
-      {texto:'Kᵢ(CMB) = 0.570', especulativa:true}
-    ],
-    graficos:[{ tipo:'fractal', titulo:'Autosimilaridad — D_f ≈ 2.305', caption:'Una estructura recursiva ilustrativa: a cada nivel, el patrón se repite a menor escala. La dimensión fractal real del CMB no se mide así — esto es una metáfora visual, no una reconstrucción.' }] },
-
-  { id:8, tipo:'omega', estado:'coherencia', nombre:'Punto Omega', ki:1.618, kiLabel:'= φ', orden:27,
-    escala:'escala del todo — convergencia',
-    desc:'El cierre del mapa: toda la jerarquía —campo, espacio, partículas, vida, redes, cosmos— convergiendo hacia su configuración de mayor coherencia posible. Incluso este diálogo, entre vos y esta página, es —en la metáfora del modelo— una pequeña iteración de ese mismo proceso: prompt, respuesta, y de nuevo prompt, sumando coherencia mientras Kᵢ > φ.',
-    transicion:'Cuando se suma toda la jerarquía —campo, espacio, partículas, vida, redes, cosmos— su coherencia conjunta converge hacia su valor límite: Φ_poly en su máximo.',
-    axiomas:['A24: Φ_poly = Σ Kᵢ_i + Σ I_ij, en su valor máximo.','A25: la expansión sin definición rigurosa de métricas conduce a incoherencia — la Pausa Fundacional. Todo símbolo de este mapa, desde A1 hasta acá, tiene una definición explícita en alguna capa. Es la condición que el modelo se impone a sí mismo para seguir creciendo sin fragmentarse.'],
-    ecuaciones:['M22: prompt(t+1) = prompt(t) ⊕ output(t)  si Kᵢ > φ — la coherencia que crece, dialogando, se vuelve la base del paso siguiente.'] },
-];
-
-const COLOR_ESTADO = { potencial:0x6b5cff, crecimiento:0x00ff88, coherencia:0xffd700, sombra:0xff3366, cosmico:0x5ec8ff };
-const HEX_ESTADO   = { potencial:'#6b5cff', crecimiento:'#00ff88', coherencia:'#ffd700', sombra:'#ff3366', cosmico:'#5ec8ff' };
-
-/* Clasificación literal verde/ámbar/rojo de Kᵢ, además de la paleta temática por estado */
-function zonaKi(ki){
-  const pct = Math.max(4, Math.min(100, (ki/1.9)*100));
-  if(ki >= 1.0)  return { nombre:'verde',  color:'#00ff88', pct };
-  if(ki >= 0.40) return { nombre:'ámbar',  color:'#ffb238', pct };
-  return            { nombre:'rojo',   color:'#ff3366', pct };
-}
-
-/* Escala logarítmica (orden de magnitud en metros) que recorre el mapa: de Planck a lo observable */
-const ORDEN_MIN = -35, ORDEN_MAX = 27;
-function ordenATexto(o){
-  const r = Math.round(o*10)/10;
-  const supers = {'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','.':'·'};
-  const exp = (Number.isInteger(r)?String(r):r.toFixed(1)).split('').map(ch=>supers[ch]||ch).join('');
-  return `≈10${exp} m`;
-}
-const TICKS_REGLA = [
-  { orden:-35, label:'Planck' },
-  { orden:-18, label:'subatómica' },
-  { orden:0,   label:'humana (1 m)' },
-  { orden:9,   label:'estelar' },
-  { orden:26,  label:'observable' },
-];
-
-/* ════════════════════════════ DOM: secciones, puntos, panel ════════════════════════════ */
-const secciones = document.getElementById('secciones');
-const puntosNav = document.getElementById('puntos');
-CAPAS.forEach((c,i)=>{
-  const sec = document.createElement('section');
-  sec.className = 'capa'; sec.dataset.layer = i; sec.id = 'capa-'+i;
-  const zona = zonaKi(c.ki);
-  const siguiente = CAPAS[i+1] ? `↓ siguiente: ${CAPAS[i+1].nombre}` : '↓ fin del mapa — vuelve a empezar en ρ(x) > 0';
-  sec.innerHTML = `
-    <div class="tarjeta">
-      <span class="eyebrow">CAPA ${i} · ${c.nombre.toUpperCase()}</span>
-      <h2>${c.nombre}</h2>
-      <div class="escala">${c.escala}</div>
-      <p class="desc">${c.desc}</p>
-      <div class="ki-mini" title="Kᵢ = ${c.ki.toFixed(3)} — zona ${zona.nombre}">
-        <span class="etiqueta">Kᵢ ≈ <b>${c.kiLabel || c.ki.toFixed(2)}</b></span>
-        <div class="track"><div class="fill" style="width:${zona.pct}%;background:${zona.color};box-shadow:0 0 8px ${zona.color};"></div></div>
-        <span class="etiqueta" style="color:${zona.color};">${zona.nombre}</span>
-      </div>
-      <button class="btn-detalle" data-i="${i}">Ver axiomas y ecuaciones →</button>
-      <div class="siguiente">${siguiente}</div>
-    </div>`;
-  secciones.appendChild(sec);
-  const dot = document.createElement('button');
-  dot.title = c.nombre; dot.dataset.i = i;
-  dot.addEventListener('click', ()=> document.getElementById('capa-'+i).scrollIntoView({behavior: reducedMotion?'auto':'smooth'}));
-  puntosNav.appendChild(dot);
-});
-
-/* ─── Panel de detalle ─── */
-const panel = document.getElementById('panel');
-function abrirPanel(i){
-  const c = CAPAS[i];
-  document.getElementById('panel-eyebrow').textContent = 'CAPA ' + i + ' / 8';
-  document.getElementById('panel-titulo').textContent = c.nombre;
-  document.getElementById('panel-sub').textContent = c.escala;
-  let html = `<div class="bloque"><h4>Coherencia del modelo</h4>
-    <div class="kival"><span class="num mono">${c.kiLabel || c.ki.toFixed(2)}</span><span style="color:var(--tenue);font-size:0.78rem;">Kᵢ ilustrativo, estado: ${c.estado}</span></div></div>`;
-  if(c.axiomas){ html += `<div class="bloque"><h4>Axiomas</h4>` + c.axiomas.map(a=>`<div class="item">${a}</div>`).join('') + `</div>`; }
-  if(c.ecuaciones){ html += `<div class="bloque"><h4>Ecuaciones</h4>` + c.ecuaciones.map(e=>`<div class="item">${e}</div>`).join('') + `</div>`; }
-  if(c.notas){ html += `<div class="bloque"><h4>Profundización</h4>` + c.notas.map(n=>`<p class="nota"><b>${n.titulo}.</b> ${n.texto}</p>`).join('') + `</div>`; }
-  if(c.predicciones){
-    html += `<div class="bloque"><h4>Predicciones del modelo</h4><p class="nota-especulativa">No son consenso científico — son extrapolaciones dentro de este marco conceptual propio.</p>`
-      + c.predicciones.map(p=>{
-          let sub = '';
-          if(p.codigo || p.metodo || p.falsador || p.dataset){
-            sub = `<div class="subdato">`
-              + (p.codigo ? `<b>${p.codigo}</b> · ` : '')
-              + (p.metodo ? `método: ${p.metodo}<br>` : '')
-              + (p.falsador ? `falsador: ${p.falsador}<br>` : '')
-              + (p.dataset ? `dataset: ${p.dataset}` : '')
-              + `</div>`;
-          }
-          return `<div class="item especulativa">${p.texto}</div>${sub}`;
-        }).join('') + `</div>`;
-  }
-  if(c.anclaje){ html += `<div class="bloque"><h4>Anclaje con teorías reales</h4>` + c.anclaje.map(a=>`<p class="nota">${a}</p>`).join('') + `</div>`; }
-  if(c.graficos){
-    c.graficos.forEach((g,gi)=>{
-      html += `<div class="bloque"><h4>${g.titulo}</h4>
-        <div class="panel-grafico"><canvas id="panel-canvas-${gi}" width="600" height="240"></canvas>
-        <p class="caption">${g.caption}</p></div></div>`;
-    });
-  }
-  document.getElementById('panel-cuerpo').innerHTML = html;
-  panel.classList.add('abierto');
-  if(c.graficos){
-    const dibujantes = { decaimiento:dibujarDecaimiento, umbral:dibujarUmbral, timeline:dibujarTimeline, fractal:dibujarFractal, potencial:dibujarPotencial, colapso:dibujarColapso };
-    c.graficos.forEach((g,gi)=>{
-      const cv = document.getElementById('panel-canvas-'+gi);
-      const ctx = cv.getContext('2d');
-      (dibujantes[g.tipo] || (()=>{}))(ctx, cv.width, cv.height, HEX_ESTADO[c.estado]);
-    });
-  }
-}
-document.getElementById('panel-cerrar').addEventListener('click', ()=>panel.classList.remove('abierto'));
-secciones.addEventListener('click', e=>{
-  const btn = e.target.closest('.btn-detalle');
-  if(btn) abrirPanel(+btn.dataset.i);
-});
-
-/* ─── Mini-diagramas del panel: cada fórmula clave, dibujada, no solo escrita ─── */
-function dibujarDecaimiento(ctx,w,h,color){
-  ctx.clearRect(0,0,w,h);
-  const pad=30, beta=0.52, kiInf=0.62, Lcorr=1, Lmax=60;
-  ctx.strokeStyle='rgba(255,255,255,0.15)'; ctx.lineWidth=1;
-  ctx.beginPath(); ctx.moveTo(pad,h-pad); ctx.lineTo(w-pad,h-pad); ctx.moveTo(pad,pad); ctx.lineTo(pad,h-pad); ctx.stroke();
-  ctx.strokeStyle='rgba(255,215,0,0.35)'; ctx.setLineDash([4,4]);
-  ctx.beginPath(); ctx.moveTo(pad,pad); ctx.lineTo(w-pad,pad); ctx.stroke(); ctx.setLineDash([]);
-  ctx.strokeStyle=color; ctx.lineWidth=2.4; ctx.beginPath();
-  for(let i=0;i<=120;i++){
-    const frac = i/120;
-    const logL = Math.log10(Lcorr) + frac*(Math.log10(Lmax)-Math.log10(Lcorr));
-    const L = Math.pow(10,logL);
-    const ki = kiInf*(1-beta*Math.sqrt(Lcorr/L));
-    const px = pad + frac*(w-2*pad);
-    const py = h-pad - Math.max(0,ki/kiInf)*(h-2*pad);
-    i===0 ? ctx.moveTo(px,py) : ctx.lineTo(px,py);
-  }
-  ctx.stroke();
-  ctx.fillStyle='rgba(255,255,255,0.4)'; ctx.font='10px IBM Plex Mono, monospace';
-  ctx.fillText('L (escala) →', w-pad-58, h-8);
-  ctx.fillStyle='rgba(255,215,0,0.75)'; ctx.fillText('Kᵢ^∞', w-pad-30, pad-6);
-  ctx.fillStyle='rgba(255,255,255,0.4)'; ctx.fillText('ℓ_corr', pad-4, h-pad+16);
-}
-
-function dibujarUmbral(ctx,w,h,color){
-  ctx.clearRect(0,0,w,h);
-  const pad=28, trackY=h/2, trackH=22, x0=pad, x1=w-pad;
-  ctx.fillStyle='rgba(255,255,255,0.06)'; ctx.fillRect(x0, trackY-trackH/2, x1-x0, trackH);
-  const fracC=0.6, fracMIU=0.82;
-  const xC = x0+fracC*(x1-x0), xMIU = x0+fracMIU*(x1-x0);
-  const grad = ctx.createLinearGradient(x0,0,x1,0);
-  grad.addColorStop(0,'#ff3366'); grad.addColorStop(fracC,'#ffb238'); grad.addColorStop(1,'#00ff88');
-  ctx.fillStyle=grad; ctx.fillRect(x0, trackY-trackH/2, xMIU-x0, trackH);
-  ctx.strokeStyle='#ffd700'; ctx.lineWidth=2;
-  ctx.beginPath(); ctx.moveTo(xC, trackY-trackH/2-10); ctx.lineTo(xC, trackY+trackH/2+10); ctx.stroke();
-  ctx.fillStyle='#ffd700'; ctx.font='10px IBM Plex Mono, monospace'; ctx.textAlign='center';
-  ctx.fillText('Φ_c', xC, trackY-trackH/2-14);
-  ctx.beginPath(); ctx.arc(xMIU, trackY, 6, 0, Math.PI*2); ctx.fillStyle='#fff'; ctx.fill();
-  ctx.fillStyle='rgba(255,255,255,0.75)'; ctx.fillText('Φ_MIU', xMIU, trackY+trackH/2+22);
-  ctx.fillStyle='rgba(255,255,255,0.35)'; ctx.textAlign='left'; ctx.fillText('sin integración', x0, trackY+trackH/2+22);
-  ctx.textAlign='right'; ctx.fillText('máxima integración', x1, trackY+trackH/2+22); ctx.textAlign='left';
-}
-
-function dibujarTimeline(ctx,w,h){
-  ctx.clearRect(0,0,w,h);
-  const pad=32, yearMin=2024, yearMax=2052, y0=h/2;
-  ctx.strokeStyle='rgba(255,255,255,0.18)'; ctx.lineWidth=1.5;
-  ctx.beginPath(); ctx.moveTo(pad,y0); ctx.lineTo(w-pad,y0); ctx.stroke();
-  const bandas = [
-    { ini:2026, fin:2028, label:'Fuego', color:'#ff3366', y:y0-30 },
-    { ini:2035, fin:2037, label:'Noosfera', color:'#ffb238', y:y0 },
-    { ini:2044, fin:2052, label:'Clima (±4)', color:'#5ec8ff', y:y0+30 },
-  ];
-  ctx.font='10px IBM Plex Mono, monospace';
-  bandas.forEach(b=>{
-    const x0 = pad + (b.ini-yearMin)/(yearMax-yearMin)*(w-2*pad);
-    const x1 = pad + (b.fin-yearMin)/(yearMax-yearMin)*(w-2*pad);
-    ctx.fillStyle=b.color; ctx.fillRect(x0, b.y-5, Math.max(3,x1-x0), 10);
-    ctx.fillStyle='rgba(255,255,255,0.78)'; ctx.fillText(`${b.label} ${b.ini}–${b.fin}`, x0, b.y-10);
-  });
-  const xHoy = pad + (2026-yearMin)/(yearMax-yearMin)*(w-2*pad);
-  ctx.strokeStyle='rgba(255,255,255,0.4)'; ctx.setLineDash([3,3]);
-  ctx.beginPath(); ctx.moveTo(xHoy,8); ctx.lineTo(xHoy,h-8); ctx.stroke(); ctx.setLineDash([]);
-  ctx.fillStyle='rgba(255,255,255,0.55)'; ctx.fillText('hoy', xHoy+4, 16);
-  ctx.fillStyle='rgba(255,255,255,0.35)'; ctx.fillText(String(yearMin), pad, h-6);
-  ctx.textAlign='right'; ctx.fillText(String(yearMax), w-pad, h-6); ctx.textAlign='left';
-}
-
-function dibujarFractal(ctx,w,h,color){
-  ctx.clearRect(0,0,w,h);
-  function recurse(x,y,size,depth){
-    const third = size/3;
-    for(let r=0;r<3;r++){
-      for(let cI=0;cI<3;cI++){
-        if(r===1 && cI===1) continue; // se omite el centro en cada nivel — la firma de lo autosimilar
-        const nx = x+cI*third, ny = y+r*third;
-        if(depth<=1){
-          ctx.fillStyle = color; ctx.globalAlpha = 0.5 + 0.15*Math.random();
-          ctx.fillRect(nx+0.5, ny+0.5, third-1, third-1);
-          ctx.globalAlpha = 1;
-        } else {
-          recurse(nx, ny, third, depth-1);
+    <script>
+        const canvas = document.getElementById('cosmicCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Configurar canvas
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        
+        // Variables de animación
+        let time = 0;
+        const phi = 1.618033988749;
+        
+        // Constantes MIU
+        const constants = {
+            q_born: 1.1910149,
+            phi_c: 0.6829322,
+            delta_cod: 0.6829322,
+            omega_f: 0.65048305,
+            xi: 8.57,
+            K_i: phi * (0.6829322 / 2.5)
+        };
+        
+        // Función para crear degradado radial
+        function createRadialGradient(x, y, r1, r2, colors) {
+            const grad = ctx.createRadialGradient(x, y, r1, x, y, r2);
+            for (let i = 0; i < colors.length; i++) {
+                grad.addColorStop(i / (colors.length - 1), colors[i]);
+            }
+            return grad;
         }
-      }
-    }
-  }
-  const size = Math.min(w,h)-20, x0=(w-size)/2, y0=(h-size)/2;
-  ctx.strokeStyle='rgba(255,255,255,0.12)'; ctx.strokeRect(x0,y0,size,size);
-  recurse(x0,y0,size,3);
-}
-
-/* V(ρ) = (ρ−ρ_base)²(ρ−ρ_crit)² / ρ_base⁴ — doble pozo, ejes normalizados en unidades de ρ_base */
-function dibujarPotencial(ctx,w,h,color){
-  ctx.clearRect(0,0,w,h);
-  const pad=30, rhoBase=1, rhoCrit=1.7, xMin=0.55, xMax=2.1;
-  const Vat = r => Math.pow(r-rhoBase,2)*Math.pow(r-rhoCrit,2);
-  let vMax=0; for(let i=0;i<=200;i++){ const r=xMin+(i/200)*(xMax-xMin); vMax=Math.max(vMax,Vat(r)); }
-  ctx.strokeStyle='rgba(255,255,255,0.15)'; ctx.lineWidth=1;
-  ctx.beginPath(); ctx.moveTo(pad,h-pad); ctx.lineTo(w-pad,h-pad); ctx.moveTo(pad,pad); ctx.lineTo(pad,h-pad); ctx.stroke();
-  ctx.strokeStyle=color; ctx.lineWidth=2.4; ctx.beginPath();
-  for(let i=0;i<=200;i++){
-    const frac=i/200, r=xMin+frac*(xMax-xMin), v=Vat(r);
-    const px=pad+frac*(w-2*pad), py=h-pad-(v/vMax)*(h-2*pad)*0.92;
-    i===0 ? ctx.moveTo(px,py) : ctx.lineTo(px,py);
-  }
-  ctx.stroke();
-  // marcar los dos mínimos (ρ_base, ρ_crit) y la barrera entre ambos
-  [rhoBase, rhoCrit].forEach((r,i)=>{
-    const frac=(r-xMin)/(xMax-xMin), px=pad+frac*(w-2*pad), py=h-pad-(Vat(r)/vMax)*(h-2*pad)*0.92;
-    ctx.beginPath(); ctx.arc(px,py,4,0,Math.PI*2); ctx.fillStyle='#ffd700'; ctx.fill();
-    ctx.fillStyle='rgba(255,215,0,0.85)'; ctx.font='10px IBM Plex Mono, monospace'; ctx.textAlign='center';
-    ctx.fillText(i===0?'ρ_base':'ρ_crit', px, py-10);
-  });
-  ctx.textAlign='left'; ctx.fillStyle='rgba(255,255,255,0.4)'; ctx.font='10px IBM Plex Mono, monospace';
-  ctx.fillText('ρ →', w-pad-22, h-8);
-  ctx.fillStyle='rgba(255,255,255,0.35)'; ctx.fillText('V(ρ)', pad-2, pad+10);
-}
-
-/* df/dt = γ f (1-f) (Kᵢ_crit - Kᵢ) / Kᵢ_crit — dos curvas: Kᵢ>Kᵢ_crit (curación) y Kᵢ<Kᵢ_crit (colapso) */
-function dibujarColapso(ctx,w,h){
-  ctx.clearRect(0,0,w,h);
-  const pad=32, y0=h/2;
-  ctx.strokeStyle='rgba(255,255,255,0.15)'; ctx.lineWidth=1;
-  ctx.beginPath(); ctx.moveTo(pad,y0); ctx.lineTo(w-pad,y0); ctx.moveTo(pad,pad); ctx.lineTo(pad,h-pad); ctx.stroke();
-  const gamma=0.05, kiCrit=0.3;
-  const dfdt = (f,ki) => gamma*f*(1-f)*(kiCrit-ki)/kiCrit;
-  function curva(ki, col){
-    let vMax=0; for(let i=0;i<=100;i++){ vMax=Math.max(vMax, Math.abs(dfdt(i/100,ki))); }
-    ctx.strokeStyle=col; ctx.lineWidth=2.2; ctx.beginPath();
-    for(let i=0;i<=100;i++){
-      const f=i/100, v=dfdt(f,ki);
-      const px=pad+f*(w-2*pad), py=y0-(v/vMax)*(h/2-pad)*0.85;
-      i===0 ? ctx.moveTo(px,py) : ctx.lineTo(px,py);
-    }
-    ctx.stroke();
-  }
-  curva(0.55, '#00ff88'); // Kᵢ > Kᵢ_crit → curación, fluye hacia f=0
-  curva(0.10, '#ff3366'); // Kᵢ < Kᵢ_crit → colapso, fluye hacia f=1
-  ['f=0 (salud)','f=1 (colapso)'].forEach((t,i)=>{
-    ctx.fillStyle='rgba(255,255,255,0.55)'; ctx.font='10px IBM Plex Mono, monospace';
-    ctx.textAlign = i===0?'left':'right';
-    ctx.fillText(t, i===0?pad:w-pad, h-10);
-  });
-  ctx.textAlign='left';
-  ctx.fillStyle='#00ff88'; ctx.fillText('Kᵢ > Kᵢ_crit', pad, pad+8);
-  ctx.fillStyle='#ff3366'; ctx.fillText('Kᵢ < Kᵢ_crit', pad, pad+22);
-}
-
-const panelConst = document.getElementById('panel-const');
-document.getElementById('btn-const').addEventListener('click', ()=> panelConst.classList.toggle('abierto'));
-
-const panelGlosario = document.getElementById('panel-glosario');
-document.getElementById('btn-glosario').addEventListener('click', ()=> panelGlosario.classList.toggle('abierto'));
-
-/* ─── Regla de escala: ticks fijos + marcador móvil ─── */
-const reglaTrack = document.getElementById('regla-track');
-TICKS_REGLA.forEach(tk=>{
-  const pct = (tk.orden - ORDEN_MIN)/(ORDEN_MAX - ORDEN_MIN)*100;
-  const el = document.createElement('div');
-  el.className = 'tick';
-  el.style.bottom = pct + '%';
-  el.innerHTML = `<span>${tk.label}</span>`;
-  reglaTrack.appendChild(el);
-});
-const reglaMarca = document.createElement('div');
-reglaMarca.className = 'marca';
-reglaTrack.appendChild(reglaMarca);
-const reglaValor = document.getElementById('regla-valor');
-
-/* ─── Aviso de transición de fase (toast + destello) ─── */
-const avisoUmbral = document.getElementById('aviso-umbral');
-const flash = document.getElementById('flash');
-let avisoTimeout = null;
-function mostrarTransicion(capa){
-  if(!capa.transicion) return;
-  avisoUmbral.innerHTML = `↯ <b>transición de fase</b> · ${capa.transicion}`;
-  avisoUmbral.classList.add('activo');
-  flash.style.setProperty('--flash-color', HEX_ESTADO[capa.estado]);
-  flash.classList.remove('pulso'); void flash.offsetWidth; flash.classList.add('pulso');
-  clearTimeout(avisoTimeout);
-  avisoTimeout = setTimeout(()=> avisoUmbral.classList.remove('activo'), reducedMotion?100:3600);
-}
-
-
-/* ════════════════════════════ THREE.JS: fondo ════════════════════════════ */
-const canvas = document.getElementById('bg');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:false });
-renderer.setClearColor(0x0a0a0f, 1);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(55, innerWidth/innerHeight, 0.1, 200);
-camera.position.set(0,0,14);
-
-function resize(){
-  renderer.setSize(innerWidth, innerHeight);
-  camera.aspect = innerWidth/innerHeight;
-  camera.updateProjectionMatrix();
-}
-resize();
-window.addEventListener('resize', resize);
-
-// niebla estelar de fondo, constante en toda la experiencia
-(function fondoEstelar(){
-  const N = 1200;
-  const pos = new Float32Array(N*3);
-  for(let i=0;i<N;i++){
-    const r = 40 + Math.random()*60;
-    const th = Math.random()*Math.PI*2, ph = Math.acos(2*Math.random()-1);
-    pos[i*3]   = r*Math.sin(ph)*Math.cos(th);
-    pos[i*3+1] = r*Math.sin(ph)*Math.sin(th);
-    pos[i*3+2] = r*Math.cos(ph);
-  }
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.BufferAttribute(pos,3));
-  const m = new THREE.PointsMaterial({ color:0xffffff, size:0.09, transparent:true, opacity:0.35, depthWrite:false });
-  scene.add(new THREE.Points(g,m));
-})();
-
-/* ─── utilidades ─── */
-function colorAttr(n, hex){
-  const c = new THREE.Color(hex);
-  const arr = new Float32Array(n*3);
-  for(let i=0;i<n;i++){ arr[i*3]=c.r; arr[i*3+1]=c.g; arr[i*3+2]=c.b; }
-  return arr;
-}
-function puntosAleatoriosEnEsfera(n, radio){
-  const pos = new Float32Array(n*3);
-  for(let i=0;i<n;i++){
-    const r = radio*Math.cbrt(Math.random());
-    const th = Math.random()*Math.PI*2, ph = Math.acos(2*Math.random()-1);
-    pos[i*3]   = r*Math.sin(ph)*Math.cos(th);
-    pos[i*3+1] = r*Math.sin(ph)*Math.sin(th);
-    pos[i*3+2] = r*Math.cos(ph);
-  }
-  return pos;
-}
-
-/* ════════════════════════════ CONSTRUCTORES DE CAPAS ════════════════════════════ */
-// Cada constructor devuelve { group, update(t) } — update recibe tiempo en segundos
-// y mueve sutilmente la geometría (jitter orgánico barato: suma de senos por punto).
-
-/* Shader propio (ruido por valor, trilineal) para representar ρ(x) como campo continuo, no solo como puntos */
-const RUIDO_GLSL = `
-  float hash3(vec3 p){ p = fract(p*0.3183099 + 0.1); p *= 17.0; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
-  float ruido(vec3 x){
-    vec3 i = floor(x); vec3 f = fract(x); f = f*f*(3.0-2.0*f);
-    return mix(
-      mix(mix(hash3(i+vec3(0,0,0)), hash3(i+vec3(1,0,0)), f.x), mix(hash3(i+vec3(0,1,0)), hash3(i+vec3(1,1,0)), f.x), f.y),
-      mix(mix(hash3(i+vec3(0,0,1)), hash3(i+vec3(1,0,1)), f.x), mix(hash3(i+vec3(0,1,1)), hash3(i+vec3(1,1,1)), f.x), f.y),
-      f.z) * 2.0 - 1.0;
-  }
-`;
-function construirCampoShader(colorA, colorB){
-  const geo = new THREE.IcosahedronGeometry(2.6, 5);
-  const mat = new THREE.ShaderMaterial({
-    uniforms:{ uTime:{value:0}, uOpacity:{value:0}, uColorA:{value:new THREE.Color(colorA)}, uColorB:{value:new THREE.Color(colorB)} },
-    vertexShader: `
-      varying float vRuido;
-      uniform float uTime;
-      ${RUIDO_GLSL}
-      void main(){
-        float n = ruido(position*0.55 + uTime*0.12);
-        vRuido = n;
-        vec3 desplazado = position + normal * n * 0.42;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(desplazado, 1.0);
-      }`,
-    fragmentShader: `
-      varying float vRuido;
-      uniform vec3 uColorA; uniform vec3 uColorB; uniform float uOpacity;
-      void main(){
-        vec3 col = mix(uColorA, uColorB, smoothstep(-0.6, 0.7, vRuido));
-        gl_FragColor = vec4(col, 0.30 * uOpacity);
-      }`,
-    transparent:true, depthWrite:false, wireframe:true,
-  });
-  return new THREE.Mesh(geo, mat);
-}
-
-function construirCampo(hex){
-  const N = 2600;
-  const base = puntosAleatoriosEnEsfera(N, 6.2);
-  const pos = base.slice();
-  const fase = new Float32Array(N); for(let i=0;i<N;i++) fase[i]=Math.random()*Math.PI*2;
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.BufferAttribute(pos,3));
-  g.setAttribute('color', new THREE.BufferAttribute(colorAttr(N,hex),3));
-  const m = new THREE.PointsMaterial({ size:0.05, vertexColors:true, transparent:true, opacity:0.85, blending:THREE.AdditiveBlending, depthWrite:false });
-  const pts = new THREE.Points(g,m);
-  const nucleoRuido = construirCampoShader(0x6b5cff, 0xffd700);
-  const group = new THREE.Group(); group.add(pts); group.add(nucleoRuido);
-  return { group, update(t){
-    nucleoRuido.material.uniforms.uTime.value = reducedMotion ? 0 : t;
-    if(reducedMotion) return;
-    const arr = g.attributes.position.array;
-    for(let i=0;i<N;i++){
-      arr[i*3]   = base[i*3]   + 0.18*Math.sin(t*0.6 + fase[i]);
-      arr[i*3+1] = base[i*3+1] + 0.18*Math.sin(t*0.7 + fase[i]*1.3);
-      arr[i*3+2] = base[i*3+2] + 0.18*Math.sin(t*0.5 + fase[i]*0.8);
-    }
-    g.attributes.position.needsUpdate = true;
-    group.rotation.y = t*0.02;
-  }};
-}
-
-function construirMalla(hex){
-  const seg = 40, tam = 9;
-  const geo = new THREE.PlaneGeometry(tam, tam, seg, seg);
-  geo.rotateX(-Math.PI/2.6);
-  const mat = new THREE.MeshBasicMaterial({ color:hex, wireframe:true, transparent:true, opacity:0.55 });
-  const malla = new THREE.Mesh(geo, mat);
-  const posAttr = geo.attributes.position;
-  const base = posAttr.array.slice();
-  const group = new THREE.Group(); group.add(malla);
-  return { group, update(t){
-    const arr = posAttr.array;
-    for(let i=0;i<arr.length/3;i++){
-      const x = base[i*3], z = base[i*3+2];
-      const d = Math.sqrt(x*x+z*z);
-      const pozo = -2.4*Math.exp(-d*d/3.2);
-      arr[i*3+1] = base[i*3+1] + pozo + (reducedMotion?0:0.08*Math.sin(t*0.8+d));
-    }
-    posAttr.needsUpdate = true;
-    group.rotation.y = t*0.05;
-  }};
-}
-
-function construirParticulas(hex){
-  const group = new THREE.Group();
-  const anillos = [];
-  for(let k=0;k<3;k++){
-    const r = 1.6 + k*1.1;
-    const curva = new THREE.EllipseCurve(0,0,r,r*0.55,0,Math.PI*2,false,0);
-    const pts2d = curva.getPoints(64);
-    const pos = new Float32Array(pts2d.length*3);
-    pts2d.forEach((p,i)=>{ pos[i*3]=p.x; pos[i*3+1]=0; pos[i*3+2]=p.y; });
-    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos,3));
-    const linea = new THREE.LineLoop(g, new THREE.LineBasicMaterial({ color:hex, transparent:true, opacity:0.3 }));
-    linea.rotation.x = k*0.7; linea.rotation.z = k*0.4;
-    group.add(linea);
-    anillos.push({ obj:linea, r, vel:0.4+k*0.22, ang:Math.random()*6 });
-  }
-  // núcleo
-  const nucleo = new THREE.Mesh(new THREE.IcosahedronGeometry(0.42,1), new THREE.MeshBasicMaterial({ color:hex }));
-  group.add(nucleo);
-  // "electrones": pequeñas esferas orbitando
-  const electrones = anillos.map(a=>{
-    const e = new THREE.Mesh(new THREE.SphereGeometry(0.08,8,8), new THREE.MeshBasicMaterial({ color:0xffffff }));
-    a.obj.add(e);
-    return { e, a };
-  });
-  return { group, update(t){
-    nucleo.scale.setScalar(1 + 0.06*Math.sin(t*2));
-    electrones.forEach(({e,a})=>{
-      const ang = t*a.vel + a.ang;
-      e.position.set(a.r*Math.cos(ang), 0, a.r*Math.sin(ang));
-    });
-    group.rotation.y = t*0.06;
-  }};
-}
-
-function construirEstrella(hex){
-  const group = new THREE.Group();
-  const nucleo = new THREE.Mesh(new THREE.IcosahedronGeometry(1.5,2), new THREE.MeshBasicMaterial({ color:hex }));
-  group.add(nucleo);
-  const N=900;
-  const dir = new Float32Array(N*3);
-  for(let i=0;i<N;i++){
-    const th=Math.random()*Math.PI*2, ph=Math.acos(2*Math.random()-1);
-    dir[i*3]=Math.sin(ph)*Math.cos(th); dir[i*3+1]=Math.sin(ph)*Math.sin(th); dir[i*3+2]=Math.cos(ph);
-  }
-  const pos = new Float32Array(N*3);
-  const radios = new Float32Array(N);
-  for(let i=0;i<N;i++) radios[i]=1.8+Math.random()*1.4;
-  for(let i=0;i<N;i++){ pos[i*3]=dir[i*3]*radios[i]; pos[i*3+1]=dir[i*3+1]*radios[i]; pos[i*3+2]=dir[i*3+2]*radios[i]; }
-  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos,3));
-  g.setAttribute('color', new THREE.BufferAttribute(colorAttr(N,0xffffff),3));
-  const corona = new THREE.Points(g, new THREE.PointsMaterial({ size:0.05, vertexColors:true, transparent:true, opacity:0.55, blending:THREE.AdditiveBlending, depthWrite:false }));
-  group.add(corona);
-  return { group, update(t){
-    nucleo.scale.setScalar(1 + (reducedMotion?0:0.05*Math.sin(t*1.4)));
-    const arr=g.attributes.position.array;
-    for(let i=0;i<N;i++){
-      const r = radios[i] + (reducedMotion?0:0.15*Math.sin(t*1.1+i*0.13));
-      arr[i*3]=dir[i*3]*r; arr[i*3+1]=dir[i*3+1]*r; arr[i*3+2]=dir[i*3+2]*r;
-    }
-    g.attributes.position.needsUpdate = true;
-    group.rotation.y = t*0.08;
-  }};
-}
-
-function construirPlaneta(hex){
-  const group = new THREE.Group();
-  // textura procedural simple (gradiente + ruido en canvas)
-  const cv = document.createElement('canvas'); cv.width=256; cv.height=128;
-  const ctx = cv.getContext('2d');
-  const grad = ctx.createLinearGradient(0,0,0,128);
-  grad.addColorStop(0,'#0f3b5c'); grad.addColorStop(0.5,'#13628a'); grad.addColorStop(1,'#0a2540');
-  ctx.fillStyle = grad; ctx.fillRect(0,0,256,128);
-  ctx.fillStyle = 'rgba(0,255,136,0.5)';
-  for(let i=0;i<140;i++){ ctx.beginPath(); ctx.arc(Math.random()*256, Math.random()*128, Math.random()*9+2, 0, 7); ctx.fill(); }
-  const tex = new THREE.CanvasTexture(cv);
-  const esfera = new THREE.Mesh(new THREE.SphereGeometry(1.7,40,40), new THREE.MeshBasicMaterial({ map:tex }));
-  group.add(esfera);
-  // líneas de campo magnético (arcos polo a polo)
-  const lineas = [];
-  for(let i=0;i<6;i++){
-    const ang = (i/6)*Math.PI*2;
-    const r = 2.4 + (i%2)*0.5;
-    const pts=[];
-    for(let s=0;s<=32;s++){
-      const a = (s/32)*Math.PI;
-      pts.push(new THREE.Vector3(Math.sin(a)*r*Math.cos(ang), Math.cos(a)*r, Math.sin(a)*r*Math.sin(ang)));
-    }
-    const g = new THREE.BufferGeometry().setFromPoints(pts);
-    const linea = new THREE.Line(g, new THREE.LineBasicMaterial({ color:hex, transparent:true, opacity:0.4 }));
-    group.add(linea); lineas.push(linea);
-  }
-  return { group, update(t){
-    esfera.rotation.y = t*0.12;
-    group.rotation.y = t*0.015;
-    lineas.forEach((l,i)=> l.rotation.y = t*0.12 + i*0.001 );
-  }};
-}
-
-function construirOrganico(hex){
-  const group = new THREE.Group();
-  const segmentos = [];
-  function rama(origen, dir, profundidad, longitud){
-    if(profundidad<=0) return;
-    const fin = origen.clone().add(dir.clone().multiplyScalar(longitud));
-    segmentos.push(origen, fin);
-    const nHijos = profundidad>3 ? 2 : (Math.random()<0.7?2:1);
-    for(let i=0;i<nHijos;i++){
-      const nuevaDir = dir.clone();
-      nuevaDir.x += (Math.random()-0.5)*0.9;
-      nuevaDir.y += (Math.random()-0.5)*0.9 + 0.15;
-      nuevaDir.z += (Math.random()-0.5)*0.9;
-      nuevaDir.normalize();
-      rama(fin, nuevaDir, profundidad-1, longitud*0.72);
-    }
-  }
-  for(let i=0;i<5;i++){
-    const ang = (i/5)*Math.PI*2;
-    rama(new THREE.Vector3(Math.cos(ang)*0.3,0,Math.sin(ang)*0.3), new THREE.Vector3(0,1,0), 5, 1.0);
-  }
-  const N = segmentos.length;
-  const pos = new Float32Array(N*3);
-  segmentos.forEach((v,i)=>{ pos[i*3]=v.x; pos[i*3+1]=v.y-1.6; pos[i*3+2]=v.z; });
-  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos,3));
-  const ramas = new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color:hex, transparent:true, opacity:0.75 }));
-  group.add(ramas);
-  // nodos brillantes en las puntas
-  const puntas = [];
-  for(let i=1;i<N;i+=2) puntas.push(pos[i*3],pos[i*3+1],pos[i*3+2]);
-  const gp = new THREE.BufferGeometry(); gp.setAttribute('position', new THREE.BufferAttribute(new Float32Array(puntas),3));
-  const nodos = new THREE.Points(gp, new THREE.PointsMaterial({ color:0xffffff, size:0.07, transparent:true, opacity:0.9, blending:THREE.AdditiveBlending, depthWrite:false }));
-  group.add(nodos);
-  return { group, update(t){
-    group.rotation.y = t*0.1;
-    const s = 1 + (reducedMotion?0:0.025*Math.sin(t*2.4));
-    ramas.scale.setScalar(s); nodos.scale.setScalar(s);
-  }};
-}
-
-function construirRed(hex){
-  const group = new THREE.Group();
-  const N = 70;
-  const nodos = [];
-  for(let i=0;i<N;i++){
-    nodos.push(new THREE.Vector3((Math.random()-0.5)*7, (Math.random()-0.5)*4.2, (Math.random()-0.5)*4));
-  }
-  const posN = new Float32Array(N*3);
-  nodos.forEach((v,i)=>{ posN[i*3]=v.x; posN[i*3+1]=v.y; posN[i*3+2]=v.z; });
-  const gN = new THREE.BufferGeometry(); gN.setAttribute('position', new THREE.BufferAttribute(posN,3));
-  const matN = new THREE.PointsMaterial({ size:0.1, vertexColors:true, blending:THREE.AdditiveBlending, depthWrite:false });
-  const colN = new Float32Array(N*3); gN.setAttribute('color', new THREE.BufferAttribute(colN,3));
-  const ptsN = new THREE.Points(gN, matN);
-  group.add(ptsN);
-
-  // aristas: conectar cada nodo con sus ~2 vecinos más cercanos
-  const segs=[];
-  for(let i=0;i<N;i++){
-    const dists = nodos.map((v,j)=>({j,d:i===j?1e9:nodos[i].distanceTo(v)})).sort((a,b)=>a.d-b.d);
-    for(let k=0;k<2;k++){ segs.push(nodos[i], nodos[dists[k].j]); }
-  }
-  const posE = new Float32Array(segs.length*3);
-  segs.forEach((v,i)=>{ posE[i*3]=v.x; posE[i*3+1]=v.y; posE[i*3+2]=v.z; });
-  const gE = new THREE.BufferGeometry(); gE.setAttribute('position', new THREE.BufferAttribute(posE,3));
-  const lineas = new THREE.LineSegments(gE, new THREE.LineBasicMaterial({ color:hex, transparent:true, opacity:0.18 }));
-  group.add(lineas);
-
-  const colorVerde = new THREE.Color(0x00ff88), colorRojo = new THREE.Color(0xff3366);
-  const fases = new Float32Array(N); for(let i=0;i<N;i++) fases[i]=Math.random()*10;
-  return { group, update(t){
-    const arrC = gN.attributes.color.array;
-    for(let i=0;i<N;i++){
-      const f = reducedMotion ? 0.5 : (Math.sin(t*0.5+fases[i])*0.5+0.5);
-      const c = colorVerde.clone().lerp(colorRojo, f);
-      arrC[i*3]=c.r; arrC[i*3+1]=c.g; arrC[i*3+2]=c.b;
-    }
-    gN.attributes.color.needsUpdate = true;
-    group.rotation.y = t*0.04;
-  }};
-}
-
-function construirCosmos(hex){
-  const group = new THREE.Group();
-  // espiral galáctica
-  const N = 2400;
-  const golden = Math.PI*(3-Math.sqrt(5));
-  const pos = new Float32Array(N*3);
-  const col = new Float32Array(N*3);
-  const cDorado = new THREE.Color(0xffd700), cCian = new THREE.Color(hex);
-  for(let i=0;i<N;i++){
-    const r = Math.sqrt(i/N)*7.5;
-    const ang = i*golden*2.1;
-    pos[i*3]   = Math.cos(ang)*r;
-    pos[i*3+1] = (Math.random()-0.5)*0.5*(1-r/8);
-    pos[i*3+2] = Math.sin(ang)*r;
-    const c = cCian.clone().lerp(cDorado, Math.random()*0.4);
-    col[i*3]=c.r; col[i*3+1]=c.g; col[i*3+2]=c.b;
-  }
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.BufferAttribute(pos,3));
-  g.setAttribute('color', new THREE.BufferAttribute(col,3));
-  const galaxia = new THREE.Points(g, new THREE.PointsMaterial({ size:0.045, vertexColors:true, transparent:true, opacity:0.8, blending:THREE.AdditiveBlending, depthWrite:false }));
-  group.add(galaxia);
-  return { group, update(t){ group.rotation.y = t*0.035; group.rotation.x = 0.35; } };
-}
-
-function construirOmega(hex){
-  const group = new THREE.Group();
-  const nucleo = new THREE.Mesh(new THREE.SphereGeometry(0.5,32,32), new THREE.MeshBasicMaterial({ color:0xffffff }));
-  group.add(nucleo);
-  const halo = new THREE.Mesh(new THREE.SphereGeometry(0.9,24,24), new THREE.MeshBasicMaterial({ color:hex, transparent:true, opacity:0.25, blending:THREE.AdditiveBlending, depthWrite:false }));
-  group.add(halo);
-  const N=1400;
-  const ang = new Float32Array(N), incl = new Float32Array(N), radioIni = new Float32Array(N), vel = new Float32Array(N);
-  for(let i=0;i<N;i++){ ang[i]=Math.random()*Math.PI*2; incl[i]=Math.acos(2*Math.random()-1); radioIni[i]=2+Math.random()*7; vel[i]=0.4+Math.random()*0.6; }
-  const pos = new Float32Array(N*3);
-  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos,3));
-  g.setAttribute('color', new THREE.BufferAttribute(colorAttr(N,0xffd700),3));
-  const flujo = new THREE.Points(g, new THREE.PointsMaterial({ size:0.05, vertexColors:true, transparent:true, opacity:0.8, blending:THREE.AdditiveBlending, depthWrite:false }));
-  group.add(flujo);
-  return { group, update(t){
-    const arr = g.attributes.position.array;
-    for(let i=0;i<N;i++){
-      const r = reducedMotion ? radioIni[i]*0.5 : ((radioIni[i] - (t*vel[i])%radioIni[i]));
-      const a = ang[i] + t*0.1;
-      arr[i*3]   = r*Math.sin(incl[i])*Math.cos(a);
-      arr[i*3+1] = r*Math.cos(incl[i]);
-      arr[i*3+2] = r*Math.sin(incl[i])*Math.sin(a);
-    }
-    g.attributes.position.needsUpdate = true;
-    nucleo.scale.setScalar(1+(reducedMotion?0:0.12*Math.sin(t*2)));
-    halo.scale.copy(nucleo.scale);
-  }};
-}
-
-const CONSTRUCTORES = { campo:construirCampo, malla:construirMalla, particulas:construirParticulas,
-  estrella:construirEstrella, planeta:construirPlaneta, organico:construirOrganico,
-  red:construirRed, cosmos:construirCosmos, omega:construirOmega };
-
-const capasObj = CAPAS.map(c=>{
-  const hex = COLOR_ESTADO[c.estado];
-  const obj = CONSTRUCTORES[c.tipo](hex);
-  obj.group.traverse(o=>{ if(o.material){ o.material.transparent = true; o.material.opacity = 0; } });
-  scene.add(obj.group);
-  return obj;
-});
-
-/* ════════════════════════════ SCROLL → CAPA ACTIVA ════════════════════════════ */
-const kiFill = document.getElementById('ki-fill');
-const kiNum = document.getElementById('ki-num');
-const topbarCapa = document.getElementById('topbar-capa');
-const topbarNombre = document.getElementById('topbar-nombre');
-
-let capaActualIdx = -1;
-function actualizarUI(idx, frac){
-  if(idx !== capaActualIdx){
-    capaActualIdx = idx;
-    const c = CAPAS[idx];
-    topbarCapa.textContent = `Capa ${idx} / 8`;
-    topbarNombre.textContent = c.nombre;
-    kiFill.style.height = Math.min(100, (c.ki/1.8)*100) + '%';
-    kiFill.style.background = HEX_ESTADO[c.estado];
-    kiFill.style.boxShadow = `0 0 14px ${HEX_ESTADO[c.estado]}`;
-    kiNum.textContent = c.kiLabel || c.ki.toFixed(2);
-    [...puntosNav.children].forEach((d,i)=> d.classList.toggle('activo', i===idx));
-    actualizarAudio(c);
-
-    const pctRegla = (c.orden - ORDEN_MIN)/(ORDEN_MAX - ORDEN_MIN)*100;
-    reglaMarca.style.bottom = pctRegla + '%';
-    reglaMarca.style.background = HEX_ESTADO[c.estado];
-    reglaMarca.style.boxShadow = `0 0 10px ${HEX_ESTADO[c.estado]}`;
-    reglaValor.innerHTML = ordenATexto(c.orden);
-
-    mostrarTransicion(c);
-  }
-}
-
-function onScroll(){
-  const total = document.body.scrollHeight - innerHeight;
-  const progreso = Math.max(0, Math.min(1, window.scrollY/total));
-  const t = progreso*(CAPAS.length-1);
-  const idx = Math.min(CAPAS.length-1, Math.floor(t));
-  const frac = t-idx;
-  actualizarUI(idx, frac);
-
-  capasObj.forEach((o,i)=>{
-    let op = 0;
-    if(i===idx) op = 1-frac;
-    else if(i===idx+1) op = frac;
-    o.group.traverse(obj=>{
-      if(obj.material){
-        const valor = op * (obj.userData.opacBase ?? 1);
-        obj.material.opacity = valor;
-        if(obj.material.uniforms && obj.material.uniforms.uOpacity) obj.material.uniforms.uOpacity.value = valor;
-      }
-    });
-    o.group.visible = op>0.002;
-  });
-
-  // dolly de cámara: se acerca dentro de cada capa, se aleja al cruzar (valores cacheados; el parallax del mouse se suma en animar())
-  const zoomCurva = frac<0.5 ? frac*2 : (1-frac)*2;
-  dollyZ = 14 - zoomCurva*5.5;
-  dollyY = Math.sin(progreso*Math.PI)*0.4;
-
-  // intro
-  intro.classList.toggle('oculto', window.scrollY>40);
-  document.getElementById('topbar-escala').style.display = window.scrollY>40 ? 'inline-block':'none';
-  document.getElementById('topbar-escala').textContent = CAPAS[idx].escala;
-
-  document.getElementById('progreso-total').style.width = (progreso*100) + '%';
-}
-const intro = document.getElementById('intro');
-window.addEventListener('scroll', onScroll, { passive:true });
-
-/* ─── Parallax sutil del mouse/tacto, e interacción de clic sobre el campo ─── */
-let dollyZ = 14, dollyY = 0, mouseX = 0, mouseY = 0;
-window.addEventListener('mousemove', e=>{
-  mouseX = (e.clientX/innerWidth - 0.5);
-  mouseY = (e.clientY/innerHeight - 0.5);
-});
-canvas.addEventListener('click', ()=>{
-  if(capaActualIdx >= 0) abrirPanel(capaActualIdx);
-});
-
-// dar altura real al documento: 9 capas * 100vh (las <section> ya lo hacen por su min-height)
-
-/* ════════════════════════════ AUDIO (Web Audio, opcional) ════════════════════════════ */
-let audioCtx=null, osc=null, gainNode=null, audioOn=false, lfo=null, lfoGain=null;
-const OMEGA_F = 0.65048305; // Hz — frecuencia fundamental del modelo, audible como trémolo
-function iniciarAudio(){
-  audioCtx = new (window.AudioContext||window.webkitAudioContext)();
-  osc = audioCtx.createOscillator(); gainNode = audioCtx.createGain();
-  osc.type='sine'; osc.frequency.value=110; gainNode.gain.value=0;
-  osc.connect(gainNode); gainNode.connect(audioCtx.destination); osc.start();
-  // Ω_F como trémolo: un LFO modula la ganancia alrededor de su valor base
-  lfo = audioCtx.createOscillator(); lfo.type='sine'; lfo.frequency.value = OMEGA_F;
-  lfoGain = audioCtx.createGain(); lfoGain.gain.value = 0.018;
-  lfo.connect(lfoGain); lfoGain.connect(gainNode.gain); lfo.start();
-}
-function actualizarAudio(capa){
-  if(!audioOn || !osc) return;
-  // Ω_F=0.65 Hz escalado a rango audible, modulado por capa y Kᵢ
-  const base = 90 + capa.id*22 + capa.ki*40;
-  osc.frequency.setTargetAtTime(base, audioCtx.currentTime, 0.6);
-}
-const btnAudio = document.getElementById('audio-toggle');
-btnAudio.addEventListener('click', ()=>{
-  if(!audioCtx) iniciarAudio();
-  audioOn = !audioOn;
-  btnAudio.classList.toggle('on', audioOn);
-  btnAudio.textContent = audioOn ? '🔊' : '🔇';
-  gainNode.gain.setTargetAtTime(audioOn?0.045:0, audioCtx.currentTime, 0.5);
-  if(audioOn) actualizarAudio(CAPAS[Math.max(0,capaActualIdx)]);
-});
-
-/* ════════════════════════════ LOOP ════════════════════════════ */
-const reloj = new THREE.Clock();
-function animar(){
-  requestAnimationFrame(animar);
-  const t = reloj.getElapsedTime();
-  // solo actualizar la capa activa y la siguiente para no gastar de más
-  const activos = new Set([capaActualIdx, capaActualIdx+1].filter(i=>i>=0 && i<capasObj.length));
-  activos.forEach(i=> capasObj[i].update(t));
-  // dolly de scroll + parallax sutil de mouse/tacto, suavizado
-  const px = reducedMotion ? 0 : mouseX*0.8, py = reducedMotion ? 0 : -mouseY*0.5;
-  camera.position.x += (px - camera.position.x)*0.04;
-  camera.position.y += (dollyY + py - camera.position.y)*0.06;
-  camera.position.z += (dollyZ - camera.position.z)*0.06;
-  renderer.render(scene, camera);
-}
-onScroll();
-animar();
-
-})();
-</script>
+        
+        // Dibujar espirales áureas de fondo
+        function drawGoldenSpirals() {
+            ctx.strokeStyle = 'rgba(184, 134, 11, 0.08)';
+            ctx.lineWidth = 1;
+            
+            for (let spiral = 0; spiral < 4; spiral++) {
+                ctx.beginPath();
+                const rotation = (spiral * Math.PI / 2);
+                
+                for (let i = 0; i < 200; i++) {
+                    const theta = (i / 10) + rotation;
+                    const radius = 20 * Math.pow(phi, theta / Math.PI);
+                    const x = centerX + radius * Math.cos(theta);
+                    const y = centerY + radius * Math.sin(theta);
+                    
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                    
+                    if (radius > 350) break;
+                }
+                ctx.stroke();
+            }
+        }
+        
+        // Dibujar núcleo central pulsante
+        function drawCoreNucleus() {
+            const pulseScale = 1 + 0.15 * Math.sin(time * 0.03);
+            const coreRadius = 35 * pulseScale;
+            
+            // Núcleo dorado interior
+            const coreGrad = createRadialGradient(
+                centerX, centerY, 0, coreRadius,
+                ['#FFFFFF', '#FFD700', '#FFA500', 'rgba(255, 215, 0, 0.3)']
+            );
+            
+            ctx.fillStyle = coreGrad;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, coreRadius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Brillo exterior del núcleo
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, coreRadius, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Valores numéricos en el núcleo
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.9)';
+            ctx.font = 'bold 11px "Courier New"';
+            ctx.textAlign = 'center';
+            ctx.fillText(`q_born = ${constants.q_born}`, centerX, centerY - 5);
+            ctx.fillText(`Φ_c = ${constants.phi_c}`, centerX, centerY + 10);
+        }
+        
+        // Dibujar onda de choque esférica
+        function drawShockWave() {
+            const waveRadius = 60 + (time * 0.8) % 300;
+            const waveWidth = 15;
+            
+            // Gradiente de onda
+            const waveGrad = createRadialGradient(
+                centerX, centerY, 
+                waveRadius - waveWidth, 
+                waveRadius + waveWidth,
+                [
+                    'rgba(26, 35, 126, 0.8)',
+                    'rgba(255, 215, 0, 0.6)',
+                    'rgba(255, 255, 255, 0.4)',
+                    'rgba(26, 35, 126, 0.1)'
+                ]
+            );
+            
+            ctx.fillStyle = waveGrad;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, waveRadius + waveWidth, 0, Math.PI * 2);
+            ctx.arc(centerX, centerY, waveRadius - waveWidth, 0, Math.PI * 2, true);
+            ctx.fill();
+        }
+        
+        // Dibujar anillos concéntricos
+        function drawConcentriRings() {
+            const rings = [
+                { radius: 120, color: 'rgba(255, 165, 0, 0.4)', label: 'Plasma Primordial' },
+                { radius: 180, color: 'rgba(255, 140, 0, 0.35)', label: 'Primeros Átomos' },
+                { radius: 250, color: 'rgba(100, 150, 255, 0.3)', label: 'Primeras Estrellas' },
+                { radius: 320, color: 'rgba(123, 31, 162, 0.25)', label: 'Estructura Cósmica' }
+            ];
+            
+            for (let ring of rings) {
+                ctx.strokeStyle = ring.color;
+                ctx.lineWidth = 20;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, ring.radius, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+        }
+        
+        // Dibujar partículas en anillo 1
+        function drawPrimalParticles() {
+            const particleRadius = 120;
+            const particleCount = 8;
+            const colors = ['#FF3333', '#33FF33', '#3333FF'];
+            
+            for (let i = 0; i < particleCount; i++) {
+                const angle = (i / particleCount) * Math.PI * 2 + time * 0.01;
+                const x = centerX + particleRadius * Math.cos(angle);
+                const y = centerY + particleRadius * Math.sin(angle);
+                
+                // Pequeñas esferas de partículas
+                const grad = createRadialGradient(x - 3, y - 3, 0, 8, [
+                    colors[i % colors.length],
+                    'rgba(255, 255, 255, 0.8)',
+                    'rgba(255, 255, 255, 0)'
+                ]);
+                
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        // Dibujar filamentos de información (fractal)
+        function drawInformationFilaments() {
+            ctx.strokeStyle = 'rgba(255, 215, 0, 0.6)';
+            ctx.lineWidth = 1.5;
+            
+            const filamentCount = 12;
+            const maxLength = 320;
+            
+            for (let f = 0; f < filamentCount; f++) {
+                const baseAngle = (f / filamentCount) * Math.PI * 2;
+                
+                ctx.beginPath();
+                const startX = centerX + 40 * Math.cos(baseAngle);
+                const startY = centerY + 40 * Math.sin(baseAngle);
+                ctx.moveTo(startX, startY);
+                
+                // Crear filamento fractal
+                for (let i = 0; i < 100; i++) {
+                    const t = i / 100;
+                    const radius = 40 + maxLength * t;
+                    const angle = baseAngle + Math.sin(t * Math.PI * 3 + time * 0.02) * 0.3;
+                    
+                    const x = centerX + radius * Math.cos(angle);
+                    const y = centerY + radius * Math.sin(angle);
+                    ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+                
+                // Nodos brillantes en los filamentos
+                ctx.fillStyle = 'rgba(255, 215, 0, 0.8)';
+                for (let n = 0; n < 4; n++) {
+                    const t = (n + 1) / 5;
+                    const radius = 40 + maxLength * t;
+                    const angle = baseAngle + Math.sin(t * Math.PI * 3 + time * 0.02) * 0.3;
+                    
+                    const x = centerX + radius * Math.cos(angle);
+                    const y = centerY + radius * Math.sin(angle);
+                    
+                    const nodeGrad = createRadialGradient(x - 2, y - 2, 0, 6, [
+                        'rgba(255, 255, 255, 0.9)',
+                        'rgba(255, 215, 0, 0.5)',
+                        'rgba(255, 215, 0, 0)'
+                    ]);
+                    
+                    ctx.fillStyle = nodeGrad;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
+        
+        // Dibujar galaxias espirales
+        function drawGalaxies() {
+            const galaxyRadius = 280;
+            const galaxyCount = 5;
+            
+            for (let g = 0; g < galaxyCount; g++) {
+                const angle = (g / galaxyCount) * Math.PI * 2;
+                const gx = centerX + galaxyRadius * Math.cos(angle);
+                const gy = centerY + galaxyRadius * Math.sin(angle);
+                
+                // Disco galáctico
+                const galaxyGrad = createRadialGradient(gx, gy, 5, 25, [
+                    'rgba(255, 215, 0, 0.9)',
+                    'rgba(100, 150, 255, 0.6)',
+                    'rgba(100, 150, 255, 0.1)'
+                ]);
+                
+                ctx.fillStyle = galaxyGrad;
+                ctx.beginPath();
+                ctx.arc(gx, gy, 25, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Brazos espirales
+                ctx.strokeStyle = 'rgba(255, 215, 0, 0.4)';
+                ctx.lineWidth = 1;
+                for (let arm = 0; arm < 2; arm++) {
+                    ctx.beginPath();
+                    const armAngle = arm * Math.PI + time * 0.01;
+                    
+                    for (let r = 0; r < 20; r++) {
+                        const spiralR = r;
+                        const spiralAngle = armAngle + (r / 20) * Math.PI;
+                        const x = gx + spiralR * Math.cos(spiralAngle);
+                        const y = gy + spiralR * Math.sin(spiralAngle);
+                        
+                        if (r === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                    ctx.stroke();
+                }
+            }
+        }
+        
+        // Dibujar anotaciones
+        function drawAnnotations() {
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.7)';
+            ctx.font = '12px "Courier New"';
+            
+            // Esquina superior izquierda
+            ctx.textAlign = 'left';
+            ctx.fillText(`Δ_COD = ${constants.delta_cod}`, 30, 40);
+            ctx.fillText('(gap cuántico)', 30, 56);
+            
+            // Esquina superior derecha
+            ctx.textAlign = 'right';
+            ctx.fillText(`Ω_F = ${constants.omega_f} Hz`, canvas.width - 30, 40);
+            ctx.fillText('(frecuencia Fisher)', canvas.width - 30, 56);
+            
+            // Esquina inferior izquierda
+            ctx.textAlign = 'left';
+            ctx.fillText(`ξ = ${constants.xi} ± 0.28`, 30, canvas.height - 20);
+            ctx.fillText('(acoplamiento no-mínimo)', 30, canvas.height - 4);
+            
+            // Esquina inferior derecha
+            ctx.textAlign = 'right';
+            ctx.fillText(`K_i = φ·D_f/2.5`, canvas.width - 30, canvas.height - 20);
+            ctx.fillText('(R²=0.989, p<10⁻⁴⁸)', canvas.width - 30, canvas.height - 4);
+            
+            // Centro inferior
+            ctx.textAlign = 'center';
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.5)';
+            ctx.font = 'italic 11px "Courier New"';
+            ctx.fillText('ρ(x) > 0 — La información se expande', centerX, canvas.height - 40);
+        }
+        
+        // Función de animación principal
+        function animate() {
+            // Limpiar canvas con efecto de rastro
+            ctx.fillStyle = 'rgba(11, 12, 16, 0.95)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Dibujar en orden
+            drawGoldenSpirals();
+            drawConcentriRings();
+            drawShockWave();
+            drawPrimalParticles();
+            drawInformationFilaments();
+            drawGalaxies();
+            drawCoreNucleus();
+            drawAnnotations();
+            
+            time++;
+            requestAnimationFrame(animate);
+        }
+        
+        // Iniciar animación
+        animate();
+        
+        // Responsividad
+        window.addEventListener('resize', () => {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        });
+    </script>
 </body>
 </html>
