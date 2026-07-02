@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌌 CODEX MIU v2 — 7.24D Proyectado a 3D Real</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
+        #canvas-three { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: block; }
+        
+        #hud {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            color: #ffd700;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            z-index: 100;
+            background: rgba(10, 10, 15, 0.7);
+            padding: 12px 20px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 8px;
+            backdrop-filter: blur(8px);
+            pointer-events: none;
+        }
+
+        #instrucciones {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(10, 10, 15, 0.8);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: rgba(255, 215, 0, 0.7);
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            max-width: 280px;
+            z-index: 100;
+            pointer-events: all;
+        }
+
+        #volver {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 215, 0, 0.1);
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            color: #ffd700;
+            padding: 10px 16px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            border-radius: 6px;
+            z-index: 100;
+            transition: all 0.3s;
+            pointer-events: all;
+        }
+
+        #volver:hover {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: #ffd700;
+        }
+
+        .capilla-lista {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #ffd700;
+            font-family: Georgia, serif;
+            z-index: 200;
+        }
+
+        .capilla-lista h1 {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+        }
+
+        .capilla-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .capilla-btn {
+            background: rgba(26, 35, 126, 0.3);
+            border: 2px solid rgba(255, 215, 0, 0.4);
+            color: #ffd700;
+            padding: 2rem 1.5rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            font-family: Georgia, serif;
+            backdrop-filter: blur(10px);
+        }
+
+        .capilla-btn:hover {
+            border-color: #ffd700;
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(255, 215, 0, 0.3);
+            background: rgba(26, 35, 126, 0.5);
+        }
+
+        .capilla-btn h3 {
+            font-size: 1.4rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .capilla-btn p {
+            font-size: 0.9rem;
+            color: rgba(255, 215, 0, 0.6);
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV VUELTA -->
+<nav style="position:fixed;top:10px;left:10px;z-index:999;display:flex;gap:6px">
+  <a href="index.html" style="color:#ffd700;text-decoration:none;background:rgba(0,0,0,.78);border:1px solid rgba(255,215,0,.3);border-radius:5px;padding:4px 10px;font-family:'Courier New',monospace;font-size:11px;backdrop-filter:blur(4px)">← Galería</a>
+  <a href="../index.html" style="color:#ffd700;text-decoration:none;background:rgba(0,0,0,.78);border:1px solid rgba(255,215,0,.3);border-radius:5px;padding:4px 10px;font-family:'Courier New',monospace;font-size:11px;backdrop-filter:blur(4px)">Inicio</a>
+</nav>
+
+<div id="canvas-three"></div>
+
+<div id="hud">
+    <strong id="hud-titulo">CODEX MIU</strong><br>
+    <span id="hud-stats">D_eff = 7.24 | φ = 1.618 | K_i = φ·D_f/2.5</span>
+</div>
+
+<button id="volver" onclick="volverMenu()">← Volver</button>
+
+<div id="instrucciones">
+    <strong>Navegación:</strong><br>
+    🖱️ Arrastra: Rotar cámara<br>
+    🔍 Rueda: Zoom<br>
+    WASD: Movimiento libre<br>
+    ESPACIO: Arriba | CTRL: Abajo<br>
+    📌 Click: Interactuar<br>
+    ESC: Volver
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script>
+    // ============================================================
+    // CODEX MIU v2 — TRES.JS 7.24D ENGINE
+    // ============================================================
+
+    const CONST = {
+        PHI: 1.6180339887,
+        OMEGA_F: 0.65048305,
+        Q_BORN: 1.1910149,
+        PHI_C: 0.6829322,
+        XI: 8.57,
+        D_EFF: 7.24
+    };
+
+    let scene, camera, renderer;
+    let capillaActual = null;
+    let audioCtx = null;
+    let controls = {};
+    let menuVisible = true;
+
+    // ============================================================
+    // INICIALIZACIÓN THREE.JS
+    // ============================================================
+
+    function initThree() {
+        const container = document.getElementById('canvas-three');
+        
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0a0a0f);
+        scene.fog = new THREE.FogExp2(0x0a0a0f, 0.002);
+
+        camera = new THREE.PerspectiveCamera(
+            75,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            10000
+        );
+        camera.position.z = 5;
+
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFShadowShadowMap;
+        container.appendChild(renderer.domElement);
+
+        // Luz ambiental
+        const ambientLight = new THREE.AmbientLight(0xffd700, 0.4);
+        scene.add(ambientLight);
+
+        // Luz direccional
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(10, 20, 10);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.width = 2048;
+        directionalLight.shadow.mapSize.height = 2048;
+        scene.add(directionalLight);
+
+        // Input
+        setupInput();
+        window.addEventListener('resize', onWindowResize);
+        
+        mostrarMenu();
+    }
+
+    // ============================================================
+    // MENÚ PRINCIPAL
+    // ============================================================
+
+    function mostrarMenu() {
+        scene.clear();
+        menuVisible = true;
+
+        // Crear texto de bienvenida con Three.js
+        const canvas = document.createElement('canvas');
+        canvas.width = 2048;
+        canvas.height = 1024;
+        const ctx = canvas.getContext('2d');
+        
+        ctx.fillStyle = '#0a0a0f';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.fillStyle = '#ffd700';
+        ctx.font = 'bold 120px Georgia';
+        ctx.textAlign = 'center';
+        ctx.fillText('CODEX MIU', canvas.width / 2, 200);
+        
+        ctx.font = '40px Courier New';
+        ctx.fillStyle = 'rgba(255, 215, 0, 0.6)';
+        ctx.fillText('Voynich Multidimensional en 7.24D', canvas.width / 2, 300);
+        
+        ctx.font = '30px Georgia';
+        ctx.fillStyle = 'rgba(255, 215, 0, 0.4)';
+        ctx.fillText('ρ(x) > 0 — La información es el sustrato primordial', canvas.width / 2, 400);
+
+        const texture = new THREE.CanvasTexture(canvas);
+        const geometry = new THREE.PlaneGeometry(16, 8);
+        const material = new THREE.MeshBasicMaterial({ map: texture });
+        const mesh = new THREE.Mesh(geometry, material);
+        scene.add(mesh);
+
+        // Capillas
+        const capillas = [
+            { num: 1, nombre: '⚛️ Campo Primordial', desc: 'ρ(x) > 0' },
+            { num: 2, nombre: '🔗 Gradiente Ξ', desc: 'Figuras conectadas' },
+            { num: 3, nombre: '🌿 Coherencia K_i', desc: 'Paisaje fractal' },
+            { num: 4, nombre: '🪞 Auto-observación', desc: 'Espejos no euclídeos' },
+            { num: 5, nombre: '🌸 Estética Fractal', desc: 'Plantas imposibles' }
+        ];
+
+        // Crear botones como objetos 3D
+        capillas.forEach((cap, idx) => {
+            crearBotonCapilla(cap.num, cap.nombre, cap.desc, idx);
+        });
+
+        // Renderizar menú continuamente
+        function renderMenu() {
+            renderer.render(scene, camera);
+            requestAnimationFrame(renderMenu);
+        }
+        renderMenu();
+    }
+
+    function crearBotonCapilla(num, nombre, desc, idx) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 256;
+        const ctx = canvas.getContext('2d');
+
+        ctx.fillStyle = 'rgba(26, 35, 126, 0.3)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = 'rgba(255, 215, 0, 0.6)';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = '#ffd700';
+        ctx.font = 'bold 32px Georgia';
+        ctx.textAlign = 'center';
+        ctx.fillText(nombre, canvas.width / 2, 80);
+
+        ctx.font = '20px Courier New';
+        ctx.fillStyle = 'rgba(255, 215, 0, 0.6)';
+        ctx.fillText(desc, canvas.width / 2, 140);
+
+        ctx.font = '16px Courier New';
+        ctx.fillStyle = 'rgba(255, 215, 0, 0.4)';
+        ctx.fillText('Click para entrar', canvas.width / 2, 200);
+
+        const texture = new THREE.CanvasTexture(canvas);
+        const geometry = new THREE.PlaneGeometry(4, 2);
+        const material = new THREE.MeshBasicMaterial({ map: texture });
+        const mesh = new THREE.Mesh(geometry, material);
+
+        const totalCapillas = 5;
+        const angulo = (idx / totalCapillas) * Math.PI * 2;
+        const radio = 8;
+        
+        mesh.position.x = Math.cos(angulo) * radio;
+        mesh.position.y = Math.sin(angulo) * radio - 3;
+        mesh.userData.capilla = num;
+        mesh.userData.clickable = true;
+
+        scene.add(mesh);
+    }
+
+    function volverMenu() {
+        if (capillaActual) {
+            capillaActual.dispose();
+            capillaActual = null;
+        }
+        scene.clear();
+        menuVisible = true;
+        mostrarMenu();
+    }
+
+    // ============================================================
+    // CAPILLA 1: CAMPO PRIMORDIAL (PARTÍCULAS 3D + TEXTO)
+    // ============================================================
+
+    function crearCapillaCampoPrimordial() {
+        scene.clear();
+        menuVisible = false;
+        const container = document.querySelector('#hud-titulo');
+        container.textContent = '⚛️ El Campo Primordial (ρ(x) > 0)';
+
+        // Crear nube de partículas
+        const particlesCount = 2000;
+        const geometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(particlesCount * 3);
+        const colors = new Float32Array(particlesCount * 3);
+
+        for (let i = 0; i < particlesCount; i++) {
+            positions[i * 3] = (Math.random() - 0.5) * 50;
+            positions[i * 3 + 1] = (Math.random() - 0.5) * 50;
+            positions[i * 3 + 2] = (Math.random() - 0.5) * 50;
+
+            const luminosidad = Math.random();
+            colors[i * 3] = luminosidad * 1;
+            colors[i * 3 + 1] = luminosidad * 0.8;
+            colors[i * 3 + 2] = luminosidad * 0.3;
+        }
+
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+        const material = new THREE.PointsMaterial({
+            size: 0.5,
+            sizeAttenuation: true,
+            transparent: true,
+            opacity: 0.7,
+            vertexColors: true
+        });
+
+        const particles = new THREE.Points(geometry, material);
+        scene.add(particles);
+
+        // Crear esfera pulsante central
+        const sphereGeom = new THREE.IcosahedronGeometry(2, 6);
+        const sphereMat = new THREE.MeshPhongMaterial({
+            color: 0xffd700,
+            emissive: 0xffd700,
+            emissiveIntensity: 0.5,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.3
+        });
+        const sphere = new THREE.Mesh(sphereGeom, sphereMat);
+        scene.add(sphere);
+
+        // Animación
+        let time = 0;
+        const animate = () => {
+            requestAnimationFrame(animate);
+
+            particles.rotation.x += 0.0001;
+            particles.rotation.y += 0.0002;
+
+            sphere.scale.set(
+                1 + 0.3 * Math.sin(time * 0.01),
+                1 + 0.3 * Math.sin(time * 0.01),
+                1 + 0.3 * Math.sin(time * 0.01)
+            );
+
+            renderer.render(scene, camera);
+            time++;
+        };
+
+        capillaActual = {
+            dispose: () => {
+                particles.geometry.dispose();
+                particles.material.dispose();
+                sphere.geometry.dispose();
+                sphere.material.dispose();
+            },
+            animate: animate
+        };
+
+        animate();
+    }
+
+    // ============================================================
+    // CAPILLA 3: COHERENCIA K_i (PAISAJE FRACTAL INTERACTIVO)
+    // ============================================================
+
+    function crearCapillaCoherencia() {
+        scene.clear();
+        menuVisible = false;
+        const container = document.querySelector('#hud-titulo');
+        container.textContent = '🌿 Coherencia K_i (Paisaje Fractal)';
+
+        const gridSize = 20;
+        const nodos = [];
+        let coherenciaGlobal = 0.8;
+
+        // Crear grid de nodos
+        for (let x = 0; x < gridSize; x++) {
+            for (let z = 0; z < gridSize; z++) {
+                const geometry = new THREE.SphereGeometry(0.2, 8, 8);
+                const material = new THREE.MeshPhongMaterial({
+                    color: 0xffd700,
+                    emissive: 0xffd700,
+                    emissiveIntensity: 0.3
+                });
+                const sphere = new THREE.Mesh(geometry, material);
+
+                sphere.position.x = (x - gridSize / 2) * 1.5;
+                sphere.position.y = 0;
+                sphere.position.z = (z - gridSize / 2) * 1.5;
+
+                scene.add(sphere);
+
+                nodos.push({
+                    mesh: sphere,
+                    vivo: true,
+                    x: x,
+                    z: z
+                });
+            }
+        }
+
+        // Raycaster para clicks
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        window.addEventListener('click', (e) => {
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+
+            const nodosMeshes = nodos.map(n => n.mesh);
+            const intersects = raycaster.intersectObjects(nodosMeshes);
+
+            if (intersects.length > 0) {
+                const nodo = nodos.find(n => n.mesh === intersects[0].object);
+                if (nodo && nodo.vivo) {
+                    nodo.vivo = false;
+                    nodo.mesh.scale.set(0.1, 0.1, 0.1);
+                    coherenciaGlobal *= 0.95;
+                }
+            }
+        }, { once: false });
+
+        // Animación
+        let time = 0;
+        const animate = () => {
+            requestAnimationFrame(animate);
+
+            coherenciaGlobal += (0.8 - coherenciaGlobal) * 0.002;
+
+            nodos.forEach((nodo, idx) => {
+                if (nodo.vivo) {
+                    const Ki = CONST.PHI * 2.3 / 2.5 * coherenciaGlobal;
+                    const colorValue = Math.floor(255 * Ki);
+                    nodo.mesh.material.color.setHSL(
+                        0.15 + Ki * 0.2,
+                        1,
+                        0.3 + 0.2 * coherenciaGlobal
+                    );
+
+                    nodo.mesh.position.y = Math.sin(time * 0.01 + idx * 0.1) * 0.5;
+                }
+            });
+
+            document.querySelector('#hud-stats').textContent = 
+                `K_i = ${coherenciaGlobal.toFixed(3)} | Nodos: ${nodos.filter(n => n.vivo).length}/${nodos.length}`;
+
+            renderer.render(scene, camera);
+            time++;
+        };
+
+        capillaActual = {
+            dispose: () => {
+                nodos.forEach(n => {
+                    n.mesh.geometry.dispose();
+                    n.mesh.material.dispose();
+                });
+            },
+            animate: animate
+        };
+
+        animate();
+    }
+
+    // ============================================================
+    // CAPILLA 4: AUTO-OBSERVACIÓN (ESPEJOS NO EUCLÍDEOS)
+    // ============================================================
+
+    function crearCapillaSalaEspejos() {
+        scene.clear();
+        menuVisible = false;
+        const container = document.querySelector('#hud-titulo');
+        container.textContent = '🪞 Auto-observación A7 (Espejos Curvos)';
+
+        // Crear espejos anidados
+        for (let i = 1; i <= 8; i++) {
+            const radio = 3 + i * 1.2;
+            const geometry = new THREE.TorusGeometry(radio, 0.3, 16, 32);
+            const material = new THREE.MeshPhongMaterial({
+                color: 0xffd700,
+                emissive: 0xffd700,
+                emissiveIntensity: 0.3 / i,
+                transparent: true,
+                opacity: 0.6 - i * 0.05,
+                wireframe: true
+            });
+            const torus = new THREE.Mesh(geometry, material);
+            torus.rotation.x = Math.PI / 3 + i * 0.2;
+            torus.userData.layer = i;
+            scene.add(torus);
+        }
+
+        // Esfera central
+        const centerGeom = new THREE.IcosahedronGeometry(0.5, 4);
+        const centerMat = new THREE.MeshPhongMaterial({
+            color: 0xffd700,
+            emissive: 0xffd700,
+            emissiveIntensity: 0.8
+        });
+        const center = new THREE.Mesh(centerGeom, centerMat);
+        scene.add(center);
+
+        // Animación
+        let time = 0;
+        const animate = () => {
+            requestAnimationFrame(animate);
+
+            scene.children.forEach(child => {
+                if (child.userData.layer) {
+                    child.rotation.z += 0.001 / (child.userData.layer);
+                }
+            });
+
+            center.scale.set(
+                1 + 0.2 * Math.sin(time * 0.02),
+                1 + 0.2 * Math.sin(time * 0.02),
+                1 + 0.2 * Math.sin(time * 0.02)
+            );
+
+            renderer.render(scene, camera);
+            time++;
+        };
+
+        capillaActual = {
+            dispose: () => {
+                scene.children.forEach(child => {
+                    if (child.geometry) child.geometry.dispose();
+                    if (child.material) child.material.dispose();
+                });
+            },
+            animate: animate
+        };
+
+        animate();
+    }
+
+    // ============================================================
+    // CONTROLES Y INPUT
+    // ============================================================
+
+    function setupInput() {
+        controls = {
+            forward: false,
+            backward: false,
+            left: false,
+            right: false,
+            up: false,
+            down: false
+        };
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') volverMenu();
+            if (e.key === 'w' || e.key === 'W') controls.forward = true;
+            if (e.key === 'a' || e.key === 'A') controls.left = true;
+            if (e.key === 's' || e.key === 'S') controls.backward = true;
+            if (e.key === 'd' || e.key === 'D') controls.right = true;
+            if (e.key === ' ') controls.up = true;
+            if (e.key === 'Control') controls.down = true;
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.key === 'w' || e.key === 'W') controls.forward = false;
+            if (e.key === 'a' || e.key === 'A') controls.left = false;
+            if (e.key === 's' || e.key === 'S') controls.backward = false;
+            if (e.key === 'd' || e.key === 'D') controls.right = false;
+            if (e.key === ' ') controls.up = false;
+            if (e.key === 'Control') controls.down = false;
+        });
+
+        // Mouse drag para rotación
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+
+        document.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            previousMousePosition = { x: e.clientX, y: e.clientY };
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging && menuVisible) {
+                const deltaX = e.clientX - previousMousePosition.x;
+                const deltaY = e.clientY - previousMousePosition.y;
+                
+                camera.rotation.y += deltaX * 0.005;
+                camera.rotation.x += deltaY * 0.005;
+            }
+            previousMousePosition = { x: e.clientX, y: e.clientY };
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        // Zoom
+        document.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            camera.position.z += e.deltaY * 0.01;
+            camera.position.z = Math.max(2, Math.min(50, camera.position.z));
+        }, { passive: false });
+    }
+
+    function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    // ============================================================
+    // INICIACIÓN Y GESTIÓN DE CAPILLAS
+    // ============================================================
+
+    window.entrarCapilla = (num) => {
+        switch(num) {
+            case 1: crearCapillaCampoPrimordial(); break;
+            case 2: alert('Capilla 2 en desarrollo'); break;
+            case 3: crearCapillaCoherencia(); break;
+            case 4: crearCapillaSalaEspejos(); break;
+            case 5: alert('Capilla 5 en desarrollo'); break;
+        }
+    };
+
+    // Inicializar
+    initThree();
+    console.log('🌌 Codex MIU v2 inicializado');
+    console.log('ρ(x) > 0 — Zvvvvz');
+</script>
+
+</body>
+</html>
