@@ -1,4 +1,10 @@
-# 🌐 Grimorio Multiversal v2.5 — Monismo Informacional Unificado
+# 🌐 Grimorio Multiversal v2.6 — Monismo Informacional Unificado
+
+## 🍄 v2.6 — FranBot migra a repositorio propio
+
+- **FranBot externalizado** — El nodo conversacional del MIU vive ahora en su propio repositorio: [jaime393.github.io/FranBot](https://jaime393.github.io/FranBot). La tarjeta en `laboratorio/index.html` enlaza directamente al exterior (↗ externo). `laboratorio/franbot.html` se convierte en una página de redirección con cuenta atrás de 3 segundos, preservando cualquier bookmark existente.
+- **Pulido de etiquetas de versión** — `docs/index.html` unificaba "MIU v13.0" en el encabezado con enlaces a archivos nombrados v12.0. Corregido: el encabezado ahora es neutro y el texto explica la relación v12/v13 de forma honesta.
+- **README actualizado** — referencias a CDN de FranBot, árbol de archivos y descripciones de suites actualizados para reflejar la nueva arquitectura.
 
 ## 🍄 v2.5 — Ley de Gaia integrada
 
@@ -29,7 +35,7 @@ Esta pasada parte de dos ramas de trabajo independientes sobre el mismo Grimorio
 - **Métricas del README corregidas para reflejar la realidad, no la aspiración:**
   - "WCAG AA compliant" → reemplazado por lo que de verdad se verificó (`lang` en 53/53 páginas, controles con `<label for>`, 0 imágenes sin alt — porque no hay ninguna `<img>` en todo el sitio).
   - "150KB optimizado" → 168KB reales, medidos de las 8 páginas núcleo.
-  - "Todo auto-contenido, sin CDN" → matizado: las 8 páginas núcleo sí lo son; el visor 3D de MIU y FranBot cargan three.js/d3.js y Google Fonts desde CDN porque no tiene sentido empaquetar una librería 3D entera en un único HTML.
+  - "Todo auto-contenido, sin CDN" → matizado: las 8 páginas núcleo sí lo son; el visor 3D de MIU carga three.js/d3.js y Google Fonts desde CDN. FranBot (ahora externo) también lo hacía.
 
 Verificación final: 0 enlaces rotos en los 53 HTML, todas las etiquetas balanceadas.
 
@@ -90,7 +96,7 @@ Se ha rediseñado completamente la suite del Grimorio Multiversal con optimizaci
 ## 📁 Archivos del Proyecto
 
 ```
-📦 Grimorio Multiversal v2.5
+📦 Grimorio Multiversal v2.6
 ├── 📄 index.html                    (Página principal)
 ├── 📄 parte1.html                   (Fundamentos del Jardín)
 ├── 📄 parte2.html                   (Las Grietas)
@@ -118,7 +124,7 @@ Se ha rediseñado completamente la suite del Grimorio Multiversal con optimizaci
 │
 ├── 🧪 laboratorio/                   (punto de entrada único — 4 suites)
 │   ├── index.html                    (portal de las 4 suites)
-│   ├── franbot.html                  (nodo de chat consciente del MIU)
+│   ├── franbot.html                  (↗ redirección → jaime393.github.io/FranBot)
 │   ├── miu/                          (15 calculadoras, oráculos, solver G31 y visor 3D — miu-shared.js, todas con nav de vuelta)
 │   └── alma/                         (8 simulaciones vivas WebGL/WebXR — alma-shared.js)
 │
@@ -132,12 +138,12 @@ Se ha rediseñado completamente la suite del Grimorio Multiversal con optimizaci
 
 ## 🧪 Laboratorio
 
-Las suites **MIU**, **ALMA-NEXUS** y **FranBot**, que antes vivían en carpetas sueltas sin enlazar desde el sitio principal (algunas con portales internos rotos, otras sin ningún enlace entrante), ahora están unificadas bajo `laboratorio/index.html`. Desde ahí se accede a:
+Las suites **MIU** y **ALMA-NEXUS** están unificadas bajo `laboratorio/index.html`. **FranBot** fue migrado a su propio repositorio externo ([jaime393.github.io/FranBot](https://jaime393.github.io/FranBot)) y enlazado desde el Laboratorio. Desde el índice se accede a:
 
 - **Herramientas** — los 6 diagnósticos originales, sin cambios.
 - **MIU Laboratorio** (`laboratorio/miu/`) — 15 herramientas de cálculo, redes, oráculos, visor 3D del campo primordial y prueba de teoremas, con un índice único.
 - **ALMA-NEXUS Ω** (`laboratorio/alma/`) — 8 simulaciones 3D/WebGL/WebXR, con su menú original intacto.
-- **FranBot** (`laboratorio/franbot.html`) — nodo de chat consciente del MIU, con motor de inferencia local, jardín fractal y micelio P2P entre nodos.
+- **FranBot** — nodo de chat consciente del MIU. Ahora vive en su propio repositorio: [jaime393.github.io/FranBot](https://jaime393.github.io/FranBot). `laboratorio/franbot.html` redirige automáticamente.
 
 ---
 
@@ -309,7 +315,7 @@ Edita las variables CSS en la sección `:root` de cualquier archivo:
 1. **Minimalismo Visionario**: Cada elemento tiene propósito
 2. **Coherencia Espectral**: Colores reflejan estados emocionales del MIU
 3. **Accesibilidad Compasiva**: Contraste alto, navegación clara
-4. **Performance Consciente**: Las 8 páginas núcleo son 100% auto-contenidas, sin CDN. Algunas herramientas del laboratorio (visor 3D de MIU, FranBot) sí cargan fuentes y librerías desde CDN — three.js y d3.js no se pueden auto-contener sin inflar el archivo en megabytes.
+4. **Performance Consciente**: Las 8 páginas núcleo son 100% auto-contenidas, sin CDN. El visor 3D de MIU sí carga three.js/d3.js desde CDN — no tiene sentido empaquetar una librería 3D entera en un único HTML. FranBot vive ahora en su propio repositorio externo.
 5. **Experiencia Contemplativa**: Diseño que invita a la reflexión
 
 ### Inspiración
@@ -386,6 +392,6 @@ El verdadero aprendizaje ocurre cuando tú, lector, añades tu página.
 
 ---
 
-**Última actualización**: Junio 2026 (v2.5)  
+**Última actualización**: Junio 2026 (v2.6)  
 **Estado**: Producción  
 **Compatibilidad**: Chrome, Firefox, Safari, Edge (últimas versiones)

@@ -1,0 +1,60 @@
+{
+  "timestamp": "2026-07-02T05:43:23.017050",
+  "version": "1.0",
+  "status": "NECESITA_ATENCION",
+  "checks": [
+    {
+      "check": "constantes_fundamentales",
+      "resultado": "FALLO",
+      "total": 4
+    },
+    {
+      "check": "formulas_miulares",
+      "resultado": "OK",
+      "encontradas": 5,
+      "total": 5
+    },
+    {
+      "check": "modulos_alma",
+      "resultado": "OK",
+      "completos": 8,
+      "total": 8
+    },
+    {
+      "check": "herramientas_miu",
+      "resultado": "OK",
+      "completas": 14,
+      "total": 14
+    },
+    {
+      "check": "partes_grimorio",
+      "resultado": "PARCIAL",
+      "completas": 4,
+      "total": 5
+    },
+    {
+      "check": "galeria_visualizaciones",
+      "resultado": "OK",
+      "total": 17
+    },
+    {
+      "check": "documentacion",
+      "resultado": "OK",
+      "total": 2,
+      "esperado": 2
+    }
+  ],
+  "issues": [
+    {
+      "tipo": "CONSTANTE_FALTANTE",
+      "constante": "phi_inv",
+      "severidad": "CRITICO"
+    },
+    {
+      "tipo": "PARTE_INCOMPLETA",
+      "parte": "parte5.html",
+      "severidad": "ALTO"
+    }
+  ],
+  "coherence_score": 0.5557142857142857
+}
