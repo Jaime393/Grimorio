@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>La Ley K_i — Coherencia Fractal Universal · MIU-IFT v14.1</title>
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html, body { background:#0a0a0a; font-family:'Georgia',serif; overflow:hidden; width:100%; height:100%; }
+    canvas { display:block; position:fixed; top:0; left:0; width:100%; height:100%; }
+
+    #topnav {
+      position:fixed; top:12px; left:12px; z-index:200;
+      display:flex; gap:6px; font-family:'Courier New',monospace; font-size:11px;
+    }
+    #topnav a {
+      color:#ffd700; text-decoration:none; background:rgba(10,10,15,.8);
+      border:1px solid rgba(255,215,0,.3); border-radius:6px; padding:5px 10px;
+      backdrop-filter:blur(6px); transition:all .2s;
+    }
+    #topnav a:hover { background:rgba(255,215,0,.12); border-color:#ffd700; }
+
+    #titulo {
+      position:fixed; top:10px; left:50%; transform:translateX(-50%);
+      text-align:center; pointer-events:none; z-index:100;
+      width:max-content; max-width:calc(100vw - 220px);
+    }
+    #titulo h1 {
+      color:rgba(255,215,0,.9); font-size:clamp(12px,1.6vw,20px);
+      font-weight:normal; letter-spacing:2px;
+      text-shadow:0 0 18px rgba(255,215,0,.4);
+    }
+    #titulo p {
+      color:rgba(255,215,0,.55); font-size:clamp(9px,1vw,13px);
+      font-family:'Courier New',monospace; margin-top:2px; letter-spacing:1px;
+    }
+
+    #footer {
+      position:fixed; bottom:8px; left:50%; transform:translateX(-50%);
+      color:rgba(255,215,0,.45); font-size:clamp(8px,.78vw,10px);
+      font-family:'Courier New',monospace; text-align:center; pointer-events:none;
+      z-index:100; white-space:nowrap;
+    }
+
+    /* Leyenda: derecha, centrada verticalmente, fuera del área de anotaciones */
+    #leyenda {
+      position:fixed; right:12px; top:50%; transform:translateY(-50%);
+      z-index:100; display:flex; flex-direction:column; gap:10px;
+      pointer-events:none;
+    }
+    .zona-item { display:flex; align-items:flex-start; gap:7px; font-family:'Courier New',monospace; font-size:clamp(8px,.8vw,11px); }
+    .zona-dot  { width:9px; height:9px; border-radius:50%; flex-shrink:0; margin-top:2px; }
+    .zona-label{ color:rgba(255,215,0,.75); }
+    .zona-val  { color:rgba(255,215,0,.42); font-size:.9em; }
+
+    #controles {
+      position:fixed; bottom:36px; right:12px; z-index:200;
+      display:flex; flex-direction:column; gap:6px;
+    }
+    #controles button {
+      background:rgba(10,10,15,.8); border:1px solid rgba(255,215,0,.3);
+      border-radius:6px; color:#ffd700; font-family:'Courier New',monospace;
+      font-size:11px; padding:5px 10px; cursor:pointer;
+      backdrop-filter:blur(6px); transition:all .2s;
+    }
+    #controles button:hover { background:rgba(255,215,0,.12); border-color:#ffd700; }
+
+    #info-panel {
+      position:fixed; left:12px; bottom:90px; z-index:200; max-width:210px;
+      background:rgba(8,10,18,.88); border:1px solid rgba(255,215,0,.25);
+      border-radius:8px; padding:14px; font-family:'Courier New',monospace;
+      font-size:10px; color:rgba(255,215,0,.72); line-height:1.8;
+      backdrop-filter:blur(8px); display:none;
+    }
+    #info-panel b    { color:rgba(255,215,0,.95); }
+    #info-panel .warn{ color:rgba(255,100,100,.82); }
+  </style>
+</head>
+<body>
+
+<nav id="topnav">
+  <a href="index.html">← Galería</a>
+  <a href="../index.html">Inicio</a>
+</nav>
+
+<div id="titulo">
+  <h1>La Ley de Coherencia Fractal Universal</h1>
+  <p>K_i = φ⁻¹ · D_f / 2.5</p>
+</div>
+
+<canvas id="c"></canvas>
+
+<!-- Leyenda derecha — zona media, no toca las anotaciones de esquina -->
+<div id="leyenda">
+  <div class="zona-item">
+    <div class="zona-dot" style="background:#2e7d32"></div>
+    <div><div class="zona-label">Alta D_f ≥ 2.3</div><div class="zona-val">Tropical · K_i ≈ 0.61</div></div>
+  </div>
+  <div class="zona-item">
+    <div class="zona-dot" style="background:#b58900"></div>
+    <div><div class="zona-label">Media D_f 1.8–2.3</div><div class="zona-val">Templado · K_i ≈ 0.57</div></div>
+  </div>
+  <div class="zona-item">
+    <div class="zona-dot" style="background:#7d4c28"></div>
+    <div><div class="zona-label">Baja D_f ≤ 1.5</div><div class="zona-val">Sabana · K_i ≈ 0.35</div></div>
+  </div>
+</div>
+
+<div id="controles">
+  <button id="btn-pausa">⏸ Pausa</button>
+  <button id="btn-info">ℹ Info</button>
+  <button id="btn-regen">🌱 Regen</button>
+</div>
+
+<div id="info-panel">
+  <b>Ley K_i</b><br>
+  K_i = φ⁻¹ · D_f / 2.5<br><br>
+  φ⁻¹ = 0.618 (inverso áureo)<br>
+  D_f = dimensión fractal<br>
+  K_i = coherencia sistémica<br><br>
+  <b>R² = 0.989</b> (350 sistemas)<br>
+  <span class="warn">⚠ Consistencia interna.<br>Validación externa pendiente.</span><br><br>
+  🟢 Tropical D_f 2.3–2.5<br>
+  🟡 Templado D_f 1.8–2.3<br>
+  🔴 Sabana   D_f 1.3–1.5<br><br>
+  MIU-IFT v14.1
+</div>
+
+<div id="footer">
+  MIU-IFT v14.1 · K_i=φ⁻¹·D_f/2.5 · 350 sistemas · R²=0.989 (consistencia interna) · validación externa pendiente
+</div>
+
+<script>
+'use strict';
+const canvas  = document.getElementById('c');
+const ctx     = canvas.getContext('2d');
+const PHI     = 1.6180339887;   // razón áurea — usado en espirales de Fibonacci
+const PHI_INV = 0.6180339887;   // φ⁻¹ = 1/φ — correcto para escala Ki (A10 MIU-IFT v5.3)
+
+let W, H, CX, CY, time = 0, paused = false;
+let trees = [];
+
+/* ── PRNG con semilla ── */
+function mkRng(seed) {
+  let s = seed >>> 0;
+  return () => {
+    s += 0x6D2B79F5;
+    let t = Math.imul(s ^ s >>> 15, 1 | s);
+    t ^= t + Math.imul(t ^ t >>> 7, 61 | t);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+/* ── Árbol fractal ── */
+class Arbol {
+  constructor(x, y, ang, prof, maxP, Df, lon0, r) {
+    this.x = x; this.y = y; this.ang = ang; this.prof = prof;
+    this.Df = Df; this.Ki = (PHI_INV * Df) / 2.5;  // φ⁻¹·Df/2.5, ℓcorr/ℓ0=1 (default)
+    this.lon  = lon0 * Math.pow(0.67, prof);
+    this.gros = Math.max(0.25, 3.2 - prof * 0.40);
+    this.hijos = [];
+    if (prof < maxP && r() > 0.10) this._rama(r, maxP);
+  }
+  _rama(r, maxP) {
+    const n = this.Df > 2.3 ? 3 + Math.floor(r() * 2)
+            : this.Df > 1.8 ? 2 + Math.floor(r() * 2)
+            :                  1 + Math.floor(r() * 1.5);
+    for (let i = 0; i < n; i++) {
+      const da = (r() - .5) * (Math.PI / 2.4) * (1 + this.prof * .07);
+      const na = this.ang + da;
+      this.hijos.push(new Arbol(
+        this.x + this.lon * Math.cos(na),
+        this.y + this.lon * Math.sin(na),
+        na, this.prof + 1, maxP, this.Df, this.lon / 0.67, r
+      ));
+    }
+  }
+  _col() {
+    const d = this.prof;
+    if (this.Df > 2.3) return `hsl(${115 - d*7},${76 - d*2}%,${Math.max(18, 46 - d*6)}%)`;
+    if (this.Df > 1.8) return `hsl(${40  - d*3},${62 - d*2}%,${Math.max(20, 48 - d*5)}%)`;
+    return                     `hsl(28,${50 - d}%,${Math.max(24, 42 - d*4)}%)`;
+  }
+  draw(t) {
+    if (this.lon < 1.0) return;
+    const ex = this.x + this.lon * Math.cos(this.ang);
+    const ey = this.y + this.lon * Math.sin(this.ang);
+    ctx.globalAlpha = 0.70 + 0.24 * Math.sin(t * .007 + this.prof * .5);
+    ctx.strokeStyle = this._col();
+    ctx.lineWidth   = Math.max(0.2, this.gros * (0.84 + 0.16 * Math.sin(t * .009 + this.prof * .6)));
+    ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(this.x, this.y); ctx.lineTo(ex, ey); ctx.stroke();
+    ctx.globalAlpha = 1;
+    this.hijos.forEach(h => h.draw(t));
+  }
+}
+
+/*
+ * LAYOUT DEL BOSQUE
+ * -----------------
+ * El canvas se divide en 3 coronas:
+ *
+ *   Corona exterior (borde)  → árboles tropicales y sabana plantados HACIA ADENTRO
+ *   Corona intermedia        → árboles templados, también orientados al centro
+ *   Claro central            → radio = clearR (≈ 28% del viewport mínimo)
+ *                              Monolito, espirales y anillos viven aquí
+ *
+ * Los árboles apuntan siempre HACIA el centro (ang = atan2(CY-y, CX-x) - PI/2)
+ * para que crezcan de afuera hacia adentro y NUNCA se superpongan al claro.
+ *
+ * lon0 base se escala para que la copa del árbol llegue hasta ~clearR + buffer.
+ */
+
+let clearR; // radio del claro central en px — se recalcula en resize()
+
+function angHaciaCenter(x, y) {
+  return Math.atan2(CY - y, CX - x) - Math.PI / 2;
+}
+
+function generar(seed = 42) {
+  const r = mkRng(seed);
+  trees = [];
+
+  // clearR = 28% del lado corto — garantiza claro visible
+  clearR = Math.min(W, H) * 0.28;
+
+  // ── CORONA EXTERIOR: tropicales ──
+  // 20 árboles distribuidos en ángulos regulares cerca del borde
+  const nTrop = 20;
+  for (let i = 0; i < nTrop; i++) {
+    const ang    = (i / nTrop) * Math.PI * 2 + (r() - .5) * 0.22;
+    const dist   = Math.min(W, H) * (.44 + r() * .06); // 44–50% del lado corto desde el centro
+    // clamp al canvas con margen de 8px — evita huecos angulares por skip
+    const x = Math.max(8, Math.min(W - 8, CX + dist * Math.cos(ang)));
+    const y = Math.max(8, Math.min(H - 8, CY + dist * Math.sin(ang)));
+    const lon0 = (dist - clearR) * (.48 + r() * .14);
+    trees.push(new Arbol(x, y, angHaciaCenter(x, y), 0, 6,
+      2.38 + r() * .14, lon0, r));
+  }
+
+  // ── CORONA MEDIA: templados ──
+  const nTemp = 16;
+  for (let i = 0; i < nTemp; i++) {
+    const ang  = (i / nTemp) * Math.PI * 2 + (r() - .5) * 0.28;
+    const dist = Math.min(W, H) * (.34 + r() * .06);
+    const x    = Math.max(8, Math.min(W - 8, CX + dist * Math.cos(ang)));
+    const y    = Math.max(8, Math.min(H - 8, CY + dist * Math.sin(ang)));
+    const lon0 = (dist - clearR) * (.42 + r() * .14);
+    trees.push(new Arbol(x, y, angHaciaCenter(x, y), 0, 5,
+      1.90 + r() * .30, lon0, r));
+  }
+
+  // ── BORDE: sabana ──
+  const nSab = 14;
+  for (let i = 0; i < nSab; i++) {
+    const ang  = (i / nSab) * Math.PI * 2 + (r() - .5) * 0.30;
+    const dist = Math.min(W, H) * (.50 + r() * .04);
+    const x    = Math.max(8, Math.min(W - 8, CX + dist * Math.cos(ang)));
+    const y    = Math.max(8, Math.min(H - 8, CY + dist * Math.sin(ang)));
+    const lon0 = (dist - clearR) * (.35 + r() * .10);
+    trees.push(new Arbol(x, y, angHaciaCenter(x, y), 0, 4,
+      1.28 + r() * .20, lon0, r));
+  }
+}
+
+/* ── Estrellas (solo en el claro central y bordes oscuros) ── */
+let stars = [];
+function genStars() {
+  const r2 = mkRng(77); stars = [];
+  const n = Math.min(180, Math.floor(W * H / 6000));
+  for (let i = 0; i < n; i++) {
+    // puntos dentro del claro o en bordes alejados del bosque
+    const ang  = r2() * Math.PI * 2;
+    const dist = r2() < .55
+      ? r2() * clearR * .85                               // dentro del claro
+      : Math.min(W, H) * (.55 + r2() * .1);              // más allá del bosque
+    stars.push({
+      x: CX + dist * Math.cos(ang),
+      y: CY + dist * Math.sin(ang),
+      sz: .25 + r2() * 1.0,
+      ph: r2() * Math.PI * 2
+    });
+  }
+}
+
+/* ── Fondo ── */
+function fondo() {
+  const g = ctx.createRadialGradient(CX, CY, 0, CX, CY, Math.max(W, H) * .7);
+  g.addColorStop(0,  '#0d1b2a');
+  g.addColorStop(.18,'#112818');
+  g.addColorStop(.42,'#1a3a1a');
+  g.addColorStop(.70,'#122012');
+  g.addColorStop(1,  '#080d08');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+}
+
+function estrellas() {
+  stars.forEach(s => {
+    const a = .15 + .55 * Math.abs(Math.sin(time * .005 + s.ph));
+    ctx.fillStyle = `rgba(255,255,220,${a})`;
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.sz, 0, Math.PI * 2); ctx.fill();
+  });
+}
+
+/* ── Claro central con halo, espiral y monolito ── */
+function claro() {
+  const cx = CX, cy = CY;
+
+  // Halo luminoso del claro
+  const halo = ctx.createRadialGradient(cx, cy, clearR * .1, cx, cy, clearR * 1.15);
+  halo.addColorStop(0,   'rgba(255,250,140,.22)');
+  halo.addColorStop(.35, 'rgba(180,200,80,.10)');
+  halo.addColorStop(.75, 'rgba(80,130,80,.04)');
+  halo.addColorStop(1,   'rgba(20,60,20,0)');
+  ctx.fillStyle = halo;
+  ctx.beginPath(); ctx.arc(cx, cy, clearR * 1.15, 0, Math.PI * 2); ctx.fill();
+
+  // Espirales de Fibonacci — centradas en el monolito, confinadas al claro
+  espiralesFibonacci(cx, cy, clearR * .82);
+
+  // Monolito
+  monolito(cx, cy);
+
+  // Columna de luz hacia arriba
+  columnaLuz(cx, cy);
+}
+
+function espiralesFibonacci(cx, cy, maxR) {
+  ctx.globalAlpha = .08; ctx.strokeStyle = '#b8860b'; ctx.lineWidth = 1.4;
+  for (let s = 0; s < 3; s++) {
+    const rot = (s * Math.PI * 2) / 3 + time * .0006;
+    ctx.beginPath();
+    for (let i = 0; i < 200; i++) {
+      const t  = i / 16 + rot;
+      const rr = 10 * Math.pow(PHI, t / (Math.PI * 2));
+      if (rr > maxR) break;
+      const px = cx + rr * Math.cos(t), py = cy + rr * Math.sin(t);
+      i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+}
+
+function monolito(cx, cy) {
+  const sz = clearR * .115; // tamaño relativo al claro — siempre proporcional
+
+  // Triángulo dorado
+  ctx.strokeStyle = 'rgba(255,215,0,.92)'; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(cx - sz, cy + sz * 1.75);
+  ctx.lineTo(cx,      cy - sz * 1.35);
+  ctx.lineTo(cx + sz, cy + sz * 1.75);
+  ctx.closePath(); ctx.stroke();
+
+  // Relleno con gradiente
+  const mg = ctx.createLinearGradient(cx, cy - sz * 1.35, cx, cy + sz * 1.75);
+  mg.addColorStop(0,   'rgba(255,255,255,.22)');
+  mg.addColorStop(.5,  'rgba(255,215,0,.08)');
+  mg.addColorStop(1,   'rgba(255,200,0,.14)');
+  ctx.fillStyle = mg;
+  ctx.beginPath();
+  ctx.moveTo(cx - sz, cy + sz * 1.75);
+  ctx.lineTo(cx,      cy - sz * 1.35);
+  ctx.lineTo(cx + sz, cy + sz * 1.75);
+  ctx.closePath(); ctx.fill();
+
+  // Brillo central
+  const ng = ctx.createRadialGradient(cx, cy - sz * .3, 2, cx, cy, sz * 1.4);
+  ng.addColorStop(0,   'rgba(255,255,255,.68)');
+  ng.addColorStop(.35, 'rgba(255,215,0,.32)');
+  ng.addColorStop(1,   'rgba(255,215,0,0)');
+  ctx.fillStyle = ng;
+  ctx.beginPath(); ctx.arc(cx, cy, sz * 1.4, 0, Math.PI * 2); ctx.fill();
+
+  // Fórmula debajo del triángulo (única etiqueta central)
+  const fs = Math.min(14, Math.max(9, W * .0085));
+  ctx.fillStyle = 'rgba(255,215,0,.92)';
+  ctx.font = `bold ${fs}px "Courier New"`;
+  ctx.textAlign = 'center';
+  ctx.fillText('K_i = φ⁻¹ · D_f / 2.5', cx, cy + sz * 3.0);
+}
+
+function columnaLuz(cx, cy) {
+  const sz  = clearR * .115;
+  const top = -H * .015; // termina ligeramente fuera del canvas — efecto de luz que sube
+  const al  = .48 + .36 * Math.sin(time * .013);
+  const cg  = ctx.createLinearGradient(cx, cy - sz * 1.35, cx, top);
+  cg.addColorStop(0,   `rgba(255,215,0,${al})`);
+  cg.addColorStop(.4,  'rgba(255,255,200,.24)');
+  cg.addColorStop(1,   'rgba(255,215,0,.02)');
+  ctx.strokeStyle = cg; ctx.lineWidth = 14; ctx.globalAlpha = al;
+  ctx.beginPath(); ctx.moveTo(cx, cy - sz * 1.35); ctx.lineTo(cx, top); ctx.stroke();
+  ctx.lineWidth = 32; ctx.globalAlpha = al * .18;
+  ctx.beginPath(); ctx.moveTo(cx, cy - sz * 1.35); ctx.lineTo(cx, top); ctx.stroke();
+  ctx.globalAlpha = 1;
+}
+
+/*
+ * ANILLOS CONCÉNTRICOS
+ * --------------------
+ * Centrados en CX, CY (igual que el monolito).
+ * Radio máximo acotado a clearR * .95 para que NUNCA invadan el bosque.
+ * Las estadísticas se escriben dentro del anillo más grande, en la parte inferior,
+ * usando textAlign='center' para que no choquen con la leyenda lateral.
+ */
+function anillosHumo() {
+  const nRings = 4;
+  // Radios escalados: el mayor no puede superar clearR * .9
+  const maxRing = clearR * .88;
+  const minRing = clearR * .18;
+
+  for (let ring = 0; ring < nRings; ring++) {
+    const t01 = ring / (nRings - 1); // 0 → 1
+    const rr  = minRing + (maxRing - minRing) * t01
+              + Math.sin(time * .007 + ring * .55) * clearR * .025;
+    const al  = .50 - ring * .09;
+
+    // Anillo exterior azul índigo
+    ctx.strokeStyle = `rgba(40,60,180,${al})`;
+    ctx.lineWidth   = 2.2;
+    ctx.beginPath(); ctx.arc(CX, CY, rr, 0, Math.PI * 2); ctx.stroke();
+
+    // Anillo interior púrpura sutil
+    ctx.strokeStyle = `rgba(130,30,170,${al * .55})`;
+    ctx.lineWidth   = 1.1;
+    ctx.beginPath(); ctx.arc(CX, CY, rr * .80, 0, Math.PI * 2); ctx.stroke();
+  }
+
+  // Estadísticas: una sola etiqueta dentro del anillo exterior
+  // Posición: debajo del monolito pero dentro del claro
+  const statsY = CY + maxRing * .68;
+  const fs     = Math.min(10, Math.max(7, W * .007));
+  ctx.textAlign  = 'center';
+  ctx.font       = `bold ${fs}px "Courier New"`;
+  ctx.fillStyle  = 'rgba(80,100,220,.65)';
+  ctx.fillText('R²=0.989  p<10⁻⁴⁸  n=350', CX, statsY);
+}
+
+/*
+ * ANOTACIONES DE ESQUINA
+ * ----------------------
+ * 4 ejemplos, uno por esquina, con pill oscuro.
+ * py fijo en px para respetar el título (top) y footer (bottom).
+ * Nunca se superponen con la leyenda (derecha) ni los controles.
+ */
+function anotaciones() {
+  const fs   = Math.min(11, Math.max(7, W * .0075));
+  const topY = 78;        // debajo del título (título termina ~70px)
+  const botY = H - 46;   // línea2 cae en botY+fs*1.35≈H-31, footer en H-22 → margen ~9px seguro
+
+  const items = [
+    { align:'left',  x:16,    py:topY, t:'Microtúbulos', s:'D_f=2.50  K_i=0.618',        warn:false },
+    { align:'left',  x:16,    py:botY, t:'Clima global',  s:'D_f=1.40  K_i=0.346  ⚠',    warn:true  },
+    { align:'right', x:W-128, py:topY, t:'Manglares',     s:'D_f=2.28  K_i=0.587',        warn:false },
+    { align:'right', x:W-128, py:botY, t:'CMB',           s:'D_f=2.305 K_i=0.570',        warn:false },
+  ];
+
+  items.forEach(it => {
+    ctx.font = `bold ${fs}px "Courier New"`;
+    const tw1 = ctx.measureText(it.t).width;
+    ctx.font  = `${fs - 1}px "Courier New"`;
+    const tw2 = ctx.measureText(it.s).width;
+    const mw  = Math.max(tw1, tw2);
+    const pad = 6;
+
+    // Pill oscuro detrás del texto
+    // fillRect simple — compat. Safari y Chrome<99
+    const bx = it.x - pad;
+    const by = it.py - fs * 1.5;
+    const bw = mw + pad * 2;
+    const bh = fs * 3.0;
+    ctx.fillStyle = 'rgba(5,7,12,0.82)';
+    ctx.fillRect(bx, by, bw, bh);
+
+    // Línea 1: nombre
+    ctx.textAlign = 'left';
+    const tx = it.align === 'right' ? it.x : it.x;
+    ctx.fillStyle = it.warn ? 'rgba(255,90,90,.92)' : 'rgba(255,215,0,.90)';
+    ctx.font = `bold ${fs}px "Courier New"`;
+    ctx.fillText(it.t, tx, it.py);
+
+    // Línea 2: datos
+    ctx.fillStyle = 'rgba(255,215,0,.52)';
+    ctx.font = `${fs - 1}px "Courier New"`;
+    ctx.fillText(it.s, tx, it.py + fs * 1.35);
+  });
+}
+
+/* ── Resize ── */
+function resize() {
+  const dpr = window.devicePixelRatio || 1;
+  W = window.innerWidth;
+  H = window.innerHeight;
+  canvas.width  = Math.round(W * dpr);
+  canvas.height = Math.round(H * dpr);
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  CX = W / 2; CY = H / 2;
+  genStars();
+  generar();
+}
+
+/* ── Loop ── */
+function loop() {
+  if (!paused) {
+    fondo();
+    estrellas();
+    trees.forEach(t => t.draw(time));
+    claro();         // halo + espirales + monolito + columna de luz
+    anillosHumo();   // anillos concéntricos + estadística única centrada
+    anotaciones();   // 4 esquinas, una sola capa
+    time++;
+  }
+  requestAnimationFrame(loop);
+}
+
+/* ── Controles ── */
+document.getElementById('btn-pausa').addEventListener('click', function () {
+  paused = !paused; this.textContent = paused ? '▶ Reanudar' : '⏸ Pausa';
+});
+document.getElementById('btn-info').addEventListener('click', function () {
+  const p = document.getElementById('info-panel');
+  p.style.display = p.style.display === 'block' ? 'none' : 'block';
+});
+document.getElementById('btn-regen').addEventListener('click', () => {
+  generar(Math.floor(Math.random() * 9999));
+});
+
+let _rt;
+window.addEventListener('resize', () => { clearTimeout(_rt); _rt = setTimeout(resize, 120); });
+
+resize(); loop();
+</script>
+</body>
+</html>

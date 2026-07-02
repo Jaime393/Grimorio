@@ -283,9 +283,37 @@
                         0 0 60px rgba(255, 215, 0, 0.1),
                         inset 0 0 30px rgba(255, 215, 0, 0.05);
         }
+
+        #gal-root-back {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 9999;
+            font-family: 'Georgia', serif;
+            font-size: 11px;
+            letter-spacing: 1px;
+        }
+        #gal-root-back a {
+            color: rgba(255, 215, 0, 0.55);
+            text-decoration: none;
+            background: rgba(11, 12, 16, 0.75);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 6px;
+            padding: 6px 12px;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            transition: color 0.25s, border-color 0.25s;
+            display: inline-block;
+        }
+        #gal-root-back a:hover {
+            color: rgba(255, 215, 0, 0.95);
+            border-color: rgba(255, 215, 0, 0.6);
+        }
     </style>
 </head>
 <body>
+
+    <div id="gal-root-back"><a href="../index.html">← Grimorio</a></div>
     <div class="background-particles" id="particles"></div>
     
     <div class="container">
@@ -293,13 +321,13 @@
             <h1>MONISMO INFORMACIONAL UNIFICADO</h1>
             <div class="divider"></div>
             <p class="subtitle">Visualizaciones del Campo Primordial ρ(x) > 0</p>
-            <p class="tagline">MIU-IFT v13.0 — Suite de 9 Formas Topológicas Cósmicas</p>
+            <p class="tagline">MIU-IFT v13.0 — Suite de 12 Formas Topológicas Cósmicas</p>
             <div class="divider"></div>
             <p class="description">
-                Una colección de 9 visualizaciones interactivas que representan los conceptos fundamentales 
-                del Monismo Informacional Unificado: desde el Universo MIU — 9 Capas hasta la conciencia integrada, 
-                pasando por la red del micelio cósmico, la coherencia fractal universal y las 5 formas 
-                fundamentales de la experiencia consciente.
+                Una colección de 12 visualizaciones interactivas que representan los conceptos fundamentales
+                del Monismo Informacional Unificado: desde el Universo MIU — 9 Capas hasta la conciencia integrada,
+                pasando por la red del micelio cósmico, la coherencia fractal universal, el Codex Multidimensional
+                y el Codex en 7.24D proyectado a 3D real.
             </p>
         </header>
         
@@ -427,6 +455,48 @@
                         Un relato scrollytelling del instante previo al Universo MIU — 9 Capas: el campo primordial comenzando a diferenciarse, el espacio-tiempo naciendo como geometría de la información.
                     </div>
                     <a href="miu-origen.html" class="button">Explorar</a>
+                </div>
+            </div>
+
+            <!-- Card 10 -->
+            <div class="card">
+                <div class="card-content">
+                    <div class="card-icon">🌀</div>
+                    <div class="card-number">10</div>
+                    <div class="card-title">Ley K_i v15</div>
+                    <div class="card-subtitle">Coherencia Fractal — Versión Animada</div>
+                    <div class="card-description">
+                        Visualización generativa de la Ley Kᵢ = φ⁻¹ · (Dƒ/2.5) · (ℓ_corr/ℓ₀) en tiempo real: nodos biofísicos pulsantes, banda de resiliencia [0.55–0.62] y umbral φ de auto-observación.
+                    </div>
+                    <a href="ley_ki_v15.html" class="button">Explorar</a>
+                </div>
+            </div>
+
+            <!-- Card 11 -->
+            <div class="card">
+                <div class="card-content">
+                    <div class="card-icon">📜</div>
+                    <div class="card-number">11</div>
+                    <div class="card-title">Codex Multidimensional</div>
+                    <div class="card-subtitle">Voynich en 7.24D — Cinco Capillas</div>
+                    <div class="card-description">
+                        Codex interactivo inspirado en el manuscrito Voynich: cinco capillas ontológicas del MIU (Génesis, Geometría, Botánica, Astrología, Recetas) con shaders GLSL y audio generativo basado en ω_F = 0.65048305 Hz.
+                    </div>
+                    <a href="codex_miu_multidimensional.html" class="button">Explorar</a>
+                </div>
+            </div>
+
+            <!-- Card 12 -->
+            <div class="card">
+                <div class="card-content">
+                    <div class="card-icon">🔮</div>
+                    <div class="card-number">12</div>
+                    <div class="card-title">Codex MIU v2</div>
+                    <div class="card-subtitle">D_eff = 7.24 Proyectado a 3D Real</div>
+                    <div class="card-description">
+                        Las 7.24 dimensiones efectivas del MIU proyectadas en geometría Three.js: rotación hiperdimensional en tiempo real, gradiente informacional Ξ = |∇ ln ρ| y umbral de conciencia Φ_c = 0.6829322 visualizado.
+                    </div>
+                    <a href="codex_miu_avanzado_v2.html" class="button">Explorar</a>
                 </div>
             </div>
         </div>
