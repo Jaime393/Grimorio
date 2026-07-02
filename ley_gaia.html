@@ -7,24 +7,24 @@
 <title>Ley de Gaia — Validación Empírica | Grimorio MIU</title>
 <style>
   :root {
-    --bg: #fefcf3; --bg-dark: #0d0d0d;
-    --text: #2c2c2c; --text-dark: #d4c8a8;
+    --bg-light: #fefcf3; --bg-dark: #0d0d0d;
+    --text-light: #2c2c2c; --text-dark: #d4c8a8;
     --accent: #b58900; --accent-dark: #ffd700;
-    --card: #ffffff; --card-dark: #1a1a2e;
-    --border: #e8e0c8; --border-dark: #333;
+    --card-light: #ffffff; --card-dark: #1a1a2e;
+    --border-light: #e8e0c8; --border-dark: #333;
     --green: #2e7d32; --red: #b71c1c; --orange: #e65100;
     --font-serif: Georgia, 'Times New Roman', serif;
     --font-sans: 'Segoe UI', Helvetica, Arial, sans-serif;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: var(--bg); color: var(--text);
+  body { background: var(--bg-light); color: var(--text-light);
     font-family: var(--font-serif); line-height: 1.8;
     transition: background .4s, color .4s; }
   body.dark { background: var(--bg-dark); color: var(--text-dark); }
 
   /* NAV */
   .topnav { position: sticky; top: 0; z-index: 100;
-    background: var(--bg); border-bottom: 1px solid var(--border);
+    background: var(--bg-light); border-bottom: 1px solid var(--border-light);
     padding: .6rem 1.5rem; display: flex; gap: 1.5rem;
     align-items: center; font-family: var(--font-sans); font-size: .9em; }
   body.dark .topnav { background: var(--bg-dark); border-color: var(--border-dark); }
@@ -42,7 +42,7 @@
   body.dark .subtitle { color: #999; }
   h2 { font-family: var(--font-sans); color: var(--accent);
        font-size: 1.3rem; margin: 2.2rem 0 .8rem;
-       border-bottom: 1px solid var(--border); padding-bottom: .5rem; }
+       border-bottom: 1px solid var(--border-light); padding-bottom: .5rem; }
   body.dark h2 { color: var(--accent-dark); border-color: var(--border-dark); }
   p { margin-bottom: 1rem; }
 
@@ -66,7 +66,7 @@
   th { background: var(--accent); color: white; padding: .6rem .8rem;
        text-align: left; font-weight: 600; }
   body.dark th { background: #2a1f00; color: var(--accent-dark); }
-  td { padding: .55rem .8rem; border-bottom: 1px solid var(--border); }
+  td { padding: .55rem .8rem; border-bottom: 1px solid var(--border-light); }
   body.dark td { border-color: var(--border-dark); }
   tr:hover td { background: #fdf6e3; }
   body.dark tr:hover td { background: #1a1500; }
@@ -78,7 +78,7 @@
   .gauges { display: grid;
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     gap: 1rem; margin: 1.5rem 0; }
-  .gauge-card { background: var(--card); border: 1px solid var(--border);
+  .gauge-card { background: var(--card-light); border: 1px solid var(--border-light);
     border-radius: 8px; padding: 1rem .8rem; text-align: center;
     font-family: var(--font-sans); }
   body.dark .gauge-card { background: var(--card-dark); border-color: var(--border-dark); }
@@ -127,7 +127,7 @@
   .hallazgo-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: .1rem; }
 
   footer { text-align: center; padding: 2rem; color: #888;
-    font-size: .85em; border-top: 1px solid var(--border);
+    font-size: .85em; border-top: 1px solid var(--border-light);
     font-family: var(--font-sans); margin-top: 3rem; }
   body.dark footer { border-color: var(--border-dark); }
   footer a { color: var(--accent); }
@@ -311,7 +311,7 @@ python scripts/synthesis_v5.py</pre>
 </div><!-- /container -->
 
 <footer>
-  <p>🌍 Ley de Gaia — MIU-IFT v13.0 | Grimorio Multiversal v2.5</p>
+  <p>🌍 Ley de Gaia — MIU-IFT v13.0 | Grimorio Multiversal v2.6</p>
   <p style="margin-top:.5rem">
     <a href="index.html">← Inicio</a> ·
     <a href="docs/index.html">Documentación</a> ·
