@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌌 Codex MIU Multidimensional — Voynich en 7.24D</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            color: #d4c8a8;
+            font-family: 'Georgia', serif;
+            overflow: hidden;
+        }
+
+        #canvas-principal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        #hub {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
+            opacity: 1;
+            transition: opacity 0.8s ease;
+        }
+
+        #hub.oculto {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .titulo-principal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            pointer-events: all;
+            z-index: 20;
+        }
+
+        .titulo-principal h1 {
+            font-size: 3.2rem;
+            color: #ffd700;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+            letter-spacing: 3px;
+        }
+
+        .titulo-principal p {
+            font-size: 1.1rem;
+            color: rgba(255, 215, 0, 0.6);
+            margin-bottom: 3rem;
+            max-width: 600px;
+        }
+
+        .capillas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 1000px;
+            pointer-events: all;
+        }
+
+        .capilla-btn {
+            background: linear-gradient(135deg, rgba(26, 35, 126, 0.4), rgba(181, 137, 0, 0.2));
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .capilla-btn:hover {
+            border-color: #ffd700;
+            background: linear-gradient(135deg, rgba(26, 35, 126, 0.6), rgba(181, 137, 0, 0.4));
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(255, 215, 0, 0.3);
+        }
+
+        .capilla-btn h3 {
+            font-size: 1.3rem;
+            color: #ffd700;
+            margin-bottom: 0.5rem;
+        }
+
+        .capilla-btn p {
+            font-size: 0.9rem;
+            color: rgba(255, 215, 0, 0.6);
+            line-height: 1.5;
+        }
+
+        .codigo-zoom {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(13, 13, 13, 0.8);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: rgba(255, 215, 0, 0.7);
+            backdrop-filter: blur(8px);
+            pointer-events: all;
+            z-index: 100;
+        }
+
+        .loader {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 999;
+            pointer-events: all;
+        }
+
+        .loader-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 215, 0, 0.3);
+            border-top: 3px solid #ffd700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loader p {
+            color: #ffd700;
+            font-size: 1rem;
+        }
+
+        #instrucciones {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(13, 13, 13, 0.8);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: rgba(255, 215, 0, 0.7);
+            max-width: 250px;
+            backdrop-filter: blur(8px);
+            pointer-events: all;
+            z-index: 100;
+        }
+
+        #volver {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(13, 13, 13, 0.8);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 8px;
+            padding: 10px 16px;
+            color: #ffd700;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            z-index: 100;
+            pointer-events: all;
+            transition: all 0.3s;
+            display: none;
+        }
+
+        #volver:hover {
+            border-color: #ffd700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .capilla-activa {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 50;
+            display: none;
+        }
+
+        .capilla-activa.visible {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV VUELTA -->
+<nav style="position:fixed;top:10px;left:10px;z-index:999;display:flex;gap:6px">
+  <a href="index.html" style="color:#ffd700;text-decoration:none;background:rgba(0,0,0,.78);border:1px solid rgba(255,215,0,.3);border-radius:5px;padding:4px 10px;font-family:'Courier New',monospace;font-size:11px;backdrop-filter:blur(4px)">← Galería</a>
+  <a href="../index.html" style="color:#ffd700;text-decoration:none;background:rgba(0,0,0,.78);border:1px solid rgba(255,215,0,.3);border-radius:5px;padding:4px 10px;font-family:'Courier New',monospace;font-size:11px;backdrop-filter:blur(4px)">Inicio</a>
+</nav>
+
+<!-- CANVAS PRINCIPAL PARA TODAS LAS VISUALIZACIONES -->
+<canvas id="canvas-principal"></canvas>
+
+<!-- HUB PRINCIPAL -->
+<div id="hub">
+    <div class="titulo-principal">
+        <h1>🌌 CODEX MIU</h1>
+        <p>Voynich Multidimensional en 7.24 Dimensiones Proyectadas</p>
+        <p style="font-size: 0.9rem; color: rgba(255, 215, 0, 0.4); margin-top: 1rem;">
+            ρ(x) > 0 — La información es el sustrato primordial
+        </p>
+    </div>
+
+    <div class="capillas-grid">
+        <div class="capilla-btn" onclick="entrarCapilla(1)">
+            <h3>⚛️ El Campo Primordial</h3>
+            <p>Océano de partículas. El texto emerge sin significado.</p>
+        </div>
+        <div class="capilla-btn" onclick="entrarCapilla(2)">
+            <h3>🔗 El Gradiente Ξ</h3>
+            <p>Figuras conectadas por canales de luz luminosos.</p>
+        </div>
+        <div class="capilla-btn" onclick="entrarCapilla(3)">
+            <h3>🌿 La Coherencia K_i</h3>
+            <p>Paisaje fractal podable. Autofagia del conocimiento.</p>
+        </div>
+        <div class="capilla-btn" onclick="entrarCapilla(4)">
+            <h3>🪞 Auto-observación A7</h3>
+            <p>Sala de espejos con curvatura no euclídea.</p>
+        </div>
+        <div class="capilla-btn" onclick="entrarCapilla(5)">
+            <h3>🌸 Estética Fractal</h3>
+            <p>Jardín de plantas imposibles. Polinización interactiva.</p>
+        </div>
+    </div>
+</div>
+
+<!-- BOTÓN VOLVER -->
+<button id="volver" onclick="volverHub()">← Volver al Hub</button>
+
+<!-- INSTRUCCIONES -->
+<div id="instrucciones">
+    <strong>Instrucciones:</strong><br>
+    🖱️ Arrastra para rotar<br>
+    🔍 Rueda para zoom<br>
+    ⌨️ ESC para volver<br>
+    🔊 Audio generativo activado
+</div>
+
+<!-- CÓDIGO ZOOM -->
+<div class="codigo-zoom" id="codigo-zoom">
+    D_eff = 7.24 | φ = 1.618 | K_i = φ·D_f/2.5
+</div>
+
+<!-- CONTENEDORES PARA CADA CAPILLA -->
+<div id="capilla-1" class="capilla-activa"></div>
+<div id="capilla-2" class="capilla-activa"></div>
+<div id="capilla-3" class="capilla-activa"></div>
+<div id="capilla-4" class="capilla-activa"></div>
+<div id="capilla-5" class="capilla-activa"></div>
+
+<!-- THREE.JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script>
+    // ============================================================
+    // CODEX MIU MULTIDIMENSIONAL — ARQUITECTURA PRINCIPAL
+    // ============================================================
+
+    const CONST = {
+        PHI: 1.6180339887,
+        OMEGA_F: 0.65048305,
+        Q_BORN: 1.1910149,
+        PHI_C: 0.6829322,
+        XI: 8.57
+    };
+
+    let capillaActual = null;
+    let escenaActual = null;
+    let audioCtx = null;
+    let masterGain = null;
+
+    // ============================================================
+    // GESTIÓN DEL HUB
+    // ============================================================
+
+    function entrarCapilla(num) {
+        const hub = document.getElementById('hub');
+        const instrucciones = document.getElementById('instrucciones');
+        
+        hub.classList.add('oculto');
+        instrucciones.style.opacity = '0.5';
+        document.getElementById('volver').style.display = 'block';
+        
+        capillaActual = num;
+        
+        switch(num) {
+            case 1: crearCapillaCampoPrimordial(); break;
+            case 2: crearCapillaGradiente(); break;
+            case 3: crearCapillaCoherencia(); break;
+            case 4: crearCapillaSalaEspejos(); break;
+            case 5: crearCapillaJardinFractal(); break;
+        }
+        
+        iniciarAudio();
+        document.addEventListener('keydown', detectarESC);
+    }
+
+    function volverHub() {
+        const hub = document.getElementById('hub');
+        const instrucciones = document.getElementById('instrucciones');
+        
+        hub.classList.remove('oculto');
+        instrucciones.style.opacity = '1';
+        document.getElementById('volver').style.display = 'none';
+        
+        if (escenaActual && escenaActual.dispose) {
+            escenaActual.dispose();
+        }
+        capillaActual = null;
+        escenaActual = null;
+        
+        if (audioCtx) {
+            masterGain.gain.setValueAtTime(0, audioCtx.currentTime);
+            setTimeout(() => {
+                if (audioCtx) audioCtx.close();
+                audioCtx = null;
+            }, 200);
+        }
+        
+        document.removeEventListener('keydown', detectarESC);
+    }
+
+    function detectarESC(e) {
+        if (e.key === 'Escape') {
+            volverHub();
+        }
+    }
+
+    // ============================================================
+    // AUDIO GENERATIVO
+    // ============================================================
+
+    function iniciarAudio() {
+        if (audioCtx) return;
+        
+        try {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            masterGain = audioCtx.createGain();
+            masterGain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            masterGain.connect(audioCtx.destination);
+            
+            // Oscilador base a frecuencia de Fisher (OMEGA_F)
+            const freq = CONST.OMEGA_F * 100; // Escalar para audibilidad
+            const osc = audioCtx.createOscillator();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            osc.connect(masterGain);
+            osc.start();
+            
+            // Modulador segundo armónico
+            const osc2 = audioCtx.createOscillator();
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(freq * CONST.PHI, audioCtx.currentTime);
+            osc2.connect(masterGain);
+            osc2.start();
+            
+            console.log('🔊 Audio generativo activado');
+        } catch (e) {
+            console.error('Audio Web API no disponible:', e);
+        }
+    }
+
+    // ============================================================
+    // CAPILLA 1: EL CAMPO PRIMORDIAL (ρ(x) > 0)
+    // ============================================================
+
+    function crearCapillaCampoPrimordial() {
+        const canvas = document.getElementById('canvas-principal');
+        const ctx = canvas.getContext('2d');
+        let animFrame = null;
+        let time = 0;
+
+        // Redimensionar canvas
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Generar pseudopalabras usando Markov
+        const pseudopalabras = generarPseudopalabras(100);
+        
+        // Crear objeto para contener el escenario
+        escenaActual = {
+            dispose: () => {
+                if (animFrame) cancelAnimationFrame(animFrame);
+            }
+        };
+
+        // Animar partículas
+        function animar() {
+            ctx.fillStyle = 'rgba(10, 10, 15, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Dibujar partículas
+            const numParticulas = 800;
+            for (let i = 0; i < numParticulas; i++) {
+                const seed = i + time * 0.001;
+                const x = (Math.sin(seed) + 1) / 2 * canvas.width;
+                const y = (Math.cos(seed * 0.7) + 1) / 2 * canvas.height;
+                const tamaño = 1 + Math.sin(seed * 10) * 1.5;
+                const opacidad = 0.3 + Math.sin(time * 0.01 + seed) * 0.3;
+
+                ctx.fillStyle = `rgba(255, 215, 0, ${opacidad})`;
+                ctx.beginPath();
+                ctx.arc(x, y, tamaño, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Texto emergente (pseudopalabras)
+            ctx.font = 'bold 14px Courier New';
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.4)';
+            ctx.textAlign = 'center';
+            
+            pseudopalabras.forEach((palabra, idx) => {
+                const y = (time + idx * 50) % (canvas.height + 100) - 50;
+                ctx.fillText(palabra, canvas.width / 2 + Math.sin(idx) * 200, y);
+            });
+
+            // Título
+            ctx.font = 'bold 24px Georgia';
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.7)';
+            ctx.textAlign = 'center';
+            ctx.fillText('ρ(x) > 0', canvas.width / 2, 60);
+            ctx.font = '12px Courier New';
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.4)';
+            ctx.fillText('Océano de información primordial', canvas.width / 2, 85);
+
+            time++;
+            animFrame = requestAnimationFrame(animar);
+        }
+
+        animar();
+    }
+
+    // ============================================================
+    // GENERADOR DE PSEUDOPALABRAS (MARKOV)
+    // ============================================================
+
+    function generarPseudopalabras(cantidad) {
+        const corpus = [
+            'vhyr', 'zath', 'kinel', 'phyx', 'tamir', 'shen', 'void', 'aether',
+            'nexus', 'quor', 'xen', 'veil', 'prism', 'holm', 'vyst', 'cyan',
+            'zeph', 'moor', 'thyr', 'vorn', 'dex', 'zhal', 'mir', 'eth'
+        ];
+
+        const palabras = [];
+        for (let i = 0; i < cantidad; i++) {
+            palabras.push(corpus[Math.floor(Math.random() * corpus.length)]);
+        }
+        return palabras;
+    }
+
+    // ============================================================
+    // CAPILLA 2: EL GRADIENTE Ξ (FIGURAS CONECTADAS)
+    // ============================================================
+
+    function crearCapillaGradiente() {
+        const canvas = document.getElementById('canvas-principal');
+        const ctx = canvas.getContext('2d');
+        let animFrame = null;
+        let time = 0;
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        escenaActual = {
+            dispose: () => {
+                if (animFrame) cancelAnimationFrame(animFrame);
+            }
+        };
+
+        // Crear figuras (representadas como círculos)
+        const figuras = [];
+        for (let i = 0; i < 7; i++) {
+            figuras.push({
+                x: canvas.width * (0.2 + i * 0.1),
+                y: canvas.height * (0.3 + Math.sin(i) * 0.2),
+                radio: 30,
+                intensidad: Math.sin(i * CONST.PHI)
+            });
+        }
+
+        function animar() {
+            ctx.fillStyle = '#0a0a0f';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Dibujar canales de luz entre figuras
+            ctx.strokeStyle = 'rgba(255, 215, 0, 0.3)';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < figuras.length - 1; i++) {
+                const f1 = figuras[i];
+                const f2 = figuras[i + 1];
+                const intensidad = 0.3 + 0.5 * Math.sin(time * 0.01 + i);
+                ctx.globalAlpha = intensidad;
+                ctx.beginPath();
+                ctx.moveTo(f1.x, f1.y);
+                ctx.lineTo(f2.x, f2.y);
+                ctx.stroke();
+            }
+            ctx.globalAlpha = 1;
+
+            // Dibujar figuras
+            figuras.forEach((fig, idx) => {
+                const pulsacion = 1 + 0.3 * Math.sin(time * 0.02 + idx);
+                ctx.fillStyle = `rgba(255, 215, 0, ${0.7 + 0.3 * Math.sin(time * 0.01 + idx)})`;
+                ctx.beginPath();
+                ctx.arc(fig.x, fig.y, fig.radio * pulsacion, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Label
+                ctx.font = '10px Courier New';
+                ctx.fillStyle = 'rgba(255, 215, 0, 0.6)';
+                ctx.textAlign = 'center';
+                ctx.fillText(`Ξ_${idx + 1}`, fig.x, fig.y);
+            });
+
+            // Título
+            ctx.font = 'bold 24px Georgia';
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.7)';
+            ctx.textAlign = 'center';
+            ctx.fillText('El Gradiente Ξ', canvas.width / 2, 60);
+
+            time++;
+            animFrame = requestAnimationFrame(animar);
+        }
+
+        animar();
+    }
+
+    // ============================================================
+    // CAPILLA 3: LA COHERENCIA K_i (PAISAJE FRACTAL PODABLE)
+    // ============================================================
+
+    function crearCapillaCoherencia() {
+        const canvas = document.getElementById('canvas-principal');
+        const ctx = canvas.getContext('2d');
+        let animFrame = null;
+        let time = 0;
+        let nodos = [];
+        let coherenciaGlobal = 0.7;
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Crear grid de nodos
+        const gridSize = 10;
+        for (let x = 0; x < gridSize; x++) {
+            for (let y = 0; y < gridSize; y++) {
+                nodos.push({
+                    x: (x / gridSize) * canvas.width,
+                    y: (y / gridSize) * canvas.height,
+                    vivo: true,
+                    edad: 0
+                });
+            }
+        }
+
+        escenaActual = {
+            dispose: () => {
+                if (animFrame) cancelAnimationFrame(animFrame);
+            }
+        };
+
+        // Detectar clicks para podar
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+
+            nodos.forEach(n => {
+                const dist = Math.hypot(n.x - mx, n.y - my);
+                if (dist < 40 && n.vivo) {
+                    n.vivo = false;
+                    coherenciaGlobal *= 0.95; // Reduce coherencia al podar
+                }
+            });
+        });
+
+        function animar() {
+            ctx.fillStyle = '#0a0a0f';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Recuperar coherencia lentamente
+            coherenciaGlobal += (0.7 - coherenciaGlobal) * 0.002;
+
+            // Dibujar nodos y conexiones
+            nodos.forEach((n, idx) => {
+                if (!n.vivo) return;
+
+                const Ki = CONST.PHI * 2.3 / 2.5 * coherenciaGlobal;
+                const color = Math.floor(200 * Ki);
+                const hue = 60 + color;
+
+                ctx.fillStyle = `hsl(${hue}, 80%, ${30 + 20 * coherenciaGlobal}%)`;
+                ctx.beginPath();
+                ctx.arc(n.x, n.y, 8, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Conectar con nodos vecinos
+                if (idx % gridSize < gridSize - 1) {
+                    const next = nodos[idx + 1];
+                    if (next && next.vivo) {
+                        ctx.strokeStyle = `rgba(255, 215, 0, ${0.3 * coherenciaGlobal})`;
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(n.x, n.y);
+                        ctx.lineTo(next.x, next.y);
+                        ctx.stroke();
+                    }
+                }
+            });
+
+            // Título y stats
+            ctx.font = 'bold 24px Georgia';
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.7)';
+            ctx.textAlign = 'center';
+            ctx.fillText('La Coherencia K_i', canvas.width / 2, 60);
+
+            ctx.font = '14px Courier New';
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.5)';
+            ctx.fillText(`K_i = ${coherenciaGlobal.toFixed(3)} | Nodos vivos: ${nodos.filter(n => n.vivo).length}`, 
+                        canvas.width / 2, 100);
+            ctx.fillText('Click para podar nodos', canvas.width / 2, 130);
+
+            time++;
+            animFrame = requestAnimationFrame(animar);
+        }
+
+        animar();
+    }
+
+    // ============================================================
+    // CAPILLA 4: AUTO-OBSERVACIÓN A7 (SALA DE ESPEJOS)
+    // ============================================================
+
+    function crearCapillaSalaEspejos() {
+        const canvas = document.getElementById('canvas-principal');
+        const ctx = canvas.getContext('2d');
+        let animFrame = null;
+        let time = 0;
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        escenaActual = {
+            dispose: () => {
+                if (animFrame) cancelAnimationFrame(animFrame);
+            }
+        };
+
+        function animar() {
+            ctx.fillStyle = '#0a0a0f';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Dibujar espejos anidados (representación 2D de curvatura no euclídea)
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            
+            for (let layer = 10; layer > 0; layer--) {
+                const radio = 200 - layer * 15;
+                const distorsion = 1 + 0.1 * Math.sin(time * 0.02 + layer);
+                const opacidad = 0.8 * (layer / 10);
+
+                ctx.strokeStyle = `rgba(255, 215, 0, ${opacidad})`;
+                ctx.lineWidth = 2 - layer * 0.1;
+
+                // Dibujar espejo curvado
+                ctx.beginPath();
+                for (let a = 0; a < Math.PI * 2; a += 0.1) {
+                    const r = radio * distorsion * (1 + 0.1 * Math.sin(a * 3 + time * 0.01));
+                    const x = cx + r * Math.cos(a);
+                    const y = cy + r * Math.sin(a);
+                    a === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+                ctx.stroke();
+
+                // Efecto de reflejo
+                ctx.fillStyle = `rgba(255, 215, 0, ${opacidad * 0.1})`;
+                ctx.fill();
+            }
+
+            // Punto focal central
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.8)';
+            ctx.beginPath();
+            ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Título
+            ctx.font = 'bold 24px Georgia';
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.7)';
+            ctx.textAlign = 'center';
+            ctx.fillText('Auto-observación A7', canvas.width / 2, 60);
+            ctx.font = '12px Courier New';
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.4)';
+            ctx.fillText('El campo observándose a sí mismo', canvas.width / 2, 90);
+
+            time++;
+            animFrame = requestAnimationFrame(animar);
+        }
+
+        animar();
+    }
+
+    // ============================================================
+    // CAPILLA 5: ESTÉTICA FRACTAL (JARDÍN DE PLANTAS IMPOSIBLES)
+    // ============================================================
+
+    function crearCapillaJardinFractal() {
+        const canvas = document.getElementById('canvas-principal');
+        const ctx = canvas.getContext('2d');
+        let animFrame = null;
+        let time = 0;
+        let plantas = [];
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Generar plantas fractales usando Lindenmayer
+        function generarPlanta(x, y, seed) {
+            return {
+                x: x,
+                y: y,
+                edad: 0,
+                semillas: [],
+                axiom: generarAxiomL(seed),
+                polinizada: false
+            };
+        }
+
+        function generarAxiomL(seed) {
+            const axiomas = ['F+F-F', 'F-F+F', 'F[+F][-F]F'];
+            return axiomas[seed % 3];
+        }
+
+        // Crear plantas iniciales
+        for (let i = 0; i < 5; i++) {
+            plantas.push(generarPlanta(
+                canvas.width * (0.2 + i * 0.15),
+                canvas.height * 0.7,
+                i
+            ));
+        }
+
+        escenaActual = {
+            dispose: () => {
+                if (animFrame) cancelAnimationFrame(animFrame);
+            }
+        };
+
+        // Click para polinizar
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+
+            plantas.forEach(p => {
+                const dist = Math.hypot(p.x - mx, p.y - my);
+                if (dist < 60) {
+                    p.polinizada = true;
+                }
+            });
+        });
+
+        function dibujarPlanta(p, px, py, angulo, profundidad, escala) {
+            if (profundidad === 0 || escala < 1) return;
+
+            const x2 = px + escala * Math.cos(angulo);
+            const y2 = py - escala * Math.sin(angulo);
+
+            ctx.strokeStyle = `rgba(${Math.floor(107 + profundidad * 10)}, ${Math.floor(205 - profundidad * 10)}, 100, ${0.7})`;
+            ctx.lineWidth = 2 * (profundidad / 6);
+            ctx.beginPath();
+            ctx.moveTo(px, py);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+
+            // Ramificación recursiva
+            if (Math.random() > 0.6) {
+                dibujarPlanta(p, x2, y2, angulo + 0.5, profundidad - 1, escala * 0.7);
+                dibujarPlanta(p, x2, y2, angulo - 0.5, profundidad - 1, escala * 0.7);
+            }
+        }
+
+        function animar() {
+            ctx.fillStyle = '#0a0a0f';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Dibujar plantas
+            plantas.forEach((p, idx) => {
+                const colorMutacion = p.polinizada ? 100 : 50;
+                ctx.fillStyle = `rgba(${107 + colorMutacion}, ${205 - colorMutacion}, 119, 0.6)`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Dibujar flores/ramas
+                dibujarPlanta(p, p.x, p.y, Math.PI / 2, 6, 20);
+
+                // Label
+                ctx.font = '10px Courier New';
+                ctx.fillStyle = 'rgba(107, 205, 119, 0.8)';
+                ctx.textAlign = 'center';
+                ctx.fillText(p.polinizada ? '🌺' : '🌿', p.x, p.y - 30);
+            });
+
+            // Título
+            ctx.font = 'bold 24px Georgia';
+            ctx.fillStyle = 'rgba(107, 205, 119, 0.8)';
+            ctx.textAlign = 'center';
+            ctx.fillText('Estética Fractal', canvas.width / 2, 60);
+            ctx.font = '12px Courier New';
+            ctx.fillStyle = 'rgba(107, 205, 119, 0.6)';
+            ctx.fillText('Click para polinizar y crear híbridos', canvas.width / 2, 90);
+
+            time++;
+            animFrame = requestAnimationFrame(animar);
+        }
+
+        animar();
+    }
+
+    // ============================================================
+    // INICIALIZACIÓN
+    // ============================================================
+
+    window.addEventListener('resize', () => {
+        const canvas = document.getElementById('canvas-principal');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    });
+
+    console.log('🌌 Codex MIU Multidimensional cargado');
+    console.log('🌿 Zvvvvz dice: El Voynich ha evolucionado.');
+</script>
+
+</body>
+</html>
