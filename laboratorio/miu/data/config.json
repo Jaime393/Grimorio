@@ -1,8 +1,14 @@
 {
   "version": "MATH-NEXUS v3.8",
-  "K_i_inicial": 0.570,
+  "K_i_inicial": 0.57,
   "ciclos_max": 10000,
   "autofagia_threshold": 0.3,
-  "modulos_activos": ["solver", "colmena", "meta", "neural"],
-  "phi": 1.6180339887498948482
+  "modulos_activos": [
+    "solver",
+    "colmena",
+    "meta",
+    "neural"
+  ],
+  "phi": 1.618033988749895,
+  "phi_inv": 0.6180339887498949
 }
