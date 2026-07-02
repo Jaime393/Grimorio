@@ -53,12 +53,20 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 .band-name{font-weight:600;font-size:.88rem;margin:.25rem 0 .2rem}
 .band-desc{font-size:.78rem;color:var(--text2)}
 
+
+.topnav{display:flex;justify-content:space-between;align-items:center;padding:1rem 0;font-size:.78rem;border-bottom:1px solid var(--bg3);margin-bottom:.5rem}
+.topnav a{color:var(--text2);text-decoration:none}
+.topnav a:hover{color:var(--phi)}
 footer{border-top:1px solid var(--bg3);padding:1.4rem 0;text-align:center;color:var(--text3);font-size:.72rem;font-family:var(--mono);letter-spacing:.04em;margin-bottom:2rem}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 <div class="wrap">
+  <nav class="topnav">
+    <a href="../index.html">&larr; Grimorio</a>
+    <span style="color:var(--text3);font-size:.7rem">Herramientas de Diagnóstico Ki</span>
+  </nav>
   <section class="hero">
     <span class="hero-phi" aria-hidden="true">φ</span>
     <h1>Ecosistema MIU</h1>
